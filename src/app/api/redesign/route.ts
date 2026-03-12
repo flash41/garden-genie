@@ -96,19 +96,22 @@ Do not invent a new space. This must be the same garden, redesigned.`;
       imageUrl: '',
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('❌ GardenAI API Error:', error);
 
-    if (error.message?.includes('API_KEY') || error.message?.includes('api key')) {
+    const message =
+      error instanceof Error ? error.message : 'An unexpected error occurred.';
+
+    if (message.includes('API_KEY') || message.includes('api key')) {
       return NextResponse.json({ error: 'Invalid or missing Google API key. Check your .env.local file.' }, { status: 500 });
     }
-    if (error.message?.includes('quota') || error.message?.includes('429')) {
+    if (message.includes('quota') || message.includes('429')) {
       return NextResponse.json({ error: 'Google API quota exceeded. Please wait a moment and try again.' }, { status: 429 });
     }
-    if (error.message?.includes('503') || error.message?.includes('overloaded')) {
+    if (message.includes('503') || message.includes('overloaded')) {
       return NextResponse.json({ error: 'Google AI is currently over capacity. Please wait 30 seconds and try again.' }, { status: 503 });
     }
 
-    return NextResponse.json({ error: error.message || 'An unexpected error occurred.' }, { status: 500 });
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

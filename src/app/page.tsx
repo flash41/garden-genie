@@ -32,7 +32,7 @@ export default function GardenDashboard() {
 
     try {
       setTimeout(() => setLoadingMessage('Synthesizing Botanical Data...'), 3000);
-      setTimeout(() => setLoadingMessage('Rendering AI Visualisation...'), 8000);
+      setTimeout(() => setLoadingMessage('Rendering Design Visualisation...'), 8000);
 
       const response = await fetch('/api/redesign', {
         method: 'POST',
@@ -61,14 +61,19 @@ export default function GardenDashboard() {
       <header className="max-w-7xl mx-auto px-8 py-10 flex justify-between items-center border-b border-slate-200">
         <div>
           <h1 className="text-3xl font-light tracking-widest uppercase text-slate-900">
-            Garden<span className="font-bold text-emerald-900">AI</span>
+            gardig<span className="font-bold text-emerald-900">.com</span>
           </h1>
           <p className="text-xs tracking-[0.2em] uppercase text-emerald-800/60 font-sans mt-1">
-            Landscape Architectural Intelligence
+            Garden Design Platform
           </p>
         </div>
         {result && (
-          <PDFButton plan={result.plan} imageBase64={result.imageBase64} style={style} />
+          <PDFButton
+            plan={result.plan}
+            imageBase64={result.imageBase64}
+            imageDataUrl={preview || undefined}
+            style={style}
+          />
         )}
       </header>
 
@@ -88,7 +93,7 @@ export default function GardenDashboard() {
                     <button
                       onClick={() => setPreview(null)}
                       className="absolute top-2 right-2 bg-black/50 p-2 rounded-full text-white text-xs hover:bg-black/70 transition-colors"
-                    >✕</button>
+                    >&#x2715;</button>
                   </>
                 ) : (
                   <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center cursor-pointer">
@@ -118,6 +123,8 @@ export default function GardenDashboard() {
               >
                 <option>Modern Minimalist</option>
                 <option>English Cottage</option>
+                <option>Irish Urban</option>
+                <option>European Urban</option>
                 <option>Japanese Zen</option>
                 <option>Mediterranean Oasis</option>
                 <option>Tropical Paradise</option>
@@ -202,20 +209,20 @@ export default function GardenDashboard() {
 
               <div className="bg-white p-4 rounded-[2rem] shadow-lg border border-slate-200">
                 <p className="text-xs uppercase tracking-widest font-sans font-bold text-emerald-800/60 mb-3 px-2">
-                  AI Render — {style}
+                  Design Render — {style}
                 </p>
                 <div className="bg-slate-100 rounded-[1.5rem] overflow-hidden min-h-[400px] flex items-center justify-center">
                   {result.imageBase64 ? (
                     <img
                       src={result.imageBase64}
-                      alt="AI Garden Redesign"
+                      alt="Garden Design Render"
                       className="w-full h-auto block"
                     />
                   ) : (
                     <div className="flex flex-col items-center gap-3 text-slate-400 p-8 text-center">
                       <ImageOff size={32} />
                       <p className="font-sans text-sm">
-                        Image render unavailable. Your architectural plan is complete below.
+                        Image render unavailable. Your plan is complete below.
                       </p>
                     </div>
                   )}
@@ -224,7 +231,7 @@ export default function GardenDashboard() {
 
               <div className="bg-white p-10 rounded-[2rem] border border-slate-200 shadow-sm">
                 <p className="text-xs uppercase tracking-widest font-sans font-bold text-emerald-800/60 mb-6">
-                  Architectural Specification
+                  Design Specification
                 </p>
                 <div className="prose prose-slate lg:prose-lg max-w-none text-slate-900">
                   <ReactMarkdown>{result.plan}</ReactMarkdown>
