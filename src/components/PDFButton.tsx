@@ -11,6 +11,7 @@ interface Props {
   imageBase64: string;
   imageDataUrl?: string;
   gridImageUrl?: string;
+  aerialImageUrl?: string;
   style: string;
   clientName?: string;
   siteAddress?: string;
@@ -27,6 +28,7 @@ export default function PDFButton({
   imageBase64,
   imageDataUrl,
   gridImageUrl,
+  aerialImageUrl,
   style,
   clientName,
   siteAddress,
@@ -47,6 +49,7 @@ export default function PDFButton({
       imageBase64={imageBase64}
       imageDataUrl={imageDataUrl}
       gridImageUrl={gridImageUrl}
+      aerialImageUrl={aerialImageUrl}
       style={style}
       clientName={clientName}
       siteAddress={siteAddress}

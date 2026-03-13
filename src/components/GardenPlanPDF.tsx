@@ -161,11 +161,11 @@ const SubHead = ({ text }: { text: string }) => (
 const PageChrome = ({ clientName, dateStr, style }: any) => (
   <>
     <View style={S.runHdr} fixed>
-      <Text style={S.runBrand}>gardig.com · Garden Design Proposal</Text>
+      <Text style={S.runBrand}>dedrab.com · Garden Design Proposal</Text>
       <Text style={S.runRight}>{clientName ? `${clientName} · ` : ''}{style}</Text>
     </View>
     <View style={S.footer} fixed>
-      <Text style={S.footerBrand}>gardig.com</Text>
+      <Text style={S.footerBrand}>dedrab.com</Text>
       <Text style={S.footerMid}>{clientName ? `${clientName} · ` : ''}{dateStr} · Confidential</Text>
       <Text style={S.footerPg} render={({ pageNumber, totalPages }) => `Page ${pageNumber} / ${totalPages}`} />
     </View>
@@ -180,12 +180,13 @@ interface Props {
   imageBase64: string;
   imageDataUrl?: string;
   gridImageUrl?: string;
+  aerialImageUrl?: string;
   style: string;
   clientName?: string;
   siteAddress?: string;
 }
 
-export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageUrl, style, clientName, siteAddress }: Props) => {
+export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageUrl, aerialImageUrl, style, clientName, siteAddress }: Props) => {
   const d = doc || {};
   const hasBefore = !!imageDataUrl;
   const hasAfter  = !!imageBase64;
@@ -217,7 +218,7 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
         <View style={S.coverTopRule} />
         <View style={S.coverContent}>
           <View style={S.coverTopRow}>
-            <Text style={S.coverBrand}>gardig.com</Text>
+            <Text style={S.coverBrand}>dedrab.com</Text>
             <Text style={S.coverDate}>{dateStr}</Text>
           </View>
           <View style={S.coverMid}>
@@ -698,16 +699,51 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
         </Section>
       </Page>
 
-      {/* ── Page 6: Appendices ────────────────────────────────── */}
+      {/* ── Page 6: Aerial Layout Plan ────────────────────────── */}
+      {aerialImageUrl ? (
+        <Page size="A4" style={S.page}>
+          <PageChrome clientName={clientName} dateStr={dateStr} style={style} />
+
+          <Section num="App A" title="Garden Layout Plan">
+            <Text style={[S.small, { marginBottom: 8 }]}>
+              Top-down layout sketch with plant position markers. Numbers correspond to the plant schedule in Section 05. Print this and take it outside.
+            </Text>
+            <Image src={aerialImageUrl} style={[S.imgSingle, { height: 360, objectFit: 'contain' }]} />
+            {plants.length > 0 ? (
+              <>
+                <SubHead text="Plant Reference" />
+                <View style={S.table}>
+                  <View style={S.tableHdr}>
+                    <Text style={[S.tableHdrT, { flex: 0.4 }]}>#</Text>
+                    <Text style={[S.tableHdrT, { flex: 0.8 }]}>Grid</Text>
+                    <Text style={[S.tableHdrT, { flex: 2.5 }]}>Plant</Text>
+                    <Text style={[S.tableHdrT, { flex: 4 }]}>Description</Text>
+                  </View>
+                  {plants.map((p: any, i: number) => (
+                    <View key={i} wrap={false} style={i % 2 === 0 ? S.tableRow : S.tableRowAlt}>
+                      <Text style={[S.tableCellB, { flex: 0.4, color: T.accent }]}>{i + 1}</Text>
+                      <Text style={[S.tableCellB, { flex: 0.8 }]}>{safe(p.gridLocation)}</Text>
+                      <Text style={[S.tableCellB, { flex: 2.5, fontSize: 7.5, fontStyle: 'italic' }]}>{safe(p.botanicalName)}{p.commonName ? ` — ${p.commonName}` : ''}</Text>
+                      <Text style={[S.tableCell, { flex: 4, fontSize: 7.5 }]}>{safe(p.designRationale)}</Text>
+                    </View>
+                  ))}
+                </View>
+              </>
+            ) : null}
+          </Section>
+        </Page>
+      ) : null}
+
+      {/* ── Page 7: Appendices ────────────────────────────────── */}
       <Page size="A4" style={S.page}>
         <PageChrome clientName={clientName} dateStr={dateStr} style={style} />
 
-        <Section num="11" title="Appendices">
+        <Section num="App B" title="Appendices">
 
           {/* A: Before & After */}
           {(hasBefore || hasAfter) ? (
             <>
-              <SubHead text="A — Site Photography: Before &amp; After" />
+              <SubHead text="B — Site Photography: Before &amp; After" />
               {hasBefore && hasAfter ? (
                 <View style={S.imgRow}>
                   <View style={S.imgCol}>
@@ -733,10 +769,10 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
             </>
           ) : null}
 
-          {/* B: Grid Reference Overlay */}
+          {/* C: Grid Reference Overlay */}
           {gridImageUrl ? (
             <>
-              <SubHead text="B — Grid Reference Overlay: Plant Location Key" />
+              <SubHead text="C — Grid Reference Overlay: Plant Location Key" />
               <Text style={[S.small, { marginBottom: 6 }]}>
                 Numbers on the render correspond to the plant schedule in Section 05. Grid columns A–F (left to right), rows 1–6 (top to bottom).
               </Text>
@@ -764,10 +800,10 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
             </>
           ) : null}
 
-          {/* C: Plant data sheets */}
+          {/* D: Plant data sheets */}
           {plants.length > 0 ? (
             <>
-              <SubHead text="C — Plant Data Reference" />
+              <SubHead text="D — Plant Data Reference" />
               <View style={S.table}>
                 <View style={S.tableHdr}>
                   <Text style={[S.tableHdrT, { flex: 2 }]}>Botanical Name</Text>
@@ -789,17 +825,17 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
             </>
           ) : null}
 
-          {/* D: Caveats */}
+          {/* E: Caveats */}
           {safeArr(d.caveats).length > 0 ? (
             <>
-              <SubHead text="D — Notes &amp; Caveats" />
+              <SubHead text="E — Notes &amp; Caveats" />
               {safeArr(d.caveats).map((c: string, i: number) => (
                 <Bullet key={i} text={c} />
               ))}
             </>
           ) : null}
 
-          {/* D: Confidence */}
+          {/* E: Confidence */}
           {d.confidence ? (
             <Text style={[S.small, { marginTop: 8 }]}>
               Design confidence score: {Math.round(d.confidence * 100)}% — based on image clarity and available site data.

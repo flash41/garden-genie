@@ -437,6 +437,39 @@ function detectCurrency(): string {
   return 'EUR';
 }
 
+function ReferenceTable({ plants }: { plants: any[] }) {
+  if (!plants?.length) return null;
+  return (
+    <div style={{ overflowX: "auto", borderRadius: C.rLg, border: `1px solid ${C.rule}`, marginTop: 14 }}>
+      <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: C.font, fontSize: px(BASE - 1) }}>
+        <thead>
+          <tr style={{ background: C.brand }}>
+            <th style={{ padding: "9px 12px", color: "#fff", textAlign: "left", fontSize: px(12), fontWeight: 600, width: 40 }}>#</th>
+            <th style={{ padding: "9px 12px", color: "#fff", textAlign: "left", fontSize: px(12), fontWeight: 600, width: 60 }}>Grid</th>
+            <th style={{ padding: "9px 12px", color: "#fff", textAlign: "left", fontSize: px(12), fontWeight: 600 }}>Plant</th>
+            <th style={{ padding: "9px 12px", color: "#fff", textAlign: "left", fontSize: px(12), fontWeight: 600 }}>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          {plants.map((p: any, i: number) => (
+            <tr key={p.id} style={{ background: i % 2 === 0 ? C.surface : C.card, borderBottom: `1px solid ${C.rule}` }}>
+              <td style={{ padding: "9px 12px", color: C.accent, fontWeight: 700, fontSize: px(13) }}>{i + 1}</td>
+              <td style={{ padding: "9px 12px" }}>
+                <span style={{ background: C.brand, color: C.accent, borderRadius: C.r, padding: "2px 7px", fontSize: px(11), fontWeight: 700 }}>{p.gridLocation || "—"}</span>
+              </td>
+              <td style={{ padding: "9px 12px" }}>
+                <div style={{ fontStyle: "italic", color: C.brand, fontWeight: 600, fontSize: px(13) }}>{p.botanicalName}</div>
+                <div style={{ color: C.inkLight, fontSize: px(12) }}>{p.commonName}</div>
+              </td>
+              <td style={{ padding: "9px 12px", color: C.inkMid, fontSize: px(13), lineHeight: 1.5 }}>{p.designRationale}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 function CostTable({ costEstimate }: { costEstimate: any }) {
   const [currency, setCurrency] = useState('EUR');
   useEffect(() => { setCurrency(detectCurrency()); }, []);
@@ -590,7 +623,9 @@ export default function GardigApp() {
   const [siteAddress, setSiteAddress] = useState("");
   const [docData, setDocData]         = useState<any>(null);
   const [renderUrl, setRenderUrl]     = useState<string | null>(null);
-  const [gridImageUrl, setGridImageUrl] = useState<string | null>(null);
+  const [gridImageUrl, setGridImageUrl]         = useState<string | null>(null);
+  const [aerialImageUrl, setAerialImageUrl]     = useState<string | null>(null);
+  const [aerialGridImageUrl, setAerialGridImageUrl] = useState<string | null>(null);
   const [loadingMsg, setLoadingMsg]   = useState("");
   const [error, setError]             = useState<string | null>(null);
   const [activeTab, setActiveTab]     = useState("overview");
@@ -633,15 +668,18 @@ export default function GardigApp() {
     return res.json();
   };
 
-  const generateRender = async (_dataUrl: string, visualPrompt: string) => {
+  const generateRender = async (visualPrompt: string, zones: any[]) => {
     const response = await fetch('/api/redesign', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ style: designLang, visualPrompt }),
+      body: JSON.stringify({ style: designLang, visualPrompt, zones }),
     });
     const data = await response.json();
-    if (data.imageError || !response.ok) return null;
-    return data.imageBase64 || null;
+    if (!response.ok) return { renderBase64: null, aerialBase64: null };
+    return {
+      renderBase64: (data.imageError ? null : data.imageBase64) || null,
+      aerialBase64: (data.imageError ? null : data.aerialImageBase64) || null,
+    };
   };
 
   const handleAnalyse = async () => {
@@ -654,23 +692,31 @@ export default function GardigApp() {
       const mimeType = imageDataUrl.split(";")[0].split(":")[1];
       const doc = await callGemini(base64, mimeType);
       setDocData(doc);
-      setLoadingMsg("Generating design render...");
+      setLoadingMsg("Generating design render and layout sketch...");
+      const plants = doc.plantingSpecification?.plants || [];
+      const zones  = doc.spatialLayout?.zones || [];
       let imgBase64: string | null = null;
+      let aerialBase64: string | null = null;
       if (doc.visualPrompt) {
-        imgBase64 = await generateRender(imageDataUrl, doc.visualPrompt);
+        const result = await generateRender(doc.visualPrompt, zones);
+        imgBase64   = result.renderBase64;
+        aerialBase64 = result.aerialBase64;
         setRenderUrl(imgBase64);
+        setAerialImageUrl(aerialBase64);
       }
 
-      // Generate annotated grid overlay for PDF
-      setLoadingMsg("Annotating grid overlay...");
-      const plants = doc.plantingSpecification?.plants || [];
+      // Generate annotated grid overlays for PDF
+      setLoadingMsg("Annotating grid overlays...");
       if (imgBase64 && plants.length > 0) {
         const overlay = await generateGridOverlay(imgBase64, plants);
         setGridImageUrl(overlay || null);
       } else if (imageDataUrl && plants.length > 0) {
-        // Fallback: annotate the before photo if no render
         const overlay = await generateGridOverlay(imageDataUrl, plants);
         setGridImageUrl(overlay || null);
+      }
+      if (aerialBase64 && plants.length > 0) {
+        const aerialOverlay = await generateGridOverlay(aerialBase64, plants);
+        setAerialGridImageUrl(aerialOverlay || null);
       }
       setLoadingMsg("Building proposal...");
       await new Promise(r => setTimeout(r, 300));
@@ -862,6 +908,7 @@ export default function GardigApp() {
             imageBase64={renderUrl || ''}
             imageDataUrl={imageDataUrl || undefined}
             gridImageUrl={gridImageUrl || undefined}
+            aerialImageUrl={aerialGridImageUrl || undefined}
             style={designLang}
             clientName={clientName || undefined}
             siteAddress={siteAddress || undefined}
@@ -928,6 +975,7 @@ export default function GardigApp() {
                       imageBase64={renderUrl || ''}
                       imageDataUrl={imageDataUrl || undefined}
                       gridImageUrl={gridImageUrl || undefined}
+                      aerialImageUrl={aerialGridImageUrl || undefined}
                       style={designLang}
                       clientName={clientName || undefined}
                       siteAddress={siteAddress || undefined}
@@ -1373,22 +1421,27 @@ export default function GardigApp() {
             )}
           </div>
 
-          {/* Plant key */}
+          {/* Plant reference table */}
           {plants.length > 0 && (
-            <Card>
-              <Label>Plant Location Key</Label>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(210px, 1fr))", gap: 9, marginTop: 8 }}>
-                {plants.map((p: any, i: number) => (
-                  <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", background: C.surface, borderRadius: C.r, border: `1px solid ${C.rule}` }}>
-                    <div style={{ width: 28, height: 28, borderRadius: C.r, background: C.brand, color: C.accent, display: "flex", alignItems: "center", justifyContent: "center", fontSize: px(13), fontWeight: 700, flexShrink: 0 }}>{i+1}</div>
-                    <div>
-                      <div style={{ fontStyle: "italic", color: C.brand, fontWeight: 600, fontSize: px(13) }}>{p.botanicalName}</div>
-                      <div style={{ color: C.inkLight, fontSize: px(12) }}>{p.commonName} · <strong style={{ color: C.accent }}>{p.gridLocation}</strong></div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Card>
+            <div style={{ marginBottom: 32 }}>
+              <Label>Plant Reference Table</Label>
+              <ReferenceTable plants={plants} />
+            </div>
+          )}
+
+          {/* Aerial layout */}
+          {(aerialImageUrl || aerialGridImageUrl) && (
+            <div style={{ marginBottom: 24 }}>
+              <SectionTitle n="11b" title="Garden Layout Plan" />
+              <div style={{ marginBottom: 10, fontSize: px(BASE - 1), color: C.inkMid }}>Your planting guide — print this and take it outside</div>
+              <GridOverlayImage src={aerialGridImageUrl || aerialImageUrl!} plants={plants} label="Layout Plan" />
+              {plants.length > 0 && (
+                <div style={{ marginTop: 18 }}>
+                  <Label>Layout Reference</Label>
+                  <ReferenceTable plants={plants} />
+                </div>
+              )}
+            </div>
           )}
         </>}
 
@@ -1396,7 +1449,7 @@ export default function GardigApp() {
 
       {/* Footer */}
       <div style={{ background: C.brand, padding: "18px 28px", textAlign: "center", fontFamily: C.font, fontSize: px(13), color: "rgba(255,255,255,0.45)" }}>
-        <span style={{ color: C.accent, fontWeight: 700 }}>gardig.com</span> · Garden Design Platform ·
+        <span style={{ color: C.accent, fontWeight: 700 }}>dedrab.com</span> · Garden Design Platform ·
         Report generated {new Date().toLocaleDateString("en-GB", { day:"numeric", month:"long", year:"numeric" })}
       </div>
     </div>
