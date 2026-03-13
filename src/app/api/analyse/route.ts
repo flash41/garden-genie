@@ -40,10 +40,20 @@ Every plant MUST have all 4 seasonalInterest fields populated with specific deta
 Every plant MUST have realistic mature size, spacing, hardiness rating, sun and water requirements.
 
 ═══════════════════════════════════════════════════════════════
-CRITICAL RULE 4 — COSTS
+CRITICAL RULE 4 — COSTS (self-implementation framing)
 ═══════════════════════════════════════════════════════════════
-All cost line items MUST have realistic non-zero numeric low and high values.
-Base on current UK market rates unless the site is clearly elsewhere.
+This plan is for a gardener doing the work themselves, not hiring contractors.
+All cost lines MUST reflect what the homeowner will actually spend:
+- Plants and bulbs (retail prices from garden centres)
+- Compost, mulch, topsoil, and soil amendments (bags/cubic metres)
+- Hard landscaping materials: gravel, paving slabs, timber, edging (retail)
+- Tools and equipment they may need to buy or hire
+- Irrigation fittings and hosepipe where relevant
+- Sundries: stakes, ties, labels, fertiliser, slug pellets
+
+DO NOT include: labour charges, contractor fees, designer fees, or any cost the homeowner does not personally spend money on.
+Category labels should use plain language: "Plants & Bulbs", "Compost & Mulch", "Paving Materials", "Tools & Equipment", etc. — not "Planting Labour" or "Construction Works".
+Use realistic retail pricing (not trade rates). Base on current Irish/UK garden centre prices unless the site is clearly elsewhere.
 Never use 0 for any cost value.
 
 ═══════════════════════════════════════════════════════════════

@@ -159,34 +159,35 @@ All plants must suit the observed hardiness zone and site conditions.`;
 const C = {
   // Core palette
   brand:       "#0a3d2b",      // deep forest green
-  brandMid:    "#16a34a",      // active/highlight green
-  brandLight:  "#f0fdf4",      // very light green tint
-  accent:      "#b8962e",      // antique gold (slightly muted)
-  accentLight: "#fefce8",
+  brandMid:    "#1a5c3f",      // mid forest green
+  brandLight:  "#e8f5ee",      // light green tint
+  accent:      "#b8962e",      // antique gold
+  accentLight: "#f8f0d8",      // pale gold tint
 
-  // Neutrals
-  ink:         "#111827",      // near-black text
-  inkMid:      "#374151",      // body text
-  inkLight:    "#6b7280",      // secondary text
-  rule:        "#e5e7eb",      // borders / dividers
-  ruleDark:    "#d1d5db",
-  surface:     "#f9fafb",      // page background
-  card:        "#ffffff",
+  // Neutrals — parchment palette
+  ink:         "#2C1A0E",      // umber (near-black warm)
+  inkMid:      "#4a3928",      // warm brown body text
+  inkLight:    "#8a7e6e",      // warm grey secondary
+  rule:        "#d9cdb8",      // cream-dark borders
+  ruleDark:    "#c8bcaa",      // darker rule
+  surface:     "#F4EFE4",      // parchment page bg
+  card:        "#EDE6D3",      // linen card bg
 
   // Semantic
-  red:         "#dc2626",
-  green:       "#16a34a",
-  amber:       "#d97706",
-  blue:        "#1d4ed8",
+  red:         "#b91c1c",
+  green:       "#166534",
+  amber:       "#92400e",
+  blue:        "#1e40af",
 
   // Radius & shadow
   r:           "4px",
   rLg:         "8px",
-  shadow:      "0 1px 3px rgba(0,0,0,0.08)",
-  shadowMd:    "0 4px 12px rgba(0,0,0,0.10)",
+  shadow:      "0 1px 3px rgba(44,26,14,0.07)",
+  shadowMd:    "0 4px 12px rgba(44,26,14,0.10)",
 
-  // Font
-  font: "'Inter', 'Helvetica Neue', Arial, sans-serif",
+  // Fonts
+  font:        "'DM Sans', 'Inter', 'Helvetica Neue', Arial, sans-serif",
+  fontSerif:   "'Playfair Display', Georgia, serif",
 };
 
 // Base font size — 16px matches standard report body text
@@ -298,7 +299,7 @@ function SectionTitle({ n, title }: { n: string; title: string }) {
         fontSize: px(11), fontFamily: C.font, fontWeight: 700,
         padding: "3px 8px", borderRadius: C.r, letterSpacing: "0.08em"
       }}>{n}</span>
-      <h2 style={{ margin: 0, fontFamily: C.font, fontSize: px(17), fontWeight: 700, color: C.ink, letterSpacing: "-0.01em" }}>{title}</h2>
+      <h2 style={{ margin: 0, fontFamily: C.fontSerif, fontSize: px(18), fontWeight: 600, color: C.ink }}>{title}</h2>
       <div style={{ flex: 1, height: 1, background: C.rule, marginLeft: 4 }} />
     </div>
   );
@@ -423,14 +424,35 @@ function SeasonMatrix({ plants }: { plants: any[] }) {
   );
 }
 
+function detectCurrency(): string {
+  if (typeof navigator === 'undefined') return 'EUR';
+  const lang = navigator.language;
+  if (lang === 'en-GB') return 'GBP';
+  if (lang === 'en-IE') return 'EUR';
+  if (lang.startsWith('en-US')) return 'USD';
+  if (lang.startsWith('en-CA')) return 'CAD';
+  if (lang.startsWith('en-AU')) return 'AUD';
+  if (lang.startsWith('en-NZ')) return 'NZD';
+  // For European locales default to EUR, others fall back to EUR
+  return 'EUR';
+}
+
 function CostTable({ costEstimate }: { costEstimate: any }) {
+  const [currency, setCurrency] = useState('EUR');
+  useEffect(() => { setCurrency(detectCurrency()); }, []);
   if (!costEstimate?.lines?.length) return null;
   const lo = costEstimate.lines.reduce((s: number, l: any) => s + (l.low || 0), 0);
   const hi = costEstimate.lines.reduce((s: number, l: any) => s + (l.high || 0), 0);
   const mid = (lo + hi) / 2;
   const cont = mid * ((costEstimate.contingencyPercent || 15) / 100);
   const total = mid + cont;
-  const fmt = (n: number) => `£${Math.round(n).toLocaleString()}`;
+  const fmt = (n: number) => {
+    try {
+      return new Intl.NumberFormat(navigator.language, { style: 'currency', currency, maximumFractionDigits: 0 }).format(Math.round(n));
+    } catch {
+      return `${currency} ${Math.round(n).toLocaleString()}`;
+    }
+  };
   return (
     <div style={{ overflowX: "auto", borderRadius: C.rLg, border: `1px solid ${C.rule}` }}>
       <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: C.font, fontSize: px(BASE - 1) }}>
@@ -465,7 +487,7 @@ function CostTable({ costEstimate }: { costEstimate: any }) {
             <td />
           </tr>
           <tr style={{ background: C.brand }}>
-            <td colSpan={2} style={{ padding: "12px 14px", fontWeight: 700, color: "#fff", fontSize: px(BASE) }}>Total Estimate (mid-point + contingency)</td>
+            <td colSpan={2} style={{ padding: "12px 14px", fontWeight: 700, color: "#fff", fontSize: px(BASE) }}>Your total spend (materials + buffer)</td>
             <td colSpan={2} style={{ padding: "12px 14px", fontWeight: 700, color: C.accent, fontSize: px(BASE) }}>{fmt(total)}</td>
             <td />
           </tr>
@@ -572,6 +594,10 @@ export default function GardigApp() {
   const [loadingMsg, setLoadingMsg]   = useState("");
   const [error, setError]             = useState<string | null>(null);
   const [activeTab, setActiveTab]     = useState("overview");
+  const [emailModal, setEmailModal]   = useState(false);
+  const [emailAddr, setEmailAddr]     = useState("");
+  const [emailStatus, setEmailStatus] = useState<"idle"|"sending"|"sent"|"error">("idle");
+  const [emailError, setEmailError]   = useState<string | null>(null);
   const [showBefore, setShowBefore]   = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -607,14 +633,14 @@ export default function GardigApp() {
     return res.json();
   };
 
-  const generateRender = async (dataUrl: string, visualPrompt: string) => {
+  const generateRender = async (_dataUrl: string, visualPrompt: string) => {
     const response = await fetch('/api/redesign', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ image: dataUrl, style: designLang, orientation: 'South Facing (Full Sun)' }),
+      body: JSON.stringify({ style: designLang, visualPrompt }),
     });
-    if (!response.ok) return null;
     const data = await response.json();
+    if (data.imageError || !response.ok) return null;
     return data.imageBase64 || null;
   };
 
@@ -659,20 +685,22 @@ export default function GardigApp() {
   // ── UPLOAD SCREEN ──────────────────────────────────────────────────────────
   if (step === "upload") return (
     <div style={{ minHeight: "100vh", background: C.surface, fontFamily: C.font }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');*{box-sizing:border-box}`}</style>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');*{box-sizing:border-box}`}</style>
 
       {/* Top bar */}
-      <header style={{ background: C.card, borderBottom: `1px solid ${C.rule}`, height: 56, display: "flex", alignItems: "center", padding: "0 28px", gap: 10 }}>
-        <div style={{ width: 30, height: 30, borderRadius: C.r, background: C.brand, display: "flex", alignItems: "center", justifyContent: "center", color: C.accent, fontWeight: 700, fontSize: 15 }}>G</div>
-        <span style={{ fontWeight: 700, fontSize: px(17), color: C.ink, letterSpacing: "-0.01em" }}>gardig.com</span>
-        <span style={{ fontSize: px(13), color: C.inkLight, marginLeft: 2 }}>Landscape Design Platform</span>
+      <header style={{ background: C.brand, borderBottom: `1px solid rgba(184,150,46,0.3)`, height: 56, display: "flex", alignItems: "center", padding: "0 28px", gap: 12 }}>
+        <div style={{ width: 30, height: 30, borderRadius: C.r, background: "rgba(184,150,46,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#b8962e" strokeWidth="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12"/></svg>
+        </div>
+        <span style={{ fontFamily: C.fontSerif, fontWeight: 700, fontSize: px(18), color: "#fff", letterSpacing: "1px" }}>Dedrab</span>
+        <span style={{ fontSize: px(12), color: "rgba(255,255,255,0.45)", marginLeft: 2, letterSpacing: "0.05em" }}>dedrab.com</span>
       </header>
 
       <div style={{ maxWidth: 860, margin: "0 auto", padding: "44px 24px" }}>
         <div style={{ marginBottom: 36 }}>
-          <div style={{ fontSize: px(11), letterSpacing: "0.15em", color: C.accent, textTransform: "uppercase", fontWeight: 700, marginBottom: 8 }}>Site Analysis & Design</div>
-          <h1 style={{ fontSize: px(30), margin: "0 0 10px", color: C.ink, fontWeight: 700, letterSpacing: "-0.02em" }}>Generate a Garden Design Proposal</h1>
-          <p style={{ color: C.inkMid, maxWidth: 500, margin: 0, fontSize: px(BASE), lineHeight: 1.6 }}>
+          <div style={{ fontSize: px(10), letterSpacing: "0.15em", color: C.accent, textTransform: "uppercase", fontWeight: 600, marginBottom: 10, fontFamily: C.font }}>Site Analysis & Design</div>
+          <h1 style={{ fontFamily: C.fontSerif, fontSize: px(32), margin: "0 0 10px", color: C.ink, fontWeight: 600 }}>Generate a Garden Design Proposal</h1>
+          <p style={{ color: C.inkMid, maxWidth: 500, margin: 0, fontSize: px(BASE), lineHeight: 1.6, fontFamily: C.font }}>
             Upload a site photo to receive a full proposal — plant list, spatial layout, cost estimate, and AI-generated render.
           </p>
         </div>
@@ -756,10 +784,10 @@ export default function GardigApp() {
   // ── LOADING SCREEN ─────────────────────────────────────────────────────────
   if (step === "loading") return (
     <div style={{ minHeight: "100vh", background: C.surface, fontFamily: C.font, display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');@keyframes spin{to{transform:rotate(360deg)}}`}</style>
       <div style={{ textAlign: "center" }}>
-        <div style={{ width: 44, height: 44, borderRadius: "50%", border: `3px solid ${C.rule}`, borderTopColor: C.brand, margin: "0 auto 18px", animation: "spin 0.75s linear infinite" }} />
-        <div style={{ fontSize: px(18), fontWeight: 700, color: C.ink, marginBottom: 6 }}>Analysing Your Site</div>
+        <div style={{ width: 44, height: 44, borderRadius: "50%", border: `3px solid ${C.rule}`, borderTopColor: C.accent, margin: "0 auto 18px", animation: "spin 0.75s linear infinite" }} />
+        <div style={{ fontFamily: C.fontSerif, fontSize: px(20), fontWeight: 600, color: C.ink, marginBottom: 8 }}>Analysing Your Garden</div>
         <div style={{ fontSize: px(14), color: C.inkLight }}>{loadingMsg}</div>
       </div>
     </div>
@@ -783,24 +811,50 @@ export default function GardigApp() {
     { id: "visuals",         label: "Visuals" },
   ];
 
+  async function sendPlan(pdfBase64: string) {
+    setEmailStatus("sending");
+    setEmailError(null);
+    try {
+      const res = await fetch('/api/send-plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipientEmail: emailAddr,
+          pdfBase64,
+          planTitle: docData?.overview?.tagline || 'Garden Design Plan',
+          designStyle: designLang,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Send failed');
+      setEmailStatus("sent");
+    } catch (e: unknown) {
+      setEmailError(e instanceof Error ? e.message : 'Unknown error');
+      setEmailStatus("error");
+    }
+  }
+
   return (
     <div style={{ minHeight: "100vh", background: C.surface, fontFamily: C.font, color: C.ink, fontSize: px(BASE) }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
         *{box-sizing:border-box}
         .tab:hover{background:${C.brandLight}!important;color:${C.brand}!important}
         @media print{.noprint{display:none!important};body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
       `}</style>
 
       {/* Sticky header */}
-      <header className="noprint" style={{ background: C.card, borderBottom: `1px solid ${C.rule}`, height: 56, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 24px", position: "sticky", top: 0, zIndex: 100, boxShadow: C.shadow }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ width: 30, height: 30, borderRadius: C.r, background: C.brand, display: "flex", alignItems: "center", justifyContent: "center", color: C.accent, fontWeight: 700, fontSize: 15 }}>G</div>
-          <span style={{ fontWeight: 700, fontSize: px(17), color: C.ink }}>gardig.com</span>
+      <header className="noprint" style={{ background: C.brand, borderBottom: `1px solid rgba(184,150,46,0.3)`, height: 56, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 24px", position: "sticky", top: 0, zIndex: 100, boxShadow: C.shadow }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ width: 30, height: 30, borderRadius: C.r, background: "rgba(184,150,46,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#b8962e" strokeWidth="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12"/></svg>
+          </div>
+          <span style={{ fontFamily: C.fontSerif, fontWeight: 700, fontSize: px(18), color: "#fff", letterSpacing: "1px" }}>Dedrab</span>
+          <span style={{ fontSize: px(12), color: "rgba(255,255,255,0.4)", letterSpacing: "0.05em" }}>dedrab.com</span>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
           <button onClick={() => { setStep("upload"); setDocData(null); setRenderUrl(null); setGridImageUrl(null); }}
-            style={{ background: C.card, border: `1px solid ${C.rule}`, color: C.inkMid, padding: "7px 15px", borderRadius: C.r, cursor: "pointer", fontFamily: C.font, fontSize: px(13), fontWeight: 600 }}>
+            style={{ background: "rgba(255,255,255,0.08)", border: `1px solid rgba(255,255,255,0.2)`, color: "rgba(255,255,255,0.8)", padding: "7px 15px", borderRadius: C.r, cursor: "pointer", fontFamily: C.font, fontSize: px(13), fontWeight: 600 }}>
             ← New Analysis
           </button>
           <PDFButton
@@ -812,8 +866,83 @@ export default function GardigApp() {
             clientName={clientName || undefined}
             siteAddress={siteAddress || undefined}
           />
+          <button
+            onClick={() => { setEmailModal(true); setEmailStatus("idle"); setEmailAddr(""); setEmailError(null); }}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 7,
+              background: "rgba(255,255,255,0.08)", border: `1px solid rgba(255,255,255,0.2)`, color: "rgba(255,255,255,0.8)",
+              padding: '8px 18px', borderRadius: C.r,
+              cursor: 'pointer', fontFamily: C.font, fontSize: px(13), fontWeight: 600,
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            Share by Email
+          </button>
         </div>
       </header>
+
+      {/* Email modal */}
+      {emailModal && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          onClick={(e) => { if (e.target === e.currentTarget) setEmailModal(false); }}>
+          <div style={{ background: C.card, borderRadius: C.rLg, width: 420, maxWidth: '90vw', boxShadow: '0 24px 64px rgba(0,0,0,0.18)', overflow: 'hidden' }}>
+            {/* Modal header */}
+            <div style={{ background: C.brand, padding: '20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ fontSize: px(15), fontWeight: 700, color: '#fff' }}>Share by Email</div>
+                <div style={{ fontSize: px(12), color: 'rgba(255,255,255,0.6)', marginTop: 2 }}>Send the PDF plan to any email address</div>
+              </div>
+              <button onClick={() => setEmailModal(false)} style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', fontSize: 20, lineHeight: 1, padding: 4 }}>✕</button>
+            </div>
+
+            {/* Modal body */}
+            <div style={{ padding: 24 }}>
+              {emailStatus === 'sent' ? (
+                <div style={{ textAlign: 'center', padding: '16px 0' }}>
+                  <div style={{ fontSize: 32, marginBottom: 12 }}>✓</div>
+                  <div style={{ fontWeight: 700, fontSize: px(15), color: C.green, marginBottom: 6 }}>Plan sent successfully</div>
+                  <div style={{ fontSize: px(13), color: C.inkLight }}>Your garden plan has been emailed to <strong>{emailAddr}</strong></div>
+                  <button onClick={() => setEmailModal(false)} style={{ marginTop: 20, background: C.brand, color: '#fff', border: 'none', padding: '9px 24px', borderRadius: C.r, cursor: 'pointer', fontFamily: C.font, fontSize: px(13), fontWeight: 600 }}>Done</button>
+                </div>
+              ) : (
+                <>
+                  <label style={{ display: 'block', fontSize: px(12), fontWeight: 600, color: C.inkMid, marginBottom: 6, letterSpacing: '0.03em' }}>Recipient email address</label>
+                  <input
+                    type="email"
+                    value={emailAddr}
+                    onChange={(e) => setEmailAddr(e.target.value)}
+                    placeholder="name@example.com"
+                    style={{ width: '100%', padding: '10px 12px', border: `1px solid ${C.rule}`, borderRadius: C.r, fontSize: px(14), fontFamily: C.font, color: C.ink, outline: 'none', boxSizing: 'border-box' }}
+                    onKeyDown={(e) => { if (e.key === 'Enter' && emailAddr) document.getElementById('email-send-btn')?.click(); }}
+                  />
+                  {emailStatus === 'error' && (
+                    <div style={{ marginTop: 10, fontSize: px(13), color: C.red }}>{emailError || 'Failed to send. Please try again.'}</div>
+                  )}
+                  <div style={{ marginTop: 16, fontSize: px(12), color: C.inkLight, lineHeight: 1.5 }}>
+                    The PDF plan will be attached to a branded Dedrab email sent from noreply@dedrab.com.
+                  </div>
+                  <div style={{ marginTop: 20, display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+                    <button onClick={() => setEmailModal(false)} style={{ background: C.surface, border: `1px solid ${C.rule}`, color: C.inkMid, padding: '9px 18px', borderRadius: C.r, cursor: 'pointer', fontFamily: C.font, fontSize: px(13), fontWeight: 600 }}>Cancel</button>
+                    <PDFButton
+                      doc={docData}
+                      imageBase64={renderUrl || ''}
+                      imageDataUrl={imageDataUrl || undefined}
+                      gridImageUrl={gridImageUrl || undefined}
+                      style={designLang}
+                      clientName={clientName || undefined}
+                      siteAddress={siteAddress || undefined}
+                      onPdfReady={sendPlan}
+                      sendMode
+                      sendDisabled={!emailAddr || emailStatus === 'sending'}
+                      sendLabel={emailStatus === 'sending' ? 'Sending…' : 'Send'}
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Title bar */}
       <div style={{ background: C.brand, padding: "18px 24px", borderBottom: `3px solid ${C.accent}` }}>
@@ -1159,7 +1288,7 @@ export default function GardigApp() {
         {activeTab === "maintenance" && <>
           <SectionTitle n="09" title="Maintenance Schedule" />
           <StatGrid items={[
-            { label: "Professional Visits/Year",  value: String(doc.maintenanceSchedule?.professionalVisitsPerYear || "—") },
+            { label: "Deep Maintenance Days/Year",  value: String(doc.maintenanceSchedule?.professionalVisitsPerYear || "—") },
             { label: "Annual Pruning",             value: doc.maintenanceSchedule?.annualPruningRegime || "—" },
             { label: "Feeding Schedule",           value: doc.maintenanceSchedule?.feedingSchedule || "—" },
           ]} />
@@ -1185,7 +1314,10 @@ export default function GardigApp() {
 
         {/* ── COSTS ── */}
         {activeTab === "costs" && <>
-          <SectionTitle n="10" title="Cost Estimate" />
+          <SectionTitle n="10" title="What You&apos;ll Spend" />
+          <div style={{ marginBottom: 16, padding: "12px 16px", background: C.brandLight, borderRadius: C.r, border: `1px solid rgba(10,61,43,0.15)`, fontSize: px(BASE - 1), color: C.inkMid, lineHeight: 1.6 }}>
+            These are <strong>materials and plants costs</strong> for a self-implemented project — things you buy, not contractor rates. Spread it across weekends and tackle one phase at a time.
+          </div>
           <CostTable costEstimate={doc.costEstimate} />
           {doc.costEstimate?.costingNotes && (
             <div style={{ marginTop: 14, padding: "11px 15px", background: C.accentLight, borderRadius: C.r, fontSize: px(BASE - 1), color: C.amber, border: `1px solid #e5d06a` }}>
