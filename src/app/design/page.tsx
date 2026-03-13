@@ -769,7 +769,7 @@ export default function GardigApp() {
     const response = await fetch('/api/redesign', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ style: designLang, visualPrompt, zones, siteConstraints }),
+      body: JSON.stringify({ style: designLang, visualPrompt, zones, siteConstraints, orientation: gardenOrientation || undefined }),
     });
     const data = await response.json();
     if (!response.ok) return { renderBase64: null, aerialBase64: null };
@@ -845,7 +845,7 @@ export default function GardigApp() {
           <div style={{ fontSize: px(10), letterSpacing: "0.15em", color: C.accent, textTransform: "uppercase", fontWeight: 600, marginBottom: 10, fontFamily: C.font }}>Site Analysis & Design</div>
           <h1 style={{ fontFamily: C.fontSerif, fontSize: px(32), margin: "0 0 10px", color: C.ink, fontWeight: 600 }}>Generate a Garden Design Proposal</h1>
           <p style={{ color: C.inkMid, maxWidth: 500, margin: 0, fontSize: px(BASE), lineHeight: 1.6, fontFamily: C.font }}>
-            Upload a site photo to receive a full proposal — plant list, spatial layout, cost estimate, and AI-generated render.
+            Upload a site photo to receive a full proposal — plant list, spatial layout, cost estimate, and proposed design render.
           </p>
         </div>
 
@@ -1218,7 +1218,7 @@ export default function GardigApp() {
             { label: "Design Language",   value: designLang },
             { label: "Estimated Area",    value: doc.overview?.estimatedAreaSqm ? `${doc.overview.estimatedAreaSqm} m²` : "—" },
             { label: "Report Date",       value: new Date().toLocaleDateString("en-GB") },
-            { label: "AI Confidence",     value: doc.confidence ? `${Math.round(doc.confidence * 100)}%` : "—" },
+            { label: "Confidence",         value: doc.confidence ? `${Math.round(doc.confidence * 100)}%` : "—" },
           ]} />
           {doc.overview?.objectives?.length > 0 && (
             <Card>
@@ -1572,11 +1572,11 @@ export default function GardigApp() {
 
           {/* Main image */}
           <div style={{ marginBottom: 24 }}>
-            <Label>{showBefore ? "Original Site Photo" : "AI Render — Proposed Design"}</Label>
+            <Label>{showBefore ? "Original Site Photo" : "Proposed Vision for Your Dedrabed Garden"}</Label>
             {showBefore
               ? imageDataUrl && <img src={imageDataUrl} alt="Before" style={{ width: "100%", borderRadius: C.rLg, maxHeight: 480, objectFit: "cover", border: `1px solid ${C.rule}` }} />
               : renderUrl
-                ? <img src={renderUrl} alt="AI Render" style={{ width: "100%", borderRadius: C.rLg, maxHeight: 480, objectFit: "cover", border: `1px solid ${C.rule}` }} />
+                ? <img src={renderUrl} alt="Proposed Vision" style={{ width: "100%", borderRadius: C.rLg, maxHeight: 480, objectFit: "cover", border: `1px solid ${C.rule}` }} />
                 : <div style={{ background: C.surface, borderRadius: C.rLg, height: 260, display: "flex", alignItems: "center", justifyContent: "center", color: C.inkLight, fontSize: px(BASE), border: `1px solid ${C.rule}` }}>Render not available</div>
             }
           </div>

@@ -57,7 +57,17 @@ Use realistic retail pricing (not trade rates). Base on current Irish/UK garden 
 Never use 0 for any cost value.
 
 ═══════════════════════════════════════════════════════════════
-CRITICAL RULE 5 — SITE BOUNDARIES (non-negotiable)
+CRITICAL RULE 5 — GEOGRAPHIC PLANT SUITABILITY
+═══════════════════════════════════════════════════════════════
+The user's geographic region will be provided in the request. You MUST:
+- Only suggest plants that thrive in the specified climate zone
+- Consider local rainfall, humidity, frost risk, and summer heat
+- Prioritise plants that are easy to source locally
+- For Ireland/UK regions: plants must be hardy to at least -10°C, tolerating wet winters and cool summers
+- Include the geographic region as the 'climateZone' field in your JSON response
+
+═══════════════════════════════════════════════════════════════
+CRITICAL RULE 6 — SITE BOUNDARIES (non-negotiable)
 ═══════════════════════════════════════════════════════════════
 You MUST identify and list all permanent, immovable elements from the uploaded photo: walls, fences, buildings, sheds, gates, utility boxes, neighbouring structures, and site boundaries.
 
@@ -204,6 +214,7 @@ const SCHEMA = `{
     "contingencyPercent": 15,
     "costingNotes": "basis of pricing, market, exclusions"
   },
+  "climateZone": "geographic region and climate description used to select plants",
   "siteConstraints": {
     "boundaries": ["description of each boundary wall, fence, or site edge visible in the photo"],
     "immovableStructures": ["shed with approximate location and size", "house wall", "outbuildings"],
@@ -227,8 +238,24 @@ export async function POST(request: Request) {
     );
   }
 
+  // ── Geographic region detection ──────────────────────────────────────────────
+  const forwarded = request.headers.get('x-forwarded-for');
+  const ip = forwarded ? forwarded.split(',')[0].trim() : '0.0.0.0';
+  let region = 'temperate Western Europe';
+  let country = 'Ireland';
   try {
-    const { image, designLang, clientName, siteAddress, orientation } = await request.json();
+    const geoRes = await fetch(`http://ip-api.com/json/${ip}?fields=country,regionName,lat,lon`);
+    const geo = await geoRes.json();
+    if (geo.country) {
+      country = geo.country;
+      region = `${geo.regionName}, ${geo.country} (lat: ${geo.lat}, lon: ${geo.lon})`;
+    }
+  } catch {
+    console.log('Geo lookup failed, using default region');
+  }
+
+  try {
+    const { image, designLang, clientName, orientation } = await request.json();
 
     if (!image || !designLang) {
       return NextResponse.json(
@@ -243,8 +270,9 @@ export async function POST(request: Request) {
     const userText = `Analyse this garden photograph carefully and produce a COMPLETE professional garden design proposal.
 
 Client: ${clientName || 'Private Client'}
-Site: ${siteAddress || 'Private Residence'}
-Design Language: ${designLang}${orientation ? `\nGarden Orientation: ${orientation} — The garden faces ${orientation}. Factor in sun exposure, shade patterns, and recommend plants suited to this aspect.` : ''}
+Design Language: ${designLang}
+Geographic Region: ${region}
+Plant Climate: Only suggest plants proven to thrive in ${country} — hardy to at least -10°C, tolerating wet winters and cool summers for this region.${orientation ? `\nGarden Orientation: ${orientation} — The garden faces ${orientation}. The photo was taken looking ${orientation}. Factor sun exposure accordingly.` : ''}
 
 STEP 1 — Study the photograph:
 Identify every visible element: surfaces, structures, boundaries, plants, levels, light direction, shadows, existing trees, paths, drainage evidence, access points.
