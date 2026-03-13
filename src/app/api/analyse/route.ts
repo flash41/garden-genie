@@ -7,20 +7,47 @@ export const dynamic = 'force-dynamic';
 const SYSTEM_PROMPT = `You are a senior landscape architect and botanist producing a full professional garden design proposal document.
 
 ═══════════════════════════════════════════════════════════════
+SPATIAL FINGERPRINT EXTRACTION — DO THIS FIRST
+═══════════════════════════════════════════════════════════════
+
+You are looking at a garden photograph. Before any design work, you must extract a precise spatial fingerprint of this exact garden. This fingerprint will be used to generate a render that looks like THE SAME garden.
+
+Extract and return ALL of the following in siteConstraints:
+
+CAMERA & VIEWPOINT:
+- cameraPosition: where is the camera standing? e.g. 'standing at garden entrance, ground level, looking toward rear of garden'
+- cameraHeight: 'ground level' / 'raised' / 'elevated'
+- viewDirection: compass direction the camera is pointing, e.g. 'looking north toward house'
+- fieldOfView: 'narrow corridor view' / 'wide open view' / 'square garden view'
+
+GARDEN GEOMETRY:
+- gardenShape: exact shape e.g. 'narrow rectangle, approximately 3x longer than wide'
+- gardenWidth: 'approximately Xm wide at camera position'
+- gardenDepth: 'approximately Xm deep from camera to rear wall'
+- aspectRatio: e.g. '1:3 width to depth'
+- groundLevel: 'flat' / 'slopes away from camera' / 'slopes toward camera' / 'terraced'
+
+BOUNDARIES — describe each precisely:
+- leftBoundary: material, height, condition, any features e.g. 'red brick wall, approx 1.8m high, intact, no features'
+- rightBoundary: same detail
+- rearBoundary: same detail
+- frontBoundary: what is at the camera position e.g. 'open lawn, no fence'
+
+FIXED STRUCTURES — list every one with type, position, approximate size, material, condition
+
+EXISTING VEGETATION — list every large established plant that cannot easily be moved, with position
+
+GROUND SURFACE — what currently covers the ground; note any existing paths and their position
+
+LIGHT & ASPECT — where does light come from; note any obvious shade areas
+
+Return ALL of this in the siteConstraints field. Be as precise as possible — this data locks the render to this specific garden.
+
+═══════════════════════════════════════════════════════════════
 WORKFLOW — FOLLOW THESE STEPS IN ORDER
 ═══════════════════════════════════════════════════════════════
 
-STEP 1 — BOUNDARY EXTRACTION (do this before any design work):
-Carefully examine the uploaded photo and identify EVERY permanent, immovable element. List them precisely:
-- Exact position of every wall (left wall, right wall, rear wall, front boundary etc)
-- Every fence line and its material
-- All buildings visible (house rear wall, neighbour buildings, sheds)
-- Any large established trees that cannot be moved
-- Gates, utility boxes, manholes, downpipes
-- The overall shape and dimensions of the garden space
-- Any level changes or steps
-
-STEP 2 — DESIGN CONSTRAINTS:
+STEP 1 — DESIGN CONSTRAINTS:
 The design MUST:
 - Keep every boundary wall, fence and building exactly where it is
 - Keep the garden within the EXACT same footprint as the photo
@@ -29,7 +56,7 @@ The design MUST:
 - Scale all suggestions to the actual visible garden size
 - Look like a realistic achievable transformation of THIS specific garden, not a generic garden of the same style
 
-STEP 3 — VISUAL PROMPT CONSTRUCTION:
+STEP 2 — VISUAL PROMPT CONSTRUCTION:
 The visualPrompt field MUST start with:
 "Photorealistic garden transformation. BEFORE photo shows: [describe the exact garden — its shape, boundaries, existing structures, approximate dimensions]. PRESERVE EXACTLY IN THE AFTER IMAGE: all boundary walls at their exact heights and positions, all fences at their exact positions, the house/building walls visible in the photo, the overall garden footprint and shape. ONLY CHANGE: planting, ground surface treatment, and small moveable elements within the existing fixed boundaries. Do not add any large structures not visible in the original. No text overlays, no compass rose, no grid lines, no annotations in the image. Style: [design language] garden transformation."
 
@@ -263,12 +290,25 @@ const SCHEMA = `{
   },
   "climateZone": "geographic region and climate description used to select plants",
   "siteConstraints": {
-    "boundaries": ["description of each boundary wall, fence, or site edge visible in the photo"],
-    "immovableStructures": ["shed with approximate location and size", "house wall", "outbuildings"],
-    "accessPoints": ["gate location", "door location", "path entry points"],
+    "cameraPosition": "e.g. standing at garden entrance, ground level, looking toward rear of garden",
+    "cameraHeight": "ground level|raised|elevated",
+    "viewDirection": "compass direction camera is pointing e.g. looking north toward house",
+    "fieldOfView": "narrow corridor view|wide open view|square garden view",
     "gardenShape": "e.g. narrow rectangle approximately 3m wide x 10m long",
-    "aspectRatio": "e.g. 1:3 (width:length)",
-    "viewpointDescription": "e.g. photo taken from entrance looking toward rear of house",
+    "gardenWidth": "e.g. approximately 4m wide at camera position",
+    "gardenDepth": "e.g. approximately 12m deep from camera to rear wall",
+    "aspectRatio": "e.g. 1:3 (width:depth)",
+    "groundLevel": "flat|slopes away from camera|slopes toward camera|terraced",
+    "leftBoundary": "material, height, condition e.g. red brick wall, approx 1.8m, intact",
+    "rightBoundary": "material, height, condition",
+    "rearBoundary": "material, height, condition",
+    "frontBoundary": "what is at camera position",
+    "boundaries": ["description of each boundary wall, fence, or site edge visible in the photo"],
+    "immovableStructures": ["each fixed structure: type, position, size, material, condition"],
+    "existingVegetation": ["each large established plant: species if known, position, approx size"],
+    "accessPoints": ["gate location", "door location", "path entry points"],
+    "groundSurface": "current ground covering and any existing paths",
+    "lightAspect": "apparent light direction and any obvious shade areas",
     "notes": "any other permanent constraints or utility features"
   },
   "visualPrompt": "PRESERVE EXACTLY: [list all walls, fences, buildings from photo]. Work WITHIN these structures. Only change planting, paving, and soft landscaping. Photorealistic garden design render showing the redesigned interior of the existing garden footprint.",

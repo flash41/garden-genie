@@ -742,6 +742,7 @@ export default function GardigApp() {
   const [compositeLayoutUrl, setCompositeLayoutUrl] = useState<string | null>(null);
   const [overlayOpacity, setOverlayOpacity]     = useState(0.72);
   const [layoutViewMode, setLayoutViewMode]     = useState<'overlay' | 'plan'>('overlay');
+  const [validationResult, setValidationResult] = useState<{ result: any; retried: boolean } | null>(null);
   const [loadingMsg, setLoadingMsg]   = useState("");
   const [error, setError]             = useState<string | null>(null);
   const [activeTab, setActiveTab]     = useState("overview");
@@ -815,16 +816,29 @@ export default function GardigApp() {
   };
 
   const generateRender = async (visualPrompt: string, zones: any[], siteConstraints?: any, plantCount?: number) => {
+    const originalBase64 = imageDataUrl ? imageDataUrl.split(',')[1] : undefined;
+    const originalMimeType = imageDataUrl ? imageDataUrl.split(';')[0].split(':')[1] : undefined;
     const response = await fetch('/api/redesign', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ style: designLang, visualPrompt, zones, siteConstraints, orientation: gardenOrientation || undefined, plantCount }),
+      body: JSON.stringify({
+        style: designLang,
+        visualPrompt,
+        zones,
+        siteConstraints,
+        orientation: gardenOrientation || undefined,
+        plantCount,
+        originalImageBase64: originalBase64,
+        originalImageMimeType: originalMimeType,
+      }),
     });
     const data = await response.json();
-    if (!response.ok) return { renderBase64: null, aerialBase64: null };
+    if (!response.ok) return { renderBase64: null, aerialBase64: null, validationResult: null, retried: false };
     return {
       renderBase64: (data.imageError ? null : data.imageBase64) || null,
       aerialBase64: (data.imageError ? null : data.aerialImageBase64) || null,
+      validationResult: data.validationResult || null,
+      retried: data.retried || false,
     };
   };
 
@@ -855,6 +869,9 @@ export default function GardigApp() {
         aerialBase64 = result.aerialBase64;
         setRenderUrl(imgBase64);
         setAerialImageUrl(aerialBase64);
+        if (result.validationResult !== undefined) {
+          setValidationResult({ result: result.validationResult, retried: result.retried });
+        }
       }
 
       // Generate annotated grid overlays for PDF
@@ -1639,7 +1656,28 @@ export default function GardigApp() {
 
           {/* Main image */}
           <div style={{ marginBottom: 24 }}>
-            <Label>{showBefore ? "Original Site Photo" : "Proposed Vision for Your Dedrabed Garden"}</Label>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+              <Label>{showBefore ? "Original Site Photo" : "Proposed Vision for Your Dedrabed Garden"}</Label>
+              {!showBefore && renderUrl && validationResult && (() => {
+                const vr = validationResult.result;
+                const retried = validationResult.retried;
+                if (vr?.overallPass) return (
+                  <span style={{ fontSize: px(12), fontWeight: 600, color: C.green, display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <span>✓</span> Verified — same garden
+                  </span>
+                );
+                if (!vr?.overallPass && retried) return (
+                  <span style={{ fontSize: px(12), fontWeight: 600, color: C.amber, display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <span>⚠</span> Corrected after review
+                  </span>
+                );
+                return (
+                  <span title={(vr?.failReasons || []).join(' · ')} style={{ fontSize: px(12), fontWeight: 600, color: C.red, cursor: 'help', display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <span>✗</span> May not match your garden exactly
+                  </span>
+                );
+              })()}
+            </div>
             {showBefore
               ? imageDataUrl && <img src={imageDataUrl} alt="Before" style={{ width: "100%", borderRadius: C.rLg, maxHeight: 480, objectFit: "cover", border: `1px solid ${C.rule}` }} />
               : renderUrl
