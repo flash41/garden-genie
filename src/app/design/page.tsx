@@ -796,6 +796,10 @@ export default function GardigApp() {
     setError(null);
     setStep("loading");
     try {
+      if (!imageDataUrl) {
+        setError("No image selected. Please upload a photo first.");
+        return;
+      }
       setLoadingMsg("Analysing site photograph...");
       const base64 = imageDataUrl.split(",")[1];
       const mimeType = imageDataUrl.split(";")[0].split(":")[1];
