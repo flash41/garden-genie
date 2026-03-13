@@ -5,14 +5,18 @@ export const dynamic = 'force-dynamic';
 
 const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY || '' });
 
-async function generateImage(prompt: string, aspectRatio: '16:9' | '1:1'): Promise<string | null> {
-  const res = await ai.models.generateImages({
-    model: 'imagen-3.0-generate-002',
-    prompt,
-    config: { numberOfImages: 1, aspectRatio },
+async function generateImage(prompt: string): Promise<string | null> {
+  const response = await ai.models.generateContent({
+    model: 'gemini-2.0-flash-exp',
+    contents: [{ role: 'user', parts: [{ text: prompt }] }],
+    config: { responseModalities: ['Text', 'Image'] },
   });
-  const bytes = res.generatedImages?.[0]?.image?.imageBytes;
-  return bytes ? `data:image/png;base64,${bytes}` : null;
+  const imagePart = response.candidates?.[0]?.content?.parts?.find(
+    (p: any) => p.inlineData
+  );
+  if (!imagePart?.inlineData?.data) return null;
+  const mime = imagePart.inlineData.mimeType || 'image/png';
+  return `data:${mime};base64,${imagePart.inlineData.data}`;
 }
 
 export async function POST(request: Request) {
@@ -25,24 +29,35 @@ export async function POST(request: Request) {
 
     // ── Render prompt ──────────────────────────────────────────────────────────
     const renderPrompt = visualPrompt
-      ? `${visualPrompt} Photorealistic garden design render, professional architectural visualisation, ${style} style, golden hour lighting, high detail.`
-      : `A photorealistic ${style} garden design render. Professional landscape architectural visualisation. Lush planting, carefully composed layout, golden hour lighting. High detail, magazine quality.`;
+      ? `Generate a photorealistic garden design image: ${visualPrompt}. Photorealistic style, professional garden photography, ${style} style, golden hour lighting, high detail.`
+      : `Generate a photorealistic ${style} garden design image. Professional landscape photography, lush planting, carefully composed layout, golden hour lighting. High detail, magazine quality.`;
 
     // ── Aerial prompt ──────────────────────────────────────────────────────────
     const zoneList = Array.isArray(zones) && zones.length > 0
       ? zones.map((z: any) => z.name || z.type).filter(Boolean).join(', ')
       : 'lawn, mixed borders, patio area, garden path';
 
-    const aerialPrompt = `A professional top-down overhead garden design plan illustration for a ${style} garden. Pure aerial view, looking directly down. Architectural watercolour and ink illustration on cream parchment paper. Clean ink outlines. Show clearly labelled zones: ${zoneList}. Include plant groupings, lawn areas, paths, borders, and patio spaces. Add grid reference marks on edges: columns A through F left to right, rows 1 through 6 top to bottom. No perspective, no shadows, pure flat plan view. Magazine-quality landscape design illustration.`;
+    const aerialPrompt = `Generate a professional hand-drawn aerial garden layout plan, top-down view, ink and watercolour style on cream graph paper, for a ${style} garden. Show clearly labelled zones: ${zoneList}. Include compass direction, scale reference, borders, lawn, paths, and planting areas. Add grid reference marks on edges: columns A through F left to right, rows 1 through 6 top to bottom. Clean architectural illustration style, no perspective, pure flat plan view.`;
 
-    // ── Generate both in parallel ──────────────────────────────────────────────
-    const [renderResult, aerialResult] = await Promise.allSettled([
-      generateImage(renderPrompt, '16:9'),
-      generateImage(aerialPrompt, '1:1'),
-    ]);
+    // ── Generate render ────────────────────────────────────────────────────────
+    console.log('Starting render generation...');
+    let imageBase64: string | null = null;
+    try {
+      imageBase64 = await generateImage(renderPrompt);
+      console.log('Render complete, image size:', imageBase64?.length ?? 0);
+    } catch (err: unknown) {
+      console.error('Render generation failed:', JSON.stringify(err));
+    }
 
-    const imageBase64 = renderResult.status === 'fulfilled' ? renderResult.value : null;
-    const aerialImageBase64 = aerialResult.status === 'fulfilled' ? aerialResult.value : null;
+    // ── Generate aerial sketch ─────────────────────────────────────────────────
+    console.log('Starting aerial sketch generation...');
+    let aerialImageBase64: string | null = null;
+    try {
+      aerialImageBase64 = await generateImage(aerialPrompt);
+      console.log('Aerial sketch complete, image size:', aerialImageBase64?.length ?? 0);
+    } catch (err: unknown) {
+      console.error('Aerial sketch generation failed:', JSON.stringify(err));
+    }
 
     if (!imageBase64 && !aerialImageBase64) {
       return NextResponse.json({ imageError: true });
@@ -51,7 +66,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ imageBase64, aerialImageBase64 });
 
   } catch (error: unknown) {
-    console.error('Redesign API error:', error);
+    console.error('Redesign API error:', JSON.stringify(error));
     const message = error instanceof Error ? error.message : 'Unexpected error';
 
     if (message.includes('API_KEY') || message.includes('api key')) {

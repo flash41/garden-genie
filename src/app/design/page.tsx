@@ -634,10 +634,19 @@ export default function GardigApp() {
   const [emailStatus, setEmailStatus] = useState<"idle"|"sending"|"sent"|"error">("idle");
   const [emailError, setEmailError]   = useState<string | null>(null);
   const [showBefore, setShowBefore]   = useState(false);
+  const [fileSizeError, setFileSizeError] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleFile = (file: File) => {
     if (!file) return;
+    if (file.size > 4 * 1024 * 1024) {
+      setFileSizeError(true);
+      setImageFile(null);
+      setImageDataUrl(null);
+      if (fileRef.current) fileRef.current.value = '';
+      return;
+    }
+    setFileSizeError(false);
     setImageFile(file);
     const reader = new FileReader();
     reader.onload = e => setImageDataUrl(e.target?.result as string);
@@ -771,10 +780,19 @@ export default function GardigApp() {
                 : <div>
                     <div style={{ fontSize: 28, marginBottom: 6 }}>📷</div>
                     <div style={{ color: C.inkMid, fontSize: px(14), fontWeight: 500 }}>Drop image or click to browse</div>
-                    <div style={{ color: C.inkLight, fontSize: px(12), marginTop: 3 }}>JPG, PNG, WEBP</div>
+                    <div style={{ color: C.inkLight, fontSize: px(12), marginTop: 3 }}>JPG, PNG, WEBP · Max 4 MB</div>
                   </div>
               }
             </div>
+            {fileSizeError && (
+              <div style={{
+                marginTop: 10, padding: "10px 14px",
+                background: C.surface, borderLeft: `3px solid ${C.accent}`,
+                borderRadius: C.r, fontSize: px(13), color: C.red, lineHeight: 1.5,
+              }}>
+                Your file is too large — please try another image or reduce its size before uploading.
+              </div>
+            )}
             <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])} />
           </Card>
 
