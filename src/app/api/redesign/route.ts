@@ -21,29 +21,38 @@ async function generateImage(prompt: string): Promise<string | null> {
 
 export async function POST(request: Request) {
   try {
-    const { style, visualPrompt, zones } = await request.json();
+    const { style, visualPrompt, zones, siteConstraints } = await request.json();
 
     if (!style) {
       return NextResponse.json({ error: 'Missing required field: style' }, { status: 400 });
     }
 
+    // ── Boundary context (prepended to both prompts) ───────────────────────────
+    const boundaryContext = siteConstraints
+      ? `SITE BOUNDARIES TO PRESERVE EXACTLY AS PHOTOGRAPHED: Walls/Fences: ${(siteConstraints.boundaries || []).join(', ')}. Fixed Structures: ${(siteConstraints.immovableStructures || []).join(', ')}. The garden footprint is fixed. Only redesign what is inside it. `
+      : '';
+
     // ── Render prompt ──────────────────────────────────────────────────────────
-    const renderPrompt = visualPrompt
-      ? `Generate a photorealistic garden design image: ${visualPrompt}. Photorealistic style, professional garden photography, ${style} style, golden hour lighting, high detail.`
-      : `Generate a photorealistic ${style} garden design image. Professional landscape photography, lush planting, carefully composed layout, golden hour lighting. High detail, magazine quality.`;
+    const fullVisualPrompt = boundaryContext + (visualPrompt
+      ? `${visualPrompt}. Photorealistic style, professional garden photography, ${style} style, golden hour lighting, high detail.`
+      : `Generate a photorealistic ${style} garden design image. Professional landscape photography, lush planting, carefully composed layout, golden hour lighting. High detail, magazine quality.`);
 
     // ── Aerial prompt ──────────────────────────────────────────────────────────
     const zoneList = Array.isArray(zones) && zones.length > 0
       ? zones.map((z: any) => z.name || z.type).filter(Boolean).join(', ')
       : 'lawn, mixed borders, patio area, garden path';
 
-    const aerialPrompt = `Generate a professional hand-drawn aerial garden layout plan, top-down view, ink and watercolour style on cream graph paper, for a ${style} garden. Show clearly labelled zones: ${zoneList}. Include compass direction, scale reference, borders, lawn, paths, and planting areas. Add grid reference marks on edges: columns A through F left to right, rows 1 through 6 top to bottom. Clean architectural illustration style, no perspective, pure flat plan view.`;
+    const structureList = siteConstraints
+      ? `Show fixed structures in their real positions: ${(siteConstraints.immovableStructures || []).join(', ')}. Show boundaries: ${(siteConstraints.boundaries || []).join(', ')}. `
+      : '';
+
+    const aerialPrompt = `Generate a professional hand-drawn aerial garden layout plan, top-down view, ink and watercolour style on cream graph paper, for a ${style} garden. ${structureList}Show clearly labelled zones: ${zoneList}. Include compass direction, scale reference, borders, lawn, paths, and planting areas. Add grid reference marks on edges: columns A through F left to right, rows 1 through 6 top to bottom. Clean architectural illustration style, no perspective, pure flat plan view.`;
 
     // ── Generate render ────────────────────────────────────────────────────────
     console.log('Starting render generation...');
     let imageBase64: string | null = null;
     try {
-      imageBase64 = await generateImage(renderPrompt);
+      imageBase64 = await generateImage(fullVisualPrompt);
       console.log('Render complete, image size:', imageBase64?.length ?? 0);
     } catch (err: unknown) {
       console.error('Render generation failed:', JSON.stringify(err));

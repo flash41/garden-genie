@@ -101,8 +101,8 @@ export async function POST(req: NextRequest) {
   const base64Data = pdfBase64.includes(',') ? pdfBase64.split(',')[1] : pdfBase64;
 
   try {
-    const { error } = await resend.emails.send({
-      from: 'Dedrab <noreply@dedrab.com>',
+    const { data, error } = await resend.emails.send({
+      from: 'Dedrab <hello@dedrab.com>',
       to: [recipientEmail],
       subject,
       html,
@@ -115,12 +115,13 @@ export async function POST(req: NextRequest) {
     });
 
     if (error) {
+      console.error('Resend error:', JSON.stringify(error));
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, id: data?.id });
   } catch (err: unknown) {
-    console.error('Send plan error:', err);
+    console.error('Send plan error:', JSON.stringify(err));
     return NextResponse.json(
       { error: 'Failed to send email', details: String(err) },
       { status: 500 }

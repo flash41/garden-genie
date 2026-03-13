@@ -57,6 +57,17 @@ Use realistic retail pricing (not trade rates). Base on current Irish/UK garden 
 Never use 0 for any cost value.
 
 ═══════════════════════════════════════════════════════════════
+CRITICAL RULE 5 — SITE BOUNDARIES (non-negotiable)
+═══════════════════════════════════════════════════════════════
+You MUST identify and list all permanent, immovable elements from the uploaded photo: walls, fences, buildings, sheds, gates, utility boxes, neighbouring structures, and site boundaries.
+
+These elements CANNOT be moved, removed, or ignored. Every plant placement, hardscape suggestion, and layout change MUST work within and around these fixed structures.
+
+Populate the siteConstraints field with everything permanent you observe.
+
+The visualPrompt field MUST begin with: "Photorealistic garden design render. PRESERVE EXACTLY: [list all walls, fences, buildings, boundaries from the photo]. Work WITHIN these existing structures. Do not remove or alter any boundary walls, fences, or permanent buildings. Only change planting, paving, and soft landscaping within the existing footprint."
+
+═══════════════════════════════════════════════════════════════
 TONE
 ═══════════════════════════════════════════════════════════════
 Plain, direct, technical English. No poetry or flowery language.
@@ -193,7 +204,13 @@ const SCHEMA = `{
     "contingencyPercent": 15,
     "costingNotes": "basis of pricing, market, exclusions"
   },
-  "visualPrompt": "detailed 150-word image generation prompt for the finished redesigned garden",
+  "siteConstraints": {
+    "boundaries": ["description of each boundary wall, fence, or site edge visible in the photo"],
+    "immovableStructures": ["shed with approximate location and size", "house wall", "outbuildings"],
+    "accessPoints": ["gate location", "door location", "path entry points"],
+    "notes": "any other permanent constraints or utility features"
+  },
+  "visualPrompt": "PRESERVE EXACTLY: [list all walls, fences, buildings from photo]. Work WITHIN these structures. Only change planting, paving, and soft landscaping. Photorealistic garden design render showing the redesigned interior of the existing garden footprint.",
   "confidence": 0.85,
   "caveats": ["any assumptions made or limitations of this proposal"]
 }`;

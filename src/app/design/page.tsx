@@ -706,7 +706,7 @@ export default function GardigApp() {
   const [designLang, setDesignLang]   = useState("Japanese Zen");
   const [gardenOrientation, setGardenOrientation] = useState<string>('');
   const [clientName, setClientName]   = useState("");
-  const [siteAddress, setSiteAddress] = useState("");
+  const [userEmail, setUserEmail]     = useState("");
   const [docData, setDocData]         = useState<any>(null);
   const [renderUrl, setRenderUrl]     = useState<string | null>(null);
   const [gridImageUrl, setGridImageUrl]         = useState<string | null>(null);
@@ -721,6 +721,8 @@ export default function GardigApp() {
   const [emailError, setEmailError]   = useState<string | null>(null);
   const [showBefore, setShowBefore]   = useState(false);
   const [fileSizeError, setFileSizeError] = useState(false);
+  const [selfSendToast, setSelfSendToast] = useState<string | null>(null);
+  const [selfSendStatus, setSelfSendStatus] = useState<"idle"|"sending"|"sent"|"error">("idle");
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleFile = (file: File) => {
@@ -753,7 +755,6 @@ export default function GardigApp() {
         image: `data:${mimeType};base64,${base64Data}`,
         designLang,
         clientName: clientName || 'Client',
-        siteAddress: siteAddress || 'Private Residence',
         orientation: gardenOrientation || '',
       }),
     });
@@ -764,11 +765,11 @@ export default function GardigApp() {
     return res.json();
   };
 
-  const generateRender = async (visualPrompt: string, zones: any[]) => {
+  const generateRender = async (visualPrompt: string, zones: any[], siteConstraints?: any) => {
     const response = await fetch('/api/redesign', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ style: designLang, visualPrompt, zones }),
+      body: JSON.stringify({ style: designLang, visualPrompt, zones, siteConstraints }),
     });
     const data = await response.json();
     if (!response.ok) return { renderBase64: null, aerialBase64: null };
@@ -791,10 +792,11 @@ export default function GardigApp() {
       setLoadingMsg("Generating design render and layout sketch...");
       const plants = doc.plantingSpecification?.plants || [];
       const zones  = doc.spatialLayout?.zones || [];
+      const siteConstraints = doc.siteConstraints || null;
       let imgBase64: string | null = null;
       let aerialBase64: string | null = null;
       if (doc.visualPrompt) {
-        const result = await generateRender(doc.visualPrompt, zones);
+        const result = await generateRender(doc.visualPrompt, zones, siteConstraints);
         imgBase64   = result.renderBase64;
         aerialBase64 = result.aerialBase64;
         setRenderUrl(imgBase64);
@@ -887,16 +889,17 @@ export default function GardigApp() {
           <Card>
             <Label>02 — Project Details</Label>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {([
-                { label: "Client Name", val: clientName, set: setClientName, ph: "e.g. Johnson Residence" },
-                { label: "Site Address", val: siteAddress, set: setSiteAddress, ph: "e.g. Dublin 8, Ireland" },
-              ] as any[]).map(({ label, val, set, ph }) => (
-                <div key={label}>
-                  <label style={{ display: "block", fontSize: px(12), color: C.inkLight, marginBottom: 5, fontWeight: 600 }}>{label}</label>
-                  <input value={val} onChange={(e: any) => set(e.target.value)} placeholder={ph}
-                    style={{ width: "100%", padding: "9px 11px", border: `1px solid ${C.rule}`, borderRadius: C.r, fontFamily: C.font, fontSize: px(BASE - 1), color: C.ink, outline: "none" }} />
-                </div>
-              ))}
+              <div>
+                <label style={{ display: "block", fontSize: px(12), color: C.inkLight, marginBottom: 5, fontWeight: 600 }}>Client Name</label>
+                <input value={clientName} onChange={(e: any) => setClientName(e.target.value)} placeholder="e.g. Johnson Residence"
+                  style={{ width: "100%", padding: "9px 11px", border: `1px solid ${C.rule}`, borderRadius: C.r, fontFamily: C.font, fontSize: px(BASE - 1), color: C.ink, outline: "none" }} />
+              </div>
+              <div>
+                <label style={{ display: "block", fontSize: px(12), color: C.inkLight, marginBottom: 5, fontWeight: 600 }}>Your Email Address</label>
+                <input type="email" value={userEmail} onChange={(e: any) => setUserEmail(e.target.value)} placeholder="we'll send your plan here"
+                  style={{ width: "100%", padding: "9px 11px", border: `1px solid ${C.rule}`, borderRadius: C.r, fontFamily: C.font, fontSize: px(BASE - 1), color: C.ink, outline: "none" }} />
+                <div style={{ fontSize: px(11), color: C.inkLight, marginTop: 4 }}>We only use this to send you your plan</div>
+              </div>
               <div>
                 <label style={{ display: "block", fontSize: px(12), color: C.inkLight, marginBottom: 5, fontWeight: 600 }}>Design Language</label>
                 <select value={designLang} onChange={(e: any) => setDesignLang(e.target.value)}
@@ -998,6 +1001,37 @@ export default function GardigApp() {
     }
   }
 
+  async function sendToSelf(pdfBase64: string) {
+    if (!userEmail) {
+      setSelfSendToast('Please enter your email address before sending');
+      setSelfSendStatus("error");
+      setTimeout(() => { setSelfSendToast(null); setSelfSendStatus("idle"); }, 4000);
+      return;
+    }
+    setSelfSendStatus("sending");
+    try {
+      const res = await fetch('/api/send-plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipientEmail: userEmail,
+          pdfBase64,
+          planTitle: docData?.overview?.tagline || 'Garden Design Plan',
+          designStyle: designLang,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Send failed');
+      setSelfSendStatus("sent");
+      setSelfSendToast(`Plan sent to ${userEmail}!`);
+      setTimeout(() => { setSelfSendToast(null); setSelfSendStatus("idle"); }, 5000);
+    } catch (e: unknown) {
+      setSelfSendStatus("error");
+      setSelfSendToast(e instanceof Error ? e.message : 'Failed to send. Please try again.');
+      setTimeout(() => { setSelfSendToast(null); setSelfSendStatus("idle"); }, 5000);
+    }
+  }
+
   return (
     <div style={{ minHeight: "100vh", background: C.surface, fontFamily: C.font, color: C.ink, fontSize: px(BASE) }}>
       <style>{`
@@ -1016,7 +1050,7 @@ export default function GardigApp() {
           <span style={{ fontFamily: C.fontSerif, fontWeight: 700, fontSize: px(18), color: "#fff", letterSpacing: "1px" }}>Dedrab</span>
           <span style={{ fontSize: px(12), color: "rgba(255,255,255,0.4)", letterSpacing: "0.05em" }}>dedrab.com</span>
         </div>
-        <div style={{ display: "flex", gap: 8 }}>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <button onClick={() => { setStep("upload"); setDocData(null); setRenderUrl(null); setGridImageUrl(null); }}
             style={{ background: "rgba(255,255,255,0.08)", border: `1px solid rgba(255,255,255,0.2)`, color: "rgba(255,255,255,0.8)", padding: "7px 15px", borderRadius: C.r, cursor: "pointer", fontFamily: C.font, fontSize: px(13), fontWeight: 600 }}>
             ← New Analysis
@@ -1029,10 +1063,22 @@ export default function GardigApp() {
             aerialImageUrl={aerialGridImageUrl || undefined}
             style={designLang}
             clientName={clientName || undefined}
-            siteAddress={siteAddress || undefined}
+          />
+          <PDFButton
+            doc={docData}
+            imageBase64={renderUrl || ''}
+            imageDataUrl={imageDataUrl || undefined}
+            gridImageUrl={gridImageUrl || undefined}
+            aerialImageUrl={aerialGridImageUrl || undefined}
+            style={designLang}
+            clientName={clientName || undefined}
+            sendMode
+            onPdfReady={sendToSelf}
+            sendDisabled={selfSendStatus === 'sending'}
+            sendLabel={selfSendStatus === 'sending' ? 'Sending…' : selfSendStatus === 'sent' ? 'Sent ✓' : 'Send to Me'}
           />
           <button
-            onClick={() => { setEmailModal(true); setEmailStatus("idle"); setEmailAddr(""); setEmailError(null); }}
+            onClick={() => { setEmailModal(true); setEmailStatus("idle"); setEmailAddr(userEmail); setEmailError(null); }}
             style={{
               display: 'flex', alignItems: 'center', gap: 7,
               background: "rgba(255,255,255,0.08)", border: `1px solid rgba(255,255,255,0.2)`, color: "rgba(255,255,255,0.8)",
@@ -1041,10 +1087,25 @@ export default function GardigApp() {
             }}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-            Share by Email
+            Send to Someone Else
           </button>
         </div>
       </header>
+
+      {/* Send-to-self toast */}
+      {selfSendToast && (
+        <div style={{
+          position: 'fixed', top: 66, right: 16, zIndex: 300,
+          background: selfSendStatus === 'error' ? '#fef2f2' : C.brand,
+          border: `1px solid ${selfSendStatus === 'error' ? '#fca5a5' : C.accent}`,
+          borderRadius: C.r, padding: '10px 18px',
+          fontSize: px(13), fontFamily: C.font, fontWeight: 600,
+          color: selfSendStatus === 'error' ? C.red : C.accent,
+          boxShadow: C.shadowMd,
+        }}>
+          {selfSendToast}
+        </div>
+      )}
 
       {/* Email modal */}
       {emailModal && (
@@ -1054,7 +1115,7 @@ export default function GardigApp() {
             {/* Modal header */}
             <div style={{ background: C.brand, padding: '20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <div style={{ fontSize: px(15), fontWeight: 700, color: '#fff' }}>Share by Email</div>
+                <div style={{ fontSize: px(15), fontWeight: 700, color: '#fff' }}>Send to Someone Else</div>
                 <div style={{ fontSize: px(12), color: 'rgba(255,255,255,0.6)', marginTop: 2 }}>Send the PDF plan to any email address</div>
               </div>
               <button onClick={() => setEmailModal(false)} style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', fontSize: 20, lineHeight: 1, padding: 4 }}>✕</button>
@@ -1096,7 +1157,6 @@ export default function GardigApp() {
                       aerialImageUrl={aerialGridImageUrl || undefined}
                       style={designLang}
                       clientName={clientName || undefined}
-                      siteAddress={siteAddress || undefined}
                       onPdfReady={sendPlan}
                       sendMode
                       sendDisabled={!emailAddr || emailStatus === 'sending'}
@@ -1120,7 +1180,7 @@ export default function GardigApp() {
             {doc.overview?.tagline || "Garden Design Proposal"}
           </h1>
           <div style={{ color: "rgba(255,255,255,0.6)", fontSize: px(14), marginTop: 5 }}>
-            {clientName || "Client"} · {siteAddress || "Private Residence"} · {new Date().toLocaleDateString("en-GB", { day:"numeric", month:"long", year:"numeric" })}
+            {clientName || "Client"} · {new Date().toLocaleDateString("en-GB", { day:"numeric", month:"long", year:"numeric" })}
           </div>
         </div>
       </div>
@@ -1155,7 +1215,6 @@ export default function GardigApp() {
           </Card>
           <StatGrid items={[
             { label: "Client",            value: clientName || "Private Client" },
-            { label: "Site",              value: siteAddress || "Private Residence" },
             { label: "Design Language",   value: designLang },
             { label: "Estimated Area",    value: doc.overview?.estimatedAreaSqm ? `${doc.overview.estimatedAreaSqm} m²` : "—" },
             { label: "Report Date",       value: new Date().toLocaleDateString("en-GB") },
