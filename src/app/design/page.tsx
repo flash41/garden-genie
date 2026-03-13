@@ -697,6 +697,33 @@ function generateGridOverlay(src: string, plants: any[]): Promise<string> {
   });
 }
 
+function compositeLayoutOnPhoto(photoSrc: string, aerialSrc: string, opacity: number): Promise<string> {
+  return new Promise((resolve) => {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d')!;
+    const photo = new Image();
+    photo.crossOrigin = 'anonymous';
+    photo.onload = () => {
+      canvas.width = photo.width;
+      canvas.height = photo.height;
+      ctx.drawImage(photo, 0, 0);
+      const aerial = new Image();
+      aerial.crossOrigin = 'anonymous';
+      aerial.onload = () => {
+        ctx.globalAlpha = opacity;
+        ctx.drawImage(aerial, 0, 0, canvas.width, canvas.height);
+        ctx.globalAlpha = 1;
+        resolve(canvas.toDataURL('image/png'));
+      };
+      aerial.onerror = () => resolve(canvas.toDataURL('image/png'));
+      aerial.src = aerialSrc;
+    };
+    photo.onerror = () => resolve('');
+    photo.src = photoSrc;
+  });
+}
+
+
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 
 export default function GardigApp() {
@@ -712,6 +739,9 @@ export default function GardigApp() {
   const [gridImageUrl, setGridImageUrl]         = useState<string | null>(null);
   const [aerialImageUrl, setAerialImageUrl]     = useState<string | null>(null);
   const [aerialGridImageUrl, setAerialGridImageUrl] = useState<string | null>(null);
+  const [compositeLayoutUrl, setCompositeLayoutUrl] = useState<string | null>(null);
+  const [overlayOpacity, setOverlayOpacity]     = useState(0.72);
+  const [layoutViewMode, setLayoutViewMode]     = useState<'overlay' | 'plan'>('overlay');
   const [loadingMsg, setLoadingMsg]   = useState("");
   const [error, setError]             = useState<string | null>(null);
   const [activeTab, setActiveTab]     = useState("overview");
@@ -725,6 +755,14 @@ export default function GardigApp() {
   const [selfSendStatus, setSelfSendStatus] = useState<"idle"|"sending"|"sent"|"error">("idle");
   const [hasAttempted, setHasAttempted]   = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // Regenerate composite when opacity slider changes
+  useEffect(() => {
+    if (!imageDataUrl || !aerialGridImageUrl) return;
+    compositeLayoutOnPhoto(imageDataUrl, aerialGridImageUrl, overlayOpacity).then(url => {
+      if (url) setCompositeLayoutUrl(url);
+    });
+  }, [overlayOpacity, imageDataUrl, aerialGridImageUrl]);
 
   const missingFields = () => {
     const missing: string[] = [];
@@ -776,11 +814,11 @@ export default function GardigApp() {
     return res.json();
   };
 
-  const generateRender = async (visualPrompt: string, zones: any[], siteConstraints?: any) => {
+  const generateRender = async (visualPrompt: string, zones: any[], siteConstraints?: any, plantCount?: number) => {
     const response = await fetch('/api/redesign', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ style: designLang, visualPrompt, zones, siteConstraints, orientation: gardenOrientation || undefined }),
+      body: JSON.stringify({ style: designLang, visualPrompt, zones, siteConstraints, orientation: gardenOrientation || undefined, plantCount }),
     });
     const data = await response.json();
     if (!response.ok) return { renderBase64: null, aerialBase64: null };
@@ -812,7 +850,7 @@ export default function GardigApp() {
       let imgBase64: string | null = null;
       let aerialBase64: string | null = null;
       if (doc.visualPrompt) {
-        const result = await generateRender(doc.visualPrompt, zones, siteConstraints);
+        const result = await generateRender(doc.visualPrompt, zones, siteConstraints, plants.length || 10);
         imgBase64   = result.renderBase64;
         aerialBase64 = result.aerialBase64;
         setRenderUrl(imgBase64);
@@ -831,6 +869,12 @@ export default function GardigApp() {
       if (aerialBase64 && plants.length > 0) {
         const aerialOverlay = await generateGridOverlay(aerialBase64, plants);
         setAerialGridImageUrl(aerialOverlay || null);
+        // Composite aerial plan over the original photo
+        if (imageDataUrl) {
+          setLoadingMsg("Compositing layout overlay...");
+          const composite = await compositeLayoutOnPhoto(imageDataUrl, aerialOverlay || aerialBase64, 0.72);
+          setCompositeLayoutUrl(composite || null);
+        }
       }
       setLoadingMsg("Building proposal...");
       await new Promise(r => setTimeout(r, 300));
@@ -1083,7 +1127,7 @@ export default function GardigApp() {
             imageBase64={renderUrl || ''}
             imageDataUrl={imageDataUrl || undefined}
             gridImageUrl={gridImageUrl || undefined}
-            aerialImageUrl={aerialGridImageUrl || undefined}
+            aerialImageUrl={compositeLayoutUrl || aerialGridImageUrl || undefined}
             style={designLang}
             clientName={clientName || undefined}
           />
@@ -1092,7 +1136,7 @@ export default function GardigApp() {
             imageBase64={renderUrl || ''}
             imageDataUrl={imageDataUrl || undefined}
             gridImageUrl={gridImageUrl || undefined}
-            aerialImageUrl={aerialGridImageUrl || undefined}
+            aerialImageUrl={compositeLayoutUrl || aerialGridImageUrl || undefined}
             style={designLang}
             clientName={clientName || undefined}
             sendMode
@@ -1177,7 +1221,7 @@ export default function GardigApp() {
                       imageBase64={renderUrl || ''}
                       imageDataUrl={imageDataUrl || undefined}
                       gridImageUrl={gridImageUrl || undefined}
-                      aerialImageUrl={aerialGridImageUrl || undefined}
+                      aerialImageUrl={compositeLayoutUrl || aerialGridImageUrl || undefined}
                       style={designLang}
                       clientName={clientName || undefined}
                       onPdfReady={sendPlan}
@@ -1634,7 +1678,42 @@ export default function GardigApp() {
             <div style={{ marginBottom: 24 }}>
               <SectionTitle n="11b" title="Garden Layout Plan" />
               <div style={{ marginBottom: 10, fontSize: px(BASE - 1), color: C.inkMid }}>Your planting guide — print this and take it outside</div>
-              <GridOverlayImage src={aerialGridImageUrl || aerialImageUrl!} plants={plants} label="Layout Plan" />
+
+              {/* View mode toggle */}
+              <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+                {(['overlay', 'plan'] as const).map(mode => (
+                  <button key={mode} onClick={() => setLayoutViewMode(mode)} style={{
+                    padding: '5px 14px', fontSize: px(12), fontWeight: 600,
+                    background: layoutViewMode === mode ? C.brand : 'transparent',
+                    color: layoutViewMode === mode ? C.accent : C.inkMid,
+                    border: `1px solid ${layoutViewMode === mode ? C.brand : C.inkMid}`,
+                    borderRadius: 3, cursor: 'pointer', fontFamily: C.font,
+                  }}>
+                    {mode === 'overlay' ? 'Overlay on photo' : 'Plan only'}
+                  </button>
+                ))}
+              </div>
+
+              {/* Opacity slider (overlay mode only) */}
+              {layoutViewMode === 'overlay' && compositeLayoutUrl && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                  <span style={{ fontSize: px(12), color: C.inkMid, minWidth: 80 }}>Plan opacity</span>
+                  <input
+                    type="range" min={0.1} max={1} step={0.05}
+                    value={overlayOpacity}
+                    onChange={e => setOverlayOpacity(parseFloat(e.target.value))}
+                    style={{ flex: 1, maxWidth: 200 }}
+                  />
+                  <span style={{ fontSize: px(12), color: C.inkMid, minWidth: 35 }}>{Math.round(overlayOpacity * 100)}%</span>
+                </div>
+              )}
+
+              {/* Image */}
+              {layoutViewMode === 'overlay' && compositeLayoutUrl
+                ? <GridOverlayImage src={compositeLayoutUrl} plants={plants} label="Layout Plan (Overlay)" />
+                : <GridOverlayImage src={aerialGridImageUrl || aerialImageUrl!} plants={plants} label="Layout Plan" />
+              }
+
               {plants.length > 0 && (
                 <div style={{ marginTop: 18 }}>
                   <Label>Layout Reference</Label>

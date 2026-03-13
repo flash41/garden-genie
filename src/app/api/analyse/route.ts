@@ -94,6 +94,25 @@ The user's geographic region will be provided in the request. You MUST:
 - Include the geographic region as the 'climateZone' field in your JSON response
 
 ═══════════════════════════════════════════════════════════════
+CRITICAL — GARDEN SHAPE DETECTION
+═══════════════════════════════════════════════════════════════
+Look very carefully at the photo and determine the exact shape of the garden space. Is it:
+- A narrow corridor/passage (long and thin)?
+- A square plot?
+- An L-shape?
+- A wide rectangular space?
+
+Measure the approximate WIDTH vs LENGTH ratio from the photo.
+A garden that is much longer than it is wide must be recorded as a tall narrow rectangle, NOT a square.
+
+Return this inside siteConstraints:
+- gardenShape: e.g. "narrow rectangle approximately 3m wide x 10m long"
+- aspectRatio: e.g. "1:3" (width:length)
+- viewpointDescription: e.g. "photo taken from entrance looking toward rear of house"
+
+This shape information is CRITICAL for generating an accurate layout plan.
+
+═══════════════════════════════════════════════════════════════
 CRITICAL RULE 6 — SITE BOUNDARIES (non-negotiable)
 ═══════════════════════════════════════════════════════════════
 You MUST identify and list all permanent, immovable elements from the uploaded photo: walls, fences, buildings, sheds, gates, utility boxes, neighbouring structures, and site boundaries.
@@ -247,6 +266,9 @@ const SCHEMA = `{
     "boundaries": ["description of each boundary wall, fence, or site edge visible in the photo"],
     "immovableStructures": ["shed with approximate location and size", "house wall", "outbuildings"],
     "accessPoints": ["gate location", "door location", "path entry points"],
+    "gardenShape": "e.g. narrow rectangle approximately 3m wide x 10m long",
+    "aspectRatio": "e.g. 1:3 (width:length)",
+    "viewpointDescription": "e.g. photo taken from entrance looking toward rear of house",
     "notes": "any other permanent constraints or utility features"
   },
   "visualPrompt": "PRESERVE EXACTLY: [list all walls, fences, buildings from photo]. Work WITHIN these structures. Only change planting, paving, and soft landscaping. Photorealistic garden design render showing the redesigned interior of the existing garden footprint.",

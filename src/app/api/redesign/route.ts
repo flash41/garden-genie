@@ -21,41 +21,53 @@ async function generateImage(prompt: string): Promise<string | null> {
 
 export async function POST(request: Request) {
   try {
-    const { style, visualPrompt, zones, siteConstraints, orientation } = await request.json();
+    const { style, visualPrompt, zones, siteConstraints, orientation, plantCount } = await request.json();
 
     if (!style) {
       return NextResponse.json({ error: 'Missing required field: style' }, { status: 400 });
     }
 
-    // ── Boundary description ───────────────────────────────────────────────────
+    // ── Shape and boundary info ────────────────────────────────────────────────
+    const gardenShape  = siteConstraints?.gardenShape  || null;
+    const aspectRatio  = siteConstraints?.aspectRatio  || '1:1';
+    const numPlants    = typeof plantCount === 'number' && plantCount > 0 ? plantCount : 10;
+
     const boundaryDescription = siteConstraints
       ? `Boundary walls: ${(siteConstraints.boundaries || []).join(', ')}. Fixed structures: ${(siteConstraints.immovableStructures || []).join(', ')}. Access points: ${(siteConstraints.accessPoints || []).join(', ')}.`
       : 'Standard rectangular garden with boundary walls on all sides.';
 
     // ── Render prompt — photorealistic, no annotations ────────────────────────
     const orientationNote = orientation ? ` The garden entrance faces ${orientation}.` : '';
-    const fullVisualPrompt = `${boundaryDescription} ` + (visualPrompt
+    const boundaryPrefix = gardenShape
+      ? `THIS GARDEN IS A ${gardenShape.toUpperCase()}. The garden outline has this EXACT shape and footprint — you must preserve it precisely in the render. `
+      : '';
+    const fullVisualPrompt = `${boundaryPrefix}${boundaryDescription} ` + (visualPrompt
       ? `${visualPrompt}.${orientationNote} ${style} style. Photorealistic photography style. Natural lighting. No text, no compass, no grid, no annotations, no overlaid graphics of any kind.`
       : `Photorealistic ${style} garden design. Professional landscape photography, lush planting, carefully composed layout, golden hour lighting. High detail, magazine quality.${orientationNote} No text, no compass, no grid, no annotations, no overlaid graphics of any kind.`);
 
     // ── Aerial prompt — pure orthographic plan ────────────────────────────────
     const compassNote = orientation ? ` showing ${orientation} orientation` : '';
-    const aerialPrompt = `Architectural garden layout plan. Pure top-down orthographic view, looking straight down from directly above.
+    const aerialPrompt = `Architectural top-down garden plan drawing. STRICT REQUIREMENTS — follow every point exactly:
 
-This is a 2D plan drawing of this specific garden: ${boundaryDescription}
+GARDEN SHAPE: This garden is a ${gardenShape || 'rectangular plot'}. The width-to-length aspect ratio is ${aspectRatio}. You MUST draw the garden boundary outline to match this exact shape and ratio. If the aspect ratio is 1:3 or similar, the plan outline must be tall and narrow, NOT square. The shape of the boundary outline is the most critical constraint.
 
-The plan must show:
-- The exact same boundary walls and fences as the site, drawn as thick lines forming the garden outline
-- Garden dimensions/footprint matching the real site
-- Every planting bed shown as a shape from above with plant symbols (circles/dots for shrubs, star shapes for perennials, irregular blobs for ground cover)
-- Path and paving areas shown as flat shapes with texture
-- Lawn areas shown as flat green fill
-- A clean A-F column, 1-6 row reference grid overlaid in light gold lines
-- A small compass rose in the TOP RIGHT CORNER ONLY${compassNote} — a small diagram in the corner only, not a feature in the garden
-- A scale bar at the bottom
-- Plant numbers matching the planting schedule
+PLANT COUNT: Show exactly ${numPlants} numbered plant positions inside the garden boundary. Number each from 1 to ${numPlants}. Do not show more or fewer plant markers than this count.
 
-Style: Clean hand-drawn architectural plan on cream paper. Watercolour fills. Ink outlines. Top-down only. No perspective. No 3D. No isometric. Pure flat plan view. No photorealistic elements. This is a 2D drawing only.`;
+BOUNDARY: ${boundaryDescription}
+
+The plan MUST include:
+- Garden boundary outline drawn as thick ink lines matching the ${gardenShape || 'garden'} shape exactly
+- ${numPlants} plant positions inside the boundary, each shown as a filled circle with a number (1–${numPlants})
+- Planting bed areas as soft irregular shapes filled with watercolour green
+- Hard surfaces (paths, paving) as flat geometric shapes in grey/buff tones
+- Lawn areas as flat pale green fill
+- A reference grid in light gold lines: columns A–F left to right, rows 1–6 top to bottom
+- A small compass rose in the TOP RIGHT CORNER only${compassNote}
+- A scale bar at the bottom edge
+
+VIEWPOINT: Strict top-down orthographic only. Absolutely no perspective, no 3D, no isometric view. This is a flat 2D plan — as if looking straight down from a drone directly overhead.
+
+Style: Hand-drawn architectural plan. Cream or white paper background. Watercolour fills. Ink outlines. No photorealistic elements. No shadows suggesting 3D.`;
 
     // ── Generate render ────────────────────────────────────────────────────────
     console.log('Starting render generation...');
