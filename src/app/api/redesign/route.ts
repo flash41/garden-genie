@@ -7,7 +7,7 @@ const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY || '' });
 
 async function generateImage(prompt: string): Promise<string | null> {
   const response = await ai.models.generateContent({
-    model: 'gemini-2.0-flash-exp-image-generation',
+    model: 'gemini-3.1-flash-image-preview',
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
     config: { responseModalities: ['Text', 'Image'] },
   });
