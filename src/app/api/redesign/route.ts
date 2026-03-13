@@ -27,32 +27,35 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing required field: style' }, { status: 400 });
     }
 
-    // ── Boundary context (prepended to both prompts) ───────────────────────────
-    const boundaryContext = siteConstraints
-      ? `SITE BOUNDARIES TO PRESERVE EXACTLY AS PHOTOGRAPHED: Walls/Fences: ${(siteConstraints.boundaries || []).join(', ')}. Fixed Structures: ${(siteConstraints.immovableStructures || []).join(', ')}. The garden footprint is fixed. Only redesign what is inside it. `
-      : '';
+    // ── Boundary description ───────────────────────────────────────────────────
+    const boundaryDescription = siteConstraints
+      ? `Boundary walls: ${(siteConstraints.boundaries || []).join(', ')}. Fixed structures: ${(siteConstraints.immovableStructures || []).join(', ')}. Access points: ${(siteConstraints.accessPoints || []).join(', ')}.`
+      : 'Standard rectangular garden with boundary walls on all sides.';
 
-    // ── Render prompt ──────────────────────────────────────────────────────────
-    const orientationNote = orientation ? ` The garden entrance/photo was taken facing ${orientation}. Show compass orientation clearly with ${orientation} marked.` : '';
-    const fullVisualPrompt = boundaryContext + (visualPrompt
-      ? `${visualPrompt}. Photorealistic style, professional garden photography, ${style} style, golden hour lighting, high detail.${orientationNote}`
-      : `Generate a photorealistic ${style} garden design image. Professional landscape photography, lush planting, carefully composed layout, golden hour lighting. High detail, magazine quality.${orientationNote}`);
+    // ── Render prompt — photorealistic, no annotations ────────────────────────
+    const orientationNote = orientation ? ` The garden entrance faces ${orientation}.` : '';
+    const fullVisualPrompt = `${boundaryDescription} ` + (visualPrompt
+      ? `${visualPrompt}.${orientationNote} ${style} style. Photorealistic photography style. Natural lighting. No text, no compass, no grid, no annotations, no overlaid graphics of any kind.`
+      : `Photorealistic ${style} garden design. Professional landscape photography, lush planting, carefully composed layout, golden hour lighting. High detail, magazine quality.${orientationNote} No text, no compass, no grid, no annotations, no overlaid graphics of any kind.`);
 
-    // ── Aerial prompt — top-down birds-eye view of the same garden ─────────────
-    const aerialPrompt = `Top-down birds-eye view garden layout plan. Looking directly down from above at this exact garden: ${fullVisualPrompt}.
+    // ── Aerial prompt — pure orthographic plan ────────────────────────────────
+    const compassNote = orientation ? ` showing ${orientation} orientation` : '';
+    const aerialPrompt = `Architectural garden layout plan. Pure top-down orthographic view, looking straight down from directly above.
 
-Style: Clean architectural illustration, watercolour on cream paper.
-Show exactly the same layout as the rendered design but from above.
-Include:
-- The same boundary walls, fences and structures in their exact positions
-- Every planting bed and lawn area in the same location as the render
-- Path and paving layout matching the render exactly
-- Individual plant positions shown as top-down botanical illustrations
-- A clean A-F column, 1-6 row reference grid overlaid on top
-- A compass rose in the corner${orientation ? ` showing ${orientation} facing` : ''}
-- Scale bar showing approximate metres
-- No perspective, pure top-down orthographic view
-- Soft watercolour fill colours matching the render palette`;
+This is a 2D plan drawing of this specific garden: ${boundaryDescription}
+
+The plan must show:
+- The exact same boundary walls and fences as the site, drawn as thick lines forming the garden outline
+- Garden dimensions/footprint matching the real site
+- Every planting bed shown as a shape from above with plant symbols (circles/dots for shrubs, star shapes for perennials, irregular blobs for ground cover)
+- Path and paving areas shown as flat shapes with texture
+- Lawn areas shown as flat green fill
+- A clean A-F column, 1-6 row reference grid overlaid in light gold lines
+- A small compass rose in the TOP RIGHT CORNER ONLY${compassNote} — a small diagram in the corner only, not a feature in the garden
+- A scale bar at the bottom
+- Plant numbers matching the planting schedule
+
+Style: Clean hand-drawn architectural plan on cream paper. Watercolour fills. Ink outlines. Top-down only. No perspective. No 3D. No isometric. Pure flat plan view. No photorealistic elements. This is a 2D drawing only.`;
 
     // ── Generate render ────────────────────────────────────────────────────────
     console.log('Starting render generation...');

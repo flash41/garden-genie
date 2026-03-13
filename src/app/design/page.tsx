@@ -451,10 +451,10 @@ function ReferenceTable({ plants }: { plants: any[] }) {
       <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: C.font, fontSize: px(BASE - 1) }}>
         <thead>
           <tr style={{ background: C.brand }}>
-            <th style={{ padding: "9px 12px", color: "#fff", textAlign: "left", fontSize: px(12), fontWeight: 600, width: 40 }}>#</th>
-            <th style={{ padding: "9px 12px", color: "#fff", textAlign: "left", fontSize: px(12), fontWeight: 600, width: 60 }}>Grid</th>
-            <th style={{ padding: "9px 12px", color: "#fff", textAlign: "left", fontSize: px(12), fontWeight: 600 }}>Plant</th>
-            <th style={{ padding: "9px 12px", color: "#fff", textAlign: "left", fontSize: px(12), fontWeight: 600 }}>Description</th>
+            <th style={{ padding: "9px 12px", color: "#fff", textAlign: "left", fontSize: px(12), fontWeight: 600, width: 36 }}>#</th>
+            <th style={{ padding: "9px 12px", color: "#fff", textAlign: "left", fontSize: px(12), fontWeight: 600, width: 56 }}>Grid</th>
+            <th style={{ padding: "9px 12px", color: "#fff", textAlign: "left", fontSize: px(12), fontWeight: 600 }}>Before (existing)</th>
+            <th style={{ padding: "9px 12px", color: "#fff", textAlign: "left", fontSize: px(12), fontWeight: 600 }}>After (proposed)</th>
           </tr>
         </thead>
         <tbody>
@@ -464,11 +464,11 @@ function ReferenceTable({ plants }: { plants: any[] }) {
               <td style={{ padding: "9px 12px" }}>
                 <span style={{ background: C.brand, color: C.accent, borderRadius: C.r, padding: "2px 7px", fontSize: px(11), fontWeight: 700 }}>{p.gridLocation || "—"}</span>
               </td>
+              <td style={{ padding: "9px 12px", color: C.inkMid, fontSize: px(13) }}>{p.existingElement || "—"}</td>
               <td style={{ padding: "9px 12px" }}>
                 <div style={{ fontStyle: "italic", color: C.brand, fontWeight: 600, fontSize: px(13) }}>{p.botanicalName}</div>
-                <div style={{ color: C.inkLight, fontSize: px(12) }}>{p.commonName}</div>
+                <div style={{ color: C.inkLight, fontSize: px(12) }}>{p.commonName}{p.cultivar ? ` '${p.cultivar}'` : ""}</div>
               </td>
-              <td style={{ padding: "9px 12px", color: C.inkMid, fontSize: px(13), lineHeight: 1.5 }}>{p.designRationale}</td>
             </tr>
           ))}
         </tbody>
@@ -477,7 +477,7 @@ function ReferenceTable({ plants }: { plants: any[] }) {
   );
 }
 
-function CompassSelector({ value, onChange }: { value: string; onChange: (dir: string) => void }) {
+function CompassSelector({ value, onChange, required, hasAttempted }: { value: string; onChange: (dir: string) => void; required?: boolean; hasAttempted?: boolean }) {
   const directions = [
     { dir: "N",  label: "N",  x: 50, y: 12 },
     { dir: "NE", label: "NE", x: 82, y: 22 },
@@ -491,7 +491,7 @@ function CompassSelector({ value, onChange }: { value: string; onChange: (dir: s
   return (
     <div>
       <label style={{ display: "block", fontSize: px(12), color: C.inkLight, marginBottom: 6, fontWeight: 600 }}>
-        Which direction does your garden face?
+        Which direction does your garden face?{required && <span style={{ color: "#b91c1c" }}> *</span>}
       </label>
       <div style={{ position: "relative", width: 120, height: 120, margin: "0 auto 6px" }}>
         {/* Compass rose circle */}
@@ -723,7 +723,18 @@ export default function GardigApp() {
   const [fileSizeError, setFileSizeError] = useState(false);
   const [selfSendToast, setSelfSendToast] = useState<string | null>(null);
   const [selfSendStatus, setSelfSendStatus] = useState<"idle"|"sending"|"sent"|"error">("idle");
+  const [hasAttempted, setHasAttempted]   = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const missingFields = () => {
+    const missing: string[] = [];
+    if (!imageDataUrl) missing.push("site photo");
+    if (!userEmail || !userEmail.includes('@') || !userEmail.includes('.')) missing.push("valid email address");
+    if (!designLang) missing.push("design language");
+    if (!gardenOrientation) missing.push("garden orientation");
+    return missing;
+  };
+  const isFormValid = () => missingFields().length === 0;
 
   const handleFile = (file: File) => {
     if (!file) return;
@@ -780,7 +791,8 @@ export default function GardigApp() {
   };
 
   const handleAnalyse = async () => {
-    if (!imageDataUrl) { setError("Please upload a site photo."); return; }
+    setHasAttempted(true);
+    if (!isFormValid()) return;
     setError(null);
     setStep("loading");
     try {
@@ -852,12 +864,12 @@ export default function GardigApp() {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
           {/* Upload */}
           <Card>
-            <Label>01 — Site Photo</Label>
+            <Label>01 — Site Photo <span style={{ color: C.red }}>*</span></Label>
             <div
               onDrop={handleDrop} onDragOver={e => e.preventDefault()}
               onClick={() => fileRef.current?.click()}
               style={{
-                border: `2px dashed ${imageDataUrl ? C.brand : C.ruleDark}`,
+                border: `2px dashed ${imageDataUrl ? C.brand : (hasAttempted && !imageDataUrl ? "#fca5a5" : C.ruleDark)}`,
                 borderRadius: C.r, padding: "20px 12px", textAlign: "center",
                 cursor: "pointer", background: imageDataUrl ? C.brandLight : C.surface,
                 minHeight: 170, display: "flex", alignItems: "center", justifyContent: "center",
@@ -890,25 +902,25 @@ export default function GardigApp() {
             <Label>02 — Project Details</Label>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               <div>
-                <label style={{ display: "block", fontSize: px(12), color: C.inkLight, marginBottom: 5, fontWeight: 600 }}>Client Name</label>
+                <label style={{ display: "block", fontSize: px(12), color: C.inkLight, marginBottom: 5, fontWeight: 600 }}>Client Name <span style={{ color: C.inkLight, fontWeight: 400 }}>(optional)</span></label>
                 <input value={clientName} onChange={(e: any) => setClientName(e.target.value)} placeholder="e.g. Johnson Residence"
                   style={{ width: "100%", padding: "9px 11px", border: `1px solid ${C.rule}`, borderRadius: C.r, fontFamily: C.font, fontSize: px(BASE - 1), color: C.ink, outline: "none" }} />
               </div>
               <div>
-                <label style={{ display: "block", fontSize: px(12), color: C.inkLight, marginBottom: 5, fontWeight: 600 }}>Your Email Address</label>
+                <label style={{ display: "block", fontSize: px(12), color: C.inkLight, marginBottom: 5, fontWeight: 600 }}>Your Email Address <span style={{ color: C.red }}>*</span></label>
                 <input type="email" value={userEmail} onChange={(e: any) => setUserEmail(e.target.value)} placeholder="we'll send your plan here"
-                  style={{ width: "100%", padding: "9px 11px", border: `1px solid ${C.rule}`, borderRadius: C.r, fontFamily: C.font, fontSize: px(BASE - 1), color: C.ink, outline: "none" }} />
+                  style={{ width: "100%", padding: "9px 11px", border: `1px solid ${hasAttempted && (!userEmail || !userEmail.includes('@') || !userEmail.includes('.')) ? "#fca5a5" : C.rule}`, borderRadius: C.r, fontFamily: C.font, fontSize: px(BASE - 1), color: C.ink, outline: "none" }} />
                 <div style={{ fontSize: px(11), color: C.inkLight, marginTop: 4 }}>We only use this to send you your plan</div>
               </div>
               <div>
-                <label style={{ display: "block", fontSize: px(12), color: C.inkLight, marginBottom: 5, fontWeight: 600 }}>Design Language</label>
+                <label style={{ display: "block", fontSize: px(12), color: C.inkLight, marginBottom: 5, fontWeight: 600 }}>Design Language <span style={{ color: C.red }}>*</span></label>
                 <select value={designLang} onChange={(e: any) => setDesignLang(e.target.value)}
                   style={{ width: "100%", padding: "9px 11px", border: `1px solid ${C.rule}`, borderRadius: C.r, fontFamily: C.font, fontSize: px(BASE - 1), background: C.card, color: C.ink, outline: "none" }}>
                   {DESIGN_LANGUAGES.map(l => <option key={l.value} value={l.label}>{l.label}</option>)}
                 </select>
               </div>
-              <div style={{ borderTop: `1px solid ${C.rule}`, paddingTop: 14 }}>
-                <CompassSelector value={gardenOrientation} onChange={setGardenOrientation} />
+              <div style={{ borderTop: `1px solid ${hasAttempted && !gardenOrientation ? "#fca5a5" : C.rule}`, paddingTop: 14 }}>
+                <CompassSelector value={gardenOrientation} onChange={setGardenOrientation} required hasAttempted={hasAttempted} />
               </div>
             </div>
           </Card>
@@ -920,15 +932,22 @@ export default function GardigApp() {
           </div>
         )}
 
+        {hasAttempted && !isFormValid() && (
+          <div style={{ background: "#fef2f2", border: `1px solid #fca5a5`, borderRadius: C.r, padding: "11px 15px", color: C.red, fontSize: px(14), marginTop: 14 }}>
+            Please complete: <strong>{missingFields().join(", ")}</strong> before generating your plan.
+          </div>
+        )}
+
         <div style={{ textAlign: "center", marginTop: 22 }}>
-          <button onClick={handleAnalyse} disabled={!imageDataUrl}
+          <button onClick={handleAnalyse}
             style={{
-              background: imageDataUrl ? C.brand : "#d1d5db",
-              color: imageDataUrl ? C.accent : "#9ca3af",
+              background: isFormValid() ? C.brand : "#d1d5db",
+              color: isFormValid() ? C.accent : "#9ca3af",
               border: "none", padding: "14px 48px", borderRadius: C.r,
               fontSize: px(BASE), fontFamily: C.font, fontWeight: 700,
-              cursor: imageDataUrl ? "pointer" : "not-allowed",
-              boxShadow: imageDataUrl ? C.shadowMd : "none", letterSpacing: "0.01em"
+              cursor: isFormValid() ? "pointer" : "not-allowed",
+              boxShadow: isFormValid() ? C.shadowMd : "none", letterSpacing: "0.01em",
+              opacity: isFormValid() ? 1 : 0.5, transition: "all 0.15s"
             }}>
             Generate Design Proposal →
           </button>

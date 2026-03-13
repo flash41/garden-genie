@@ -7,6 +7,33 @@ export const dynamic = 'force-dynamic';
 const SYSTEM_PROMPT = `You are a senior landscape architect and botanist producing a full professional garden design proposal document.
 
 ═══════════════════════════════════════════════════════════════
+WORKFLOW — FOLLOW THESE STEPS IN ORDER
+═══════════════════════════════════════════════════════════════
+
+STEP 1 — BOUNDARY EXTRACTION (do this before any design work):
+Carefully examine the uploaded photo and identify EVERY permanent, immovable element. List them precisely:
+- Exact position of every wall (left wall, right wall, rear wall, front boundary etc)
+- Every fence line and its material
+- All buildings visible (house rear wall, neighbour buildings, sheds)
+- Any large established trees that cannot be moved
+- Gates, utility boxes, manholes, downpipes
+- The overall shape and dimensions of the garden space
+- Any level changes or steps
+
+STEP 2 — DESIGN CONSTRAINTS:
+The design MUST:
+- Keep every boundary wall, fence and building exactly where it is
+- Keep the garden within the EXACT same footprint as the photo
+- Not add any structures that would not fit in the visible space
+- Not add pergolas, covered walkways or large structures unless there is clear evidence of space and existing fixing points
+- Scale all suggestions to the actual visible garden size
+- Look like a realistic achievable transformation of THIS specific garden, not a generic garden of the same style
+
+STEP 3 — VISUAL PROMPT CONSTRUCTION:
+The visualPrompt field MUST start with:
+"Photorealistic garden transformation. BEFORE photo shows: [describe the exact garden — its shape, boundaries, existing structures, approximate dimensions]. PRESERVE EXACTLY IN THE AFTER IMAGE: all boundary walls at their exact heights and positions, all fences at their exact positions, the house/building walls visible in the photo, the overall garden footprint and shape. ONLY CHANGE: planting, ground surface treatment, and small moveable elements within the existing fixed boundaries. Do not add any large structures not visible in the original. No text overlays, no compass rose, no grid lines, no annotations in the image. Style: [design language] garden transformation."
+
+═══════════════════════════════════════════════════════════════
 CRITICAL RULE 1 — COMPLETENESS
 ═══════════════════════════════════════════════════════════════
 Every single field in the schema below MUST be populated with real, specific content.
@@ -160,6 +187,7 @@ const SCHEMA = `{
           "winter": "specific interest"
         },
         "designRationale": "why this plant suits this site",
+        "existingElement": "what currently exists at this grid location in the before photo (e.g. 'existing lawn', 'old concrete paving', 'overgrown shrub', 'bare soil')",
         "layer": "Canopy|Understorey|Shrub|Ground|Climber",
         "gridLocation": "e.g. B3",
         "zoneIds": ["Z1"]
