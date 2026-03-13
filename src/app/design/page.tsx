@@ -6,9 +6,16 @@ import PDFButton from "@/components/PDFButton";
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 
 const DESIGN_LANGUAGES = [
-  "English Cottage",  "European Urban", "Functional Lifestyle", 
-  "Irish Urban", "Irish Rural", "Modernist Minimal", "Woodland Shade", "Mediterranean", 
-  "Tropical Lush", "Native Rewilding", "Zen Budist",
+  { value: "japanese-zen",        label: "Japanese Zen" },
+  { value: "english-cottage",     label: "English Cottage" },
+  { value: "city-garden",         label: "City Garden" },
+  { value: "mediterranean",       label: "Mediterranean" },
+  { value: "modern-minimalist",   label: "Modern Minimalist" },
+  { value: "wildlife-garden",     label: "Wildlife & Pollinator Garden" },
+  { value: "kitchen-garden",      label: "Kitchen & Herb Garden" },
+  { value: "tropical-lush",       label: "Tropical & Lush" },
+  { value: "nordic-naturalistic", label: "Nordic Naturalistic" },
+  { value: "formal-classical",    label: "Formal Classical" },
 ];
 
 const GEMINI_MODEL = "gemini-2.5-flash";
@@ -470,6 +477,84 @@ function ReferenceTable({ plants }: { plants: any[] }) {
   );
 }
 
+function CompassSelector({ value, onChange }: { value: string; onChange: (dir: string) => void }) {
+  const directions = [
+    { dir: "N",  label: "N",  x: 50, y: 12 },
+    { dir: "NE", label: "NE", x: 82, y: 22 },
+    { dir: "E",  label: "E",  x: 92, y: 50 },
+    { dir: "SE", label: "SE", x: 82, y: 78 },
+    { dir: "S",  label: "S",  x: 50, y: 88 },
+    { dir: "SW", label: "SW", x: 18, y: 78 },
+    { dir: "W",  label: "W",  x: 8,  y: 50 },
+    { dir: "NW", label: "NW", x: 18, y: 22 },
+  ];
+  return (
+    <div>
+      <label style={{ display: "block", fontSize: px(12), color: C.inkLight, marginBottom: 6, fontWeight: 600 }}>
+        Which direction does your garden face?
+      </label>
+      <div style={{ position: "relative", width: 120, height: 120, margin: "0 auto 6px" }}>
+        {/* Compass rose circle */}
+        <svg viewBox="0 0 100 100" width="120" height="120" style={{ position: "absolute", top: 0, left: 0 }}>
+          <circle cx="50" cy="50" r="46" fill={C.card} stroke={C.rule} strokeWidth="1.5" />
+          <circle cx="50" cy="50" r="5" fill={C.ruleDark} />
+          {/* Tick marks */}
+          {directions.map(({ dir, x, y }) => {
+            const isActive = value === dir;
+            const angle = { N: 0, NE: 45, E: 90, SE: 135, S: 180, SW: 225, W: 270, NW: 315 }[dir] || 0;
+            const rad = (angle - 90) * Math.PI / 180;
+            const r1 = 28, r2 = 40;
+            const x1 = 50 + r1 * Math.cos(rad), y1 = 50 + r1 * Math.sin(rad);
+            const x2 = 50 + r2 * Math.cos(rad), y2 = 50 + r2 * Math.sin(rad);
+            return (
+              <line key={dir}
+                x1={x1} y1={y1} x2={x2} y2={y2}
+                stroke={isActive ? C.accent : C.ruleDark}
+                strokeWidth={isActive ? 2.5 : 1.5}
+              />
+            );
+          })}
+        </svg>
+        {/* Clickable direction buttons */}
+        {directions.map(({ dir, label, x, y }) => {
+          const isActive = value === dir;
+          const isCardinal = ["N","E","S","W"].includes(dir);
+          return (
+            <button
+              key={dir}
+              onClick={() => onChange(value === dir ? '' : dir)}
+              style={{
+                position: "absolute",
+                left: `${x}%`, top: `${y}%`,
+                transform: "translate(-50%, -50%)",
+                width: isCardinal ? 22 : 20,
+                height: isCardinal ? 22 : 20,
+                borderRadius: "50%",
+                border: `2px solid ${isActive ? C.accent : C.ruleDark}`,
+                background: isActive ? C.brand : C.surface,
+                color: isActive ? C.accent : C.inkLight,
+                fontSize: isCardinal ? px(9) : px(8),
+                fontWeight: 700,
+                cursor: "pointer",
+                fontFamily: C.font,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                padding: 0,
+                lineHeight: 1,
+                transition: "all 0.15s",
+              }}
+            >
+              {label}
+            </button>
+          );
+        })}
+      </div>
+      <div style={{ textAlign: "center", fontSize: px(11), color: C.inkLight, fontFamily: C.font }}>
+        {value ? <span style={{ color: C.brand, fontWeight: 600 }}>{value} selected</span> : "This helps us suggest the right plants"}
+      </div>
+    </div>
+  );
+}
+
 function CostTable({ costEstimate }: { costEstimate: any }) {
   const [currency, setCurrency] = useState('EUR');
   useEffect(() => { setCurrency(detectCurrency()); }, []);
@@ -619,6 +704,7 @@ export default function GardigApp() {
   const [imageFile, setImageFile]     = useState<File | null>(null);
   const [imageDataUrl, setImageDataUrl] = useState<string | null>(null);
   const [designLang, setDesignLang]   = useState("Japanese Zen");
+  const [gardenOrientation, setGardenOrientation] = useState<string>('');
   const [clientName, setClientName]   = useState("");
   const [siteAddress, setSiteAddress] = useState("");
   const [docData, setDocData]         = useState<any>(null);
@@ -668,6 +754,7 @@ export default function GardigApp() {
         designLang,
         clientName: clientName || 'Client',
         siteAddress: siteAddress || 'Private Residence',
+        orientation: gardenOrientation || '',
       }),
     });
     if (!res.ok) {
@@ -814,10 +901,12 @@ export default function GardigApp() {
                 <label style={{ display: "block", fontSize: px(12), color: C.inkLight, marginBottom: 5, fontWeight: 600 }}>Design Language</label>
                 <select value={designLang} onChange={(e: any) => setDesignLang(e.target.value)}
                   style={{ width: "100%", padding: "9px 11px", border: `1px solid ${C.rule}`, borderRadius: C.r, fontFamily: C.font, fontSize: px(BASE - 1), background: C.card, color: C.ink, outline: "none" }}>
-                  {DESIGN_LANGUAGES.map(l => <option key={l}>{l}</option>)}
+                  {DESIGN_LANGUAGES.map(l => <option key={l.value} value={l.label}>{l.label}</option>)}
                 </select>
               </div>
-
+              <div style={{ borderTop: `1px solid ${C.rule}`, paddingTop: 14 }}>
+                <CompassSelector value={gardenOrientation} onChange={setGardenOrientation} />
+              </div>
             </div>
           </Card>
         </div>
@@ -848,11 +937,22 @@ export default function GardigApp() {
   // ── LOADING SCREEN ─────────────────────────────────────────────────────────
   if (step === "loading") return (
     <div style={{ minHeight: "100vh", background: C.surface, fontFamily: C.font, display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-      <div style={{ textAlign: "center" }}>
-        <div style={{ width: 44, height: 44, borderRadius: "50%", border: `3px solid ${C.rule}`, borderTopColor: C.accent, margin: "0 auto 18px", animation: "spin 0.75s linear infinite" }} />
-        <div style={{ fontFamily: C.fontSerif, fontSize: px(20), fontWeight: 600, color: C.ink, marginBottom: 8 }}>Analysing Your Garden</div>
-        <div style={{ fontSize: px(14), color: C.inkLight }}>{loadingMsg}</div>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');@keyframes spin{to{transform:rotate(360deg)}}@keyframes ellipsis{0%,20%{content:'.'}40%,60%{content:'..'}80%,100%{content:'...'}} .ellipsis::after{content:'...';display:inline-block;animation:ellipsis 1.5s steps(3,end) infinite}`}</style>
+      <div style={{ textAlign: "center", maxWidth: 400, padding: "0 24px" }}>
+        <div style={{ width: 44, height: 44, borderRadius: "50%", border: `3px solid ${C.rule}`, borderTopColor: C.accent, margin: "0 auto 24px", animation: "spin 0.75s linear infinite" }} />
+        <div style={{ fontFamily: C.fontSerif, fontSize: px(22), fontWeight: 600, color: C.ink, marginBottom: 10 }}>Analysing Your Garden</div>
+        <div style={{ fontSize: px(14), color: C.inkLight, marginBottom: 20 }}>{loadingMsg}</div>
+        <div style={{
+          background: C.surface, border: `1px solid ${C.rule}`, borderLeft: `3px solid ${C.accent}`,
+          borderRadius: C.r, padding: "14px 18px",
+        }}>
+          <div style={{ fontSize: px(BASE - 1), color: C.brand, fontWeight: 500, lineHeight: 1.6 }}>
+            Please wait a moment while we build your plan<span className="ellipsis" />
+          </div>
+          <div style={{ fontSize: px(13), color: C.inkLight, marginTop: 4 }}>
+            This might take a minute or two.
+          </div>
+        </div>
       </div>
     </div>
   );

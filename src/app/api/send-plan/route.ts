@@ -4,7 +4,12 @@ import { Resend } from 'resend';
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: NextRequest) {
-  const { recipientEmail, pdfBase64, planTitle, designStyle } = await req.json();
+  let recipientEmail: string, pdfBase64: string, planTitle: string, designStyle: string;
+  try {
+    ({ recipientEmail, pdfBase64, planTitle, designStyle } = await req.json());
+  } catch {
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+  }
 
   if (!recipientEmail || !pdfBase64) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -95,22 +100,30 @@ export async function POST(req: NextRequest) {
   // Strip data URL prefix if present
   const base64Data = pdfBase64.includes(',') ? pdfBase64.split(',')[1] : pdfBase64;
 
-  const { error } = await resend.emails.send({
-    from: 'Dedrab <noreply@dedrab.com>',
-    to: [recipientEmail],
-    subject,
-    html,
-    attachments: [
-      {
-        filename: 'dedrabed-garden-plan.pdf',
-        content: base64Data,
-      },
-    ],
-  });
+  try {
+    const { error } = await resend.emails.send({
+      from: 'Dedrab <noreply@dedrab.com>',
+      to: [recipientEmail],
+      subject,
+      html,
+      attachments: [
+        {
+          filename: 'dedrabed-garden-plan.pdf',
+          content: base64Data,
+        },
+      ],
+    });
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (err: unknown) {
+    console.error('Send plan error:', err);
+    return NextResponse.json(
+      { error: 'Failed to send email', details: String(err) },
+      { status: 500 }
+    );
   }
-
-  return NextResponse.json({ success: true });
 }

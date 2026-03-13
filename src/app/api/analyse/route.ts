@@ -211,7 +211,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { image, designLang, clientName, siteAddress } = await request.json();
+    const { image, designLang, clientName, siteAddress, orientation } = await request.json();
 
     if (!image || !designLang) {
       return NextResponse.json(
@@ -227,7 +227,7 @@ export async function POST(request: Request) {
 
 Client: ${clientName || 'Private Client'}
 Site: ${siteAddress || 'Private Residence'}
-Design Language: ${designLang}
+Design Language: ${designLang}${orientation ? `\nGarden Orientation: ${orientation} — The garden faces ${orientation}. Factor in sun exposure, shade patterns, and recommend plants suited to this aspect.` : ''}
 
 STEP 1 — Study the photograph:
 Identify every visible element: surfaces, structures, boundaries, plants, levels, light direction, shadows, existing trees, paths, drainage evidence, access points.
