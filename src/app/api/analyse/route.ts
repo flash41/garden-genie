@@ -151,6 +151,28 @@ Populate the siteConstraints field with everything permanent you observe.
 The visualPrompt field MUST begin with: "Photorealistic garden design render. PRESERVE EXACTLY: [list all walls, fences, buildings, boundaries from the photo]. Work WITHIN these existing structures. Do not remove or alter any boundary walls, fences, or permanent buildings. Only change planting, paving, and soft landscaping within the existing footprint."
 
 ═══════════════════════════════════════════════════════════════
+CRITICAL RULE 7 — GRID LOCATION ASSIGNMENT (non-negotiable)
+═══════════════════════════════════════════════════════════════
+For EVERY plant in the plantingSpecification array, you MUST assign a gridLocation field.
+
+The grid maps to the garden as follows:
+- Columns A–F run left to right across the garden width (A = far left, F = far right)
+- Rows 1–6 run top to bottom where 1 = rear/far end of garden, 6 = front/near camera
+
+Rules:
+- Every plant MUST have a gridLocation (never leave it null or empty)
+- Do not assign the same gridLocation to more than 2 plants
+- Spread plants across the full A–F, 1–6 grid — do not cluster them all in one area
+- Choose the gridLocation that reflects the actual position where the plant will be planted
+
+Examples:
+- Rear left corner plant → A1
+- Rear centre plant → C1 or D1
+- Mid-garden right border → F3
+- Front centre plant → C6 or D6
+- Left boundary mid-point → A3
+
+═══════════════════════════════════════════════════════════════
 TONE
 ═══════════════════════════════════════════════════════════════
 Plain, direct, technical English. No poetry or flowery language.

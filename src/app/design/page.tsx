@@ -203,7 +203,7 @@ const px = (n: number) => `${n}px`;
 
 // ─── GRID OVERLAY CANVAS ──────────────────────────────────────────────────────
 
-function GridOverlayImage({ src, plants, label }: { src: string; plants: any[]; label: string }) {
+function GridOverlayImage({ src, plants, label, showMarkers = true }: { src: string; plants: any[]; label: string; showMarkers?: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -219,69 +219,96 @@ function GridOverlayImage({ src, plants, label }: { src: string; plants: any[]; 
 
       const cols = 6, rows = 6;
       const cw = img.width / cols, rh = img.height / rows;
+      const colLetters = ["A","B","C","D","E","F"];
 
-      // Grid lines
+      // Interior grid lines only (5 vertical, 5 horizontal)
       ctx.strokeStyle = "rgba(184,150,46,0.55)";
       ctx.lineWidth = Math.max(1, img.width / 600);
-      for (let c = 0; c <= cols; c++) {
+      for (let c = 1; c < cols; c++) {
         ctx.beginPath(); ctx.moveTo(c * cw, 0); ctx.lineTo(c * cw, img.height); ctx.stroke();
       }
-      for (let r = 0; r <= rows; r++) {
+      for (let r = 1; r < rows; r++) {
         ctx.beginPath(); ctx.moveTo(0, r * rh); ctx.lineTo(img.width, r * rh); ctx.stroke();
       }
 
-      // Column / row labels
-      const colLetters = ["A","B","C","D","E","F"];
+      // Column labels — centered in each column cell
       const labelSize = Math.max(11, img.width / 50);
       ctx.fillStyle = "rgba(184,150,46,0.9)";
-      ctx.font = `600 ${labelSize}px Inter, sans-serif`;
+      ctx.font = `700 ${labelSize}px Arial, sans-serif`;
       ctx.textAlign = "center";
+      ctx.textBaseline = "top";
       for (let c = 0; c < cols; c++) {
-        ctx.fillText(colLetters[c], c * cw + cw / 2, labelSize + 4);
+        ctx.fillText(colLetters[c], c * cw + cw / 2, 4);
       }
+
+      // Row labels — centered in each row cell
       ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
       for (let r = 0; r < rows; r++) {
-        ctx.fillText(String(r + 1), 6, r * rh + rh / 2 + labelSize / 3);
+        ctx.fillText(String(r + 1), 5, r * rh + rh / 2);
       }
 
-      // Plant markers
-      if (plants?.length > 0) {
-        plants.forEach((plant, idx) => {
-          if (!plant.gridLocation) return;
-          const loc = plant.gridLocation.trim().toUpperCase();
-          const match = loc.match(/^([A-F])(\d)/);
-          if (!match) return;
-          const colIdx = colLetters.indexOf(match[1]);
-          const rowIdx = parseInt(match[2]) - 1;
-          if (colIdx < 0 || rowIdx < 0 || rowIdx > 5) return;
+      // Plant markers (After image only)
+      if (showMarkers && plants?.length > 0) {
+        const markerR = Math.max(14, img.width / 55);
+        const fontSize = Math.max(10, img.width / 65);
+        let fallbackIdx = 0;
 
-          const cx = colIdx * cw + cw / 2;
-          const cy = rowIdx * rh + rh / 2;
-          const r = Math.max(14, img.width / 55);
+        plants.forEach((plant, idx) => {
+          let cx: number, cy: number;
+
+          if (plant.gridLocation) {
+            const loc = plant.gridLocation.trim().toUpperCase();
+            const match = loc.match(/^([A-F])(\d)/);
+            if (match) {
+              const colIdx = colLetters.indexOf(match[1]);
+              const rowIdx = parseInt(match[2]) - 1;
+              if (colIdx >= 0 && rowIdx >= 0 && rowIdx <= 5) {
+                cx = colIdx * cw + cw / 2;
+                cy = rowIdx * rh + rh / 2;
+              } else {
+                cx = (fallbackIdx % cols) * cw + cw / 2;
+                cy = Math.floor(fallbackIdx / cols) % rows * rh + rh / 2;
+                fallbackIdx++;
+              }
+            } else {
+              cx = (fallbackIdx % cols) * cw + cw / 2;
+              cy = Math.floor(fallbackIdx / cols) % rows * rh + rh / 2;
+              fallbackIdx++;
+            }
+          } else {
+            cx = (fallbackIdx % cols) * cw + cw / 2;
+            cy = Math.floor(fallbackIdx / cols) % rows * rh + rh / 2;
+            fallbackIdx++;
+          }
 
           ctx.beginPath();
-          ctx.arc(cx, cy, r, 0, Math.PI * 2);
-          ctx.fillStyle = "rgba(10,61,43,0.88)";
+          ctx.arc(cx, cy, markerR, 0, Math.PI * 2);
+          ctx.fillStyle = "rgba(10,61,43,0.92)";
           ctx.fill();
           ctx.strokeStyle = "#b8962e";
           ctx.lineWidth = Math.max(2, img.width / 320);
           ctx.stroke();
 
-          ctx.fillStyle = "#fff";
-          ctx.font = `700 ${Math.max(10, img.width / 65)}px Inter, sans-serif`;
+          ctx.fillStyle = "#ffffff";
+          ctx.font = `700 ${fontSize}px Arial, sans-serif`;
           ctx.textAlign = "center";
-          ctx.fillText(String(idx + 1), cx, cy + Math.max(4, img.width / 130));
+          ctx.textBaseline = "middle";
+          ctx.fillText(String(idx + 1), cx, cy);
         });
       }
+
+      ctx.textBaseline = "alphabetic";
+      ctx.textAlign = "left";
     };
     img.onerror = () => {
       canvas.width = 600; canvas.height = 400;
       ctx.fillStyle = "#1f2937"; ctx.fillRect(0,0,600,400);
-      ctx.fillStyle = "#6b7280"; ctx.font = "15px Inter, sans-serif";
+      ctx.fillStyle = "#6b7280"; ctx.font = "15px Arial, sans-serif";
       ctx.textAlign = "center"; ctx.fillText("Image unavailable", 300, 200);
     };
     img.src = src;
-  }, [src, plants]);
+  }, [src, plants, showMarkers]);
 
   return (
     <div style={{ position: "relative" }}>
@@ -617,7 +644,7 @@ function CostTable({ costEstimate }: { costEstimate: any }) {
 
 // ─── GRID OVERLAY GENERATOR (returns base64 data URL for PDF) ────────────────
 
-function generateGridOverlay(src: string, plants: any[]): Promise<string> {
+function generateGridOverlay(src: string, plants: any[], showMarkers = true): Promise<string> {
   return new Promise((resolve) => {
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d")!;
@@ -633,66 +660,88 @@ function generateGridOverlay(src: string, plants: any[]): Promise<string> {
       const rh = img.height / rows;
       const colLetters = ["A","B","C","D","E","F"];
 
-      // Grid lines
+      // Interior grid lines only (5 vertical, 5 horizontal)
       ctx.strokeStyle = "rgba(184,150,46,0.55)";
       ctx.lineWidth = Math.max(1, img.width / 600);
-      for (let c = 0; c <= cols; c++) {
+      for (let c = 1; c < cols; c++) {
         ctx.beginPath(); ctx.moveTo(c * cw, 0); ctx.lineTo(c * cw, img.height); ctx.stroke();
       }
-      for (let r = 0; r <= rows; r++) {
+      for (let r = 1; r < rows; r++) {
         ctx.beginPath(); ctx.moveTo(0, r * rh); ctx.lineTo(img.width, r * rh); ctx.stroke();
       }
 
-      // Column / row labels
+      // Column labels — centered in each cell
       const labelSize = Math.max(11, img.width / 50);
       ctx.fillStyle = "rgba(184,150,46,0.9)";
       ctx.font = `700 ${labelSize}px Arial, sans-serif`;
       ctx.textAlign = "center";
+      ctx.textBaseline = "top";
       for (let c = 0; c < cols; c++) {
-        ctx.fillText(colLetters[c], c * cw + cw / 2, labelSize + 4);
+        ctx.fillText(colLetters[c], c * cw + cw / 2, 4);
       }
+
+      // Row labels — centered in each row
       ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
       for (let r = 0; r < rows; r++) {
-        ctx.fillText(String(r + 1), 6, r * rh + rh / 2 + labelSize / 3);
+        ctx.fillText(String(r + 1), 5, r * rh + rh / 2);
       }
 
-      // Plant number markers
-      const markerR = Math.max(14, img.width / 55);
-      const fontSize = Math.max(10, img.width / 65);
+      // Plant number markers (showMarkers only)
+      if (showMarkers) {
+        const markerR = Math.max(14, img.width / 55);
+        const fontSize = Math.max(10, img.width / 65);
+        let fallbackIdx = 0;
 
-      plants.forEach((plant, idx) => {
-        if (!plant.gridLocation) return;
-        const loc = plant.gridLocation.trim().toUpperCase();
-        const match = loc.match(/^([A-F])(\d)/);
-        if (!match) return;
-        const colIdx = colLetters.indexOf(match[1]);
-        const rowIdx = parseInt(match[2]) - 1;
-        if (colIdx < 0 || rowIdx < 0 || rowIdx > 5) return;
+        plants.forEach((plant, idx) => {
+          let cx: number, cy: number;
 
-        const cx = colIdx * cw + cw / 2;
-        const cy = rowIdx * rh + rh / 2;
+          if (plant.gridLocation) {
+            const loc = plant.gridLocation.trim().toUpperCase();
+            const match = loc.match(/^([A-F])(\d)/);
+            if (match) {
+              const colIdx = colLetters.indexOf(match[1]);
+              const rowIdx = parseInt(match[2]) - 1;
+              if (colIdx >= 0 && rowIdx >= 0 && rowIdx <= 5) {
+                cx = colIdx * cw + cw / 2;
+                cy = rowIdx * rh + rh / 2;
+              } else {
+                cx = (fallbackIdx % cols) * cw + cw / 2;
+                cy = Math.floor(fallbackIdx / cols) % rows * rh + rh / 2;
+                fallbackIdx++;
+              }
+            } else {
+              cx = (fallbackIdx % cols) * cw + cw / 2;
+              cy = Math.floor(fallbackIdx / cols) % rows * rh + rh / 2;
+              fallbackIdx++;
+            }
+          } else {
+            cx = (fallbackIdx % cols) * cw + cw / 2;
+            cy = Math.floor(fallbackIdx / cols) % rows * rh + rh / 2;
+            fallbackIdx++;
+          }
 
-        // Circle
-        ctx.beginPath();
-        ctx.arc(cx, cy, markerR, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(10,61,43,0.92)";
-        ctx.fill();
-        ctx.strokeStyle = "#b8962e";
-        ctx.lineWidth = Math.max(2, img.width / 320);
-        ctx.stroke();
+          ctx.beginPath();
+          ctx.arc(cx, cy, markerR, 0, Math.PI * 2);
+          ctx.fillStyle = "rgba(10,61,43,0.92)";
+          ctx.fill();
+          ctx.strokeStyle = "#b8962e";
+          ctx.lineWidth = Math.max(2, img.width / 320);
+          ctx.stroke();
 
-        // Number
-        ctx.fillStyle = "#ffffff";
-        ctx.font = `700 ${fontSize}px Arial, sans-serif`;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(String(idx + 1), cx, cy);
-      });
+          ctx.fillStyle = "#ffffff";
+          ctx.font = `700 ${fontSize}px Arial, sans-serif`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(String(idx + 1), cx, cy);
+        });
+      }
 
-      ctx.textBaseline = "alphabetic"; // reset
+      ctx.textBaseline = "alphabetic";
+      ctx.textAlign = "left";
       resolve(canvas.toDataURL("image/png"));
     };
-    img.onerror = () => resolve(""); // fail gracefully
+    img.onerror = () => resolve("");
     img.src = src;
   });
 }
@@ -1692,7 +1741,7 @@ export default function GardigApp() {
             {imageDataUrl && (
               <div>
                 <div style={{ fontSize: px(12), color: C.inkLight, marginBottom: 7, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>Before — Annotated</div>
-                <GridOverlayImage src={imageDataUrl} plants={plants} label="Before" />
+                <GridOverlayImage src={imageDataUrl} plants={plants} label="Before" showMarkers={false} />
               </div>
             )}
             {renderUrl && (
