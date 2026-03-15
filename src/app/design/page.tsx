@@ -1105,6 +1105,14 @@ export default function GardigApp() {
     { id: "costs",           label: "Cost Estimate" },
   ];
 
+  async function safeJson(res: Response) {
+    const ct = res.headers.get('content-type') || '';
+    if (!ct.includes('application/json')) {
+      throw new Error(`Server error (${res.status}) — please try again`);
+    }
+    return res.json();
+  }
+
   async function sendPlan(pdfBase64: string) {
     setEmailStatus("sending");
     setEmailError(null);
@@ -1119,10 +1127,12 @@ export default function GardigApp() {
           designStyle: designLang,
         }),
       });
-      const json = await res.json();
+      const json = await safeJson(res);
       if (!res.ok) throw new Error(json.error || 'Send failed');
       setEmailStatus("sent");
+      console.log('Email sent, id:', json.id);
     } catch (e: unknown) {
+      console.error('sendPlan error:', e);
       setEmailError(e instanceof Error ? e.message : 'Unknown error');
       setEmailStatus("error");
     }
@@ -1147,12 +1157,14 @@ export default function GardigApp() {
           designStyle: designLang,
         }),
       });
-      const json = await res.json();
+      const json = await safeJson(res);
       if (!res.ok) throw new Error(json.error || 'Send failed');
       setSelfSendStatus("sent");
       setSelfSendToast(`Plan sent to ${userEmail}!`);
+      console.log('Self-send email sent, id:', json.id);
       setTimeout(() => { setSelfSendToast(null); setSelfSendStatus("idle"); }, 5000);
     } catch (e: unknown) {
+      console.error('sendToSelf error:', e);
       setSelfSendStatus("error");
       setSelfSendToast(e instanceof Error ? e.message : 'Failed to send. Please try again.');
       setTimeout(() => { setSelfSendToast(null); setSelfSendStatus("idle"); }, 5000);
