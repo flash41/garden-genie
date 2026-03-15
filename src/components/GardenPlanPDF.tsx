@@ -716,15 +716,15 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
                   <View style={S.tableHdr}>
                     <Text style={[S.tableHdrT, { flex: 0.4 }]}>#</Text>
                     <Text style={[S.tableHdrT, { flex: 0.8 }]}>Grid</Text>
-                    <Text style={[S.tableHdrT, { flex: 2.5 }]}>Plant</Text>
-                    <Text style={[S.tableHdrT, { flex: 4 }]}>Description</Text>
+                    <Text style={[S.tableHdrT, { flex: 3.2 }]}>Plant</Text>
+                    <Text style={[S.tableHdrT, { flex: 3.6 }]}>Description</Text>
                   </View>
                   {plants.map((p: any, i: number) => (
                     <View key={i} wrap={false} style={i % 2 === 0 ? S.tableRow : S.tableRowAlt}>
                       <Text style={[S.tableCellB, { flex: 0.4, color: T.accent }]}>{i + 1}</Text>
                       <Text style={[S.tableCellB, { flex: 0.8 }]}>{safe(p.gridLocation)}</Text>
-                      <Text style={[S.tableCellB, { flex: 2.5, fontSize: 7.5, fontStyle: 'italic' }]}>{safe(p.botanicalName)}{p.commonName ? ` — ${p.commonName}` : ''}</Text>
-                      <Text style={[S.tableCell, { flex: 4, fontSize: 7.5 }]}>{safe(p.designRationale)}</Text>
+                      <Text style={[S.tableCellB, { flex: 3.2, fontSize: 7.5, fontStyle: 'italic' }]}>{safe(p.botanicalName)}{p.commonName && p.commonName !== p.botanicalName ? ` — ${p.commonName}` : ''}</Text>
+                      <Text style={[S.tableCell, { flex: 3.6, fontSize: 7.5 }]}>{safe(p.designRationale)}</Text>
                     </View>
                   ))}
                 </View>

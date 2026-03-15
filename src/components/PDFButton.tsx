@@ -1,9 +1,9 @@
 'use client';
 
-import { PDFDownloadLink, pdf } from '@react-pdf/renderer';
+import { pdf } from '@react-pdf/renderer';
 import { GardenPlanPDF } from './GardenPlanPDF';
 import { Download, Send } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 interface Props {
   doc?: any;
@@ -37,24 +37,7 @@ export default function PDFButton({
   sendDisabled,
   sendLabel,
 }: Props) {
-  const [isClient, setIsClient] = useState(false);
   const [generating, setGenerating] = useState(false);
-  useEffect(() => { setIsClient(true); }, []);
-  if (!isClient) return null;
-
-  const document = (
-    <GardenPlanPDF
-      doc={doc}
-      plan={plan}
-      imageBase64={imageBase64}
-      imageDataUrl={imageDataUrl}
-      gridImageUrl={gridImageUrl}
-      aerialImageUrl={aerialImageUrl}
-      style={style}
-      clientName={clientName}
-      siteAddress={siteAddress}
-    />
-  );
 
   const fileName = [
     'gardig',
@@ -63,22 +46,62 @@ export default function PDFButton({
     'Proposal',
   ].filter(Boolean).join('_') + '.pdf';
 
+  async function buildPdf(): Promise<Blob | null> {
+    const pdfDoc = (
+      <GardenPlanPDF
+        doc={doc}
+        plan={plan}
+        imageBase64={imageBase64}
+        imageDataUrl={imageDataUrl}
+        gridImageUrl={gridImageUrl}
+        aerialImageUrl={aerialImageUrl}
+        style={style}
+        clientName={clientName}
+        siteAddress={siteAddress}
+      />
+    );
+    try {
+      const instance = pdf();
+      // Wait for the reconciler to commit the document tree before rendering PDF.
+      // Using updateContainer's callback avoids the race condition where
+      // container.document is still null when toBlob() is called (React 19 async reconciler).
+      await new Promise<void>((resolve, reject) => {
+        const timer = setTimeout(
+          () => reject(new Error('PDF generation timed out')),
+          60000,
+        );
+        instance.updateContainer(pdfDoc, () => {
+          clearTimeout(timer);
+          if (!instance.container.document) {
+            reject(new Error('PDF document not ready after commit'));
+            return;
+          }
+          resolve();
+        });
+      });
+      return await instance.toBlob();
+    } catch (err) {
+      console.error('[PDFButton] PDF generation error:', err);
+      return null;
+    }
+  }
+
   if (sendMode) {
     async function handleSend() {
       if (!onPdfReady || sendDisabled) return;
       setGenerating(true);
-      try {
-        const blob = await pdf(document).toBlob();
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          const base64 = (reader.result as string).split(',')[1];
-          onPdfReady(base64);
-          setGenerating(false);
-        };
-        reader.readAsDataURL(blob);
-      } catch {
+      const blob = await buildPdf();
+      if (!blob) {
         setGenerating(false);
+        return;
       }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64 = (reader.result as string).split(',')[1];
+        onPdfReady(base64);
+        setGenerating(false);
+      };
+      reader.readAsDataURL(blob);
     }
 
     return (
@@ -102,24 +125,38 @@ export default function PDFButton({
     );
   }
 
+  async function handleDownload() {
+    setGenerating(true);
+    const blob = await buildPdf();
+    if (!blob) {
+      setGenerating(false);
+      return;
+    }
+    const url = URL.createObjectURL(blob);
+    const a = window.document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    setGenerating(false);
+  }
+
   return (
-    <PDFDownloadLink document={document} fileName={fileName}>
-      {({ loading }) => (
-        <button
-          style={{
-            display: 'flex', alignItems: 'center', gap: 7,
-            background: '#0a3d2b', border: 'none', color: '#b8962e',
-            padding: '8px 18px', borderRadius: 4,
-            cursor: loading ? 'wait' : 'pointer',
-            fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
-            fontSize: 13, fontWeight: 700, letterSpacing: '0.01em',
-            opacity: loading ? 0.7 : 1, transition: 'opacity 0.15s',
-          }}
-        >
-          <Download size={14} />
-          {loading ? 'Building PDF...' : 'Export PDF'}
-        </button>
-      )}
-    </PDFDownloadLink>
+    <button
+      onClick={handleDownload}
+      disabled={generating}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 7,
+        background: '#0a3d2b', border: 'none', color: '#b8962e',
+        padding: '8px 18px', borderRadius: 4,
+        cursor: generating ? 'wait' : 'pointer',
+        fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
+        fontSize: 13, fontWeight: 700, letterSpacing: '0.01em',
+        opacity: generating ? 0.7 : 1, transition: 'opacity 0.15s',
+      }}
+    >
+      <Download size={14} />
+      {generating ? 'Building PDF...' : 'Export PDF'}
+    </button>
   );
 }

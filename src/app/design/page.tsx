@@ -927,7 +927,15 @@ export default function GardigApp() {
   // ── UPLOAD SCREEN ──────────────────────────────────────────────────────────
   if (step === "upload") return (
     <div style={{ minHeight: "100vh", background: C.surface, fontFamily: C.font }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');*{box-sizing:border-box}`}</style>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
+        *{box-sizing:border-box}
+        .upload-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+        @media(max-width:640px){
+          .upload-form-grid{grid-template-columns:1fr}
+          .upload-generate-btn{width:100%}
+        }
+      `}</style>
 
       {/* Top bar */}
       <header style={{ background: C.brand, borderBottom: `1px solid rgba(184,150,46,0.3)`, height: 56, display: "flex", alignItems: "center", padding: "0 28px", gap: 12 }}>
@@ -947,7 +955,7 @@ export default function GardigApp() {
           </p>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
+        <div className="upload-form-grid">
           {/* Upload */}
           <Card>
             <Label>01 — Site Photo <span style={{ color: C.red }}>*</span></Label>
@@ -1046,7 +1054,7 @@ export default function GardigApp() {
         </div>
 
         <div style={{ textAlign: "center", marginTop: 22 }}>
-          <button onClick={handleAnalyse}
+          <button onClick={handleAnalyse} className="upload-generate-btn"
             style={{
               background: isFormValid() ? C.brand : "#d1d5db",
               color: isFormValid() ? C.accent : "#9ca3af",
@@ -1177,6 +1185,16 @@ export default function GardigApp() {
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
         *{box-sizing:border-box}
         .tab:hover{background:${C.brandLight}!important;color:${C.brand}!important}
+        .tab{white-space:nowrap}
+        .tab-bar-outer{overflow-x:auto;-webkit-overflow-scrolling:touch}
+        .grid-2col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+        .result-header-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+        @media(max-width:640px){
+          .grid-2col{grid-template-columns:1fr}
+          .result-header-actions{flex-wrap:wrap;gap:6px}
+          .result-header-actions>*{flex:1 1 auto;min-width:0;font-size:11px!important;padding:7px 10px!important}
+          .result-content-pad{padding:16px 12px 32px!important}
+        }
         @media print{.noprint{display:none!important};body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
       `}</style>
 
@@ -1189,7 +1207,7 @@ export default function GardigApp() {
           <span style={{ fontFamily: C.fontSerif, fontWeight: 700, fontSize: px(18), color: "#fff", letterSpacing: "1px" }}>Dedrab</span>
           <span style={{ fontSize: px(12), color: "rgba(255,255,255,0.4)", letterSpacing: "0.05em" }}>dedrab.com</span>
         </div>
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+        <div className="result-header-actions">
           <button onClick={() => { setStep("upload"); setDocData(null); setRenderUrl(null); setGridImageUrl(null); }}
             style={{ background: "rgba(255,255,255,0.08)", border: `1px solid rgba(255,255,255,0.2)`, color: "rgba(255,255,255,0.8)", padding: "7px 15px", borderRadius: C.r, cursor: "pointer", fontFamily: C.font, fontSize: px(13), fontWeight: 600 }}>
             ← New Analysis
@@ -1199,7 +1217,7 @@ export default function GardigApp() {
             imageBase64={renderUrl || ''}
             imageDataUrl={imageDataUrl || undefined}
             gridImageUrl={gridImageUrl || undefined}
-            aerialImageUrl={aerialImageUrl || undefined}
+            aerialImageUrl={aerialGridImageUrl || aerialImageUrl || undefined}
             style={designLang}
             clientName={clientName || undefined}
           />
@@ -1208,7 +1226,7 @@ export default function GardigApp() {
             imageBase64={renderUrl || ''}
             imageDataUrl={imageDataUrl || undefined}
             gridImageUrl={gridImageUrl || undefined}
-            aerialImageUrl={aerialImageUrl || undefined}
+            aerialImageUrl={aerialGridImageUrl || aerialImageUrl || undefined}
             style={designLang}
             clientName={clientName || undefined}
             sendMode
@@ -1293,7 +1311,7 @@ export default function GardigApp() {
                       imageBase64={renderUrl || ''}
                       imageDataUrl={imageDataUrl || undefined}
                       gridImageUrl={gridImageUrl || undefined}
-                      aerialImageUrl={aerialImageUrl || undefined}
+                      aerialImageUrl={aerialGridImageUrl || aerialImageUrl || undefined}
                       style={designLang}
                       clientName={clientName || undefined}
                       onPdfReady={sendPlan}
@@ -1325,7 +1343,7 @@ export default function GardigApp() {
       </div>
 
       {/* Tab strip */}
-      <div className="noprint" style={{ background: C.card, borderBottom: `1px solid ${C.rule}`, overflowX: "auto" }}>
+      <div className="noprint tab-bar-outer" style={{ background: C.card, borderBottom: `1px solid ${C.rule}`, overflowX: "auto" }}>
         <div style={{ maxWidth: 980, margin: "0 auto", display: "flex", padding: "0 24px" }}>
           {TABS.map(t => (
             <button key={t.id} className="tab"
@@ -1344,7 +1362,7 @@ export default function GardigApp() {
       </div>
 
       {/* Tab content */}
-      <div style={{ maxWidth: 980, margin: "0 auto", padding: "24px 24px 48px" }}>
+      <div className="result-content-pad" style={{ maxWidth: 980, margin: "0 auto", padding: "24px 24px 48px" }}>
 
         {/* ── OVERVIEW ── */}
         {activeTab === "overview" && <>
@@ -1426,7 +1444,7 @@ export default function GardigApp() {
           {doc.designConcept?.principles?.length > 0 && (
             <Card>
               <Label>Design Principles</Label>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 4 }}>
+              <div className="grid-2col" style={{ gap: 10, marginTop: 4 }}>
                 {doc.designConcept.principles.map((p: string, i: number) => (
                   <div key={i} style={{ padding: "11px 14px", background: C.surface, borderRadius: C.r, fontSize: px(BASE), color: C.inkMid, borderLeft: `3px solid ${C.accent}` }}>
                     {p}
@@ -1456,7 +1474,7 @@ export default function GardigApp() {
           {doc.spatialLayout?.zones?.length > 0 && (
             <Card>
               <Label>Design Zones</Label>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 8 }}>
+              <div className="grid-2col" style={{ gap: 12, marginTop: 8 }}>
                 {doc.spatialLayout.zones.map((z: any) => (
                   <div key={z.id} style={{ padding: "14px 16px", background: C.surface, borderRadius: C.r, border: `1px solid ${C.rule}` }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
@@ -1569,7 +1587,7 @@ export default function GardigApp() {
               </table>
             </div>
           )}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+          <div className="grid-2col" style={{ gap: 14 }}>
             {doc.hardscapeSpecification?.boundaryTreatments?.length > 0 && (
               <Card>
                 <Label>Boundary Treatments</Label>
@@ -1592,7 +1610,7 @@ export default function GardigApp() {
         {/* ── SOIL & IRRIGATION ── */}
         {activeTab === "soil" && <>
           <SectionTitle n="07" title="Soil, Drainage & Irrigation" />
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>
+          <div className="grid-2col" style={{ gap: 14, marginBottom: 14 }}>
             {[
               { label: "Soil Preparation",     val: doc.soilAndIrrigation?.soilPreparationPlan },
               { label: "Drainage Strategy",     val: doc.soilAndIrrigation?.drainageStrategy },
@@ -1743,7 +1761,7 @@ export default function GardigApp() {
 
           {/* Grid overlays */}
           <div style={{ marginBottom: 10 }}><Label>Grid Reference Overlays — A–F (columns) × 1–6 (rows)</Label></div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 24 }}>
+          <div className="grid-2col" style={{ marginBottom: 24 }}>
             {imageDataUrl && (
               <div>
                 <div style={{ fontSize: px(12), color: C.inkLight, marginBottom: 7, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>Before — Annotated</div>
