@@ -219,19 +219,52 @@ Fix all of these in this new attempt. The result must pass all checks.`;
       ? `Boundary walls: ${sc.boundaries.join(', ')}.`
       : 'Standard rectangular garden.';
 
-    const aerialPrompt = `Architectural top-down garden plan drawing. STRICT REQUIREMENTS:
+    const aerialPrompt = `AERIAL GARDEN LAYOUT PLAN — STRICT REQUIREMENTS:
 
-GARDEN SHAPE: This garden is a ${gardenShape}. Aspect ratio is ${aspectRatio}. The plan outline MUST match this exact shape. A narrow garden must be drawn tall and narrow, NOT square.
+VIEWPOINT: Exactly 10 metres directly above the centre point of the garden. Pure top-down orthographic view. No perspective. No angle. No isometric. Completely flat 2D plan view as if looking straight down.
 
-PLANT COUNT: Show exactly ${numPlants} numbered plant positions (circles numbered 1–${numPlants}).
+GARDEN SHAPE: ${gardenShape} with aspect ratio ${aspectRatio}.
+Draw the outline as a solid black border in the correct shape.
+If the garden is wider than tall, draw it wider than tall.
+If narrow and long, draw it narrow and long.
+MATCH THE ACTUAL PROPORTIONS EXACTLY.
 
-BOUNDARY: ${boundaryDescription}
+BOUNDARIES — draw as thick black lines:
+${boundaryDescription}
+Every wall, fence and fixed structure must appear in its correct position within the plan outline.
 
-Include: thick ink boundary outline matching garden shape, ${numPlants} numbered plant positions, planting bed shapes, hard surfaces, lawn areas, reference grid (columns A–F, rows 1–6 in light gold), small compass rose in TOP RIGHT CORNER only${compassNote}, scale bar at bottom.
+INTERNAL LAYOUT — must match the photorealistic render:
+- Path positions: draw paths in same location as render
+- Lawn area: draw in same position as render
+- Planting beds: draw bed outlines matching render positions
+- Any fixed structures (shed, patio, etc.): draw in correct position
 
-VIEWPOINT: Strict top-down orthographic only. No perspective. No 3D. No isometric.
+PLANT MARKERS:
+- Number each planting area 1 through ${numPlants}
+- Numbers must be INSIDE the garden boundary
+- NO numbers outside the garden outline
+- Each number must be inside or immediately beside a planting bed or plant symbol, never in empty space
 
-Style: Hand-drawn architectural plan. Cream paper. Watercolour fills. Ink outlines. No photorealistic elements.`;
+GRID:
+- Draw columns A–F evenly across the garden width ONLY
+- Draw rows 1–6 evenly down the garden height ONLY
+- Grid lines stay INSIDE or ON the garden boundary
+- Column letters A–F along the TOP edge of the garden outline only
+- Row numbers 1–6 along the LEFT edge of the garden outline only
+- NO extra numbers or letters scattered outside the boundary
+
+COMPASS: Small neat compass rose in the top-right corner of the image, clearly outside the garden boundary. Show ${orientation || 'N'} as the primary direction.
+
+SCALE: Simple scale bar at the bottom of the image.
+
+STYLE: Hand-drawn sketch on cream paper. Pencil and watercolour fills. Ink outlines for boundaries. Soft colour for zones.
+
+CRITICAL RULES:
+1. ALL numbered markers inside garden boundary only
+2. Grid labels only on the edges of the garden outline
+3. No random numbers or letters scattered in margins
+4. Plan proportions must match actual garden proportions
+5. Internal layout must match the photorealistic render`;
 
     // ── Generate aerial sketch ────────────────────────────────────────────────
     console.log('Starting aerial sketch generation...');

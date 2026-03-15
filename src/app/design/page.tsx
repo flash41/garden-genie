@@ -203,6 +203,75 @@ const px = (n: number) => `${n}px`;
 
 // ─── GRID OVERLAY CANVAS ──────────────────────────────────────────────────────
 
+// ── Marker positioning helpers ────────────────────────────────────────────────
+
+function clampMarkerPos(x: number, y: number, w: number, h: number) {
+  return { x: Math.max(30, Math.min(w - 30, x)), y: Math.max(h * 0.25, Math.min(h - 30, y)) };
+}
+
+function deoverlapPos(
+  placed: { x: number; y: number }[],
+  pos: { x: number; y: number },
+  w: number, h: number,
+): { x: number; y: number } {
+  let cur = { ...pos };
+  for (let i = 0; i < 8; i++) {
+    if (!placed.some(p => Math.abs(p.x - cur.x) < 40 && Math.abs(p.y - cur.y) < 40)) break;
+    cur.x += 46;
+    if (cur.x > w - 30) { cur.x = pos.x - 46; cur.y += 46; }
+    cur = clampMarkerPos(cur.x, cur.y, w, h);
+  }
+  return cur;
+}
+
+function drawPlantMarkers(ctx: CanvasRenderingContext2D, plants: any[], cw: number, ch: number) {
+  const cols = 6, rows = 6;
+  const colW = cw / cols, rowH = ch / rows;
+  const colLetters = ["A","B","C","D","E","F"];
+  const markerR = Math.max(14, cw / 55);
+  const fontSize = Math.max(10, cw / 65);
+  let fallbackIdx = 0;
+  const placed: { x: number; y: number }[] = [];
+
+  plants.forEach((plant, idx) => {
+    let gridX = 0, gridY = 0;
+
+    if (plant.gridLocation) {
+      const loc = plant.gridLocation.trim().toUpperCase();
+      const match = loc.match(/^([A-F])(\d)/);
+      if (match) {
+        const ci = colLetters.indexOf(match[1]);
+        const ri = parseInt(match[2]) - 1;
+        if (ci >= 0 && ri >= 0 && ri <= 5) {
+          gridX = ci * colW + colW / 2;
+          gridY = ri * rowH + rowH / 2;
+        } else { gridX = (fallbackIdx % cols) * colW + colW / 2; gridY = (Math.floor(fallbackIdx / cols) % rows) * rowH + rowH / 2; fallbackIdx++; }
+      } else { gridX = (fallbackIdx % cols) * colW + colW / 2; gridY = (Math.floor(fallbackIdx / cols) % rows) * rowH + rowH / 2; fallbackIdx++; }
+    } else { gridX = (fallbackIdx % cols) * colW + colW / 2; gridY = (Math.floor(fallbackIdx / cols) % rows) * rowH + rowH / 2; fallbackIdx++; }
+
+    let { x: cx, y: cy } = clampMarkerPos(gridX, gridY, cw, ch);
+    ({ x: cx, y: cy } = deoverlapPos(placed, { x: cx, y: cy }, cw, ch));
+    placed.push({ x: cx, y: cy });
+
+    // Dashed connector line if marker was repositioned
+    if (Math.abs(cx - gridX) > 6 || Math.abs(cy - gridY) > 6) {
+      ctx.save();
+      ctx.beginPath(); ctx.moveTo(gridX, gridY); ctx.lineTo(cx, cy);
+      ctx.strokeStyle = 'rgba(184,150,46,0.5)'; ctx.lineWidth = 1; ctx.setLineDash([3, 3]); ctx.stroke();
+      ctx.setLineDash([]); ctx.restore();
+    }
+
+    ctx.beginPath(); ctx.arc(cx, cy, markerR, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(10,61,43,0.92)"; ctx.fill();
+    ctx.strokeStyle = "#b8962e"; ctx.lineWidth = Math.max(2, cw / 320); ctx.stroke();
+
+    ctx.fillStyle = "#ffffff"; ctx.font = `700 ${fontSize}px Arial, sans-serif`;
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText(String(idx + 1), cx, cy);
+  });
+  ctx.textBaseline = "alphabetic"; ctx.textAlign = "left";
+}
+
 function GridOverlayImage({ src, plants, label, showMarkers = true }: { src: string; plants: any[]; label: string; showMarkers?: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -213,93 +282,26 @@ function GridOverlayImage({ src, plants, label, showMarkers = true }: { src: str
     const img = new Image();
     img.crossOrigin = "anonymous";
     img.onload = () => {
-      canvas.width = img.width;
-      canvas.height = img.height;
+      canvas.width = img.width; canvas.height = img.height;
       ctx.drawImage(img, 0, 0);
-
       const cols = 6, rows = 6;
       const cw = img.width / cols, rh = img.height / rows;
       const colLetters = ["A","B","C","D","E","F"];
 
-      // Interior grid lines only (5 vertical, 5 horizontal)
       ctx.strokeStyle = "rgba(184,150,46,0.55)";
       ctx.lineWidth = Math.max(1, img.width / 600);
-      for (let c = 1; c < cols; c++) {
-        ctx.beginPath(); ctx.moveTo(c * cw, 0); ctx.lineTo(c * cw, img.height); ctx.stroke();
-      }
-      for (let r = 1; r < rows; r++) {
-        ctx.beginPath(); ctx.moveTo(0, r * rh); ctx.lineTo(img.width, r * rh); ctx.stroke();
-      }
+      for (let c = 1; c < cols; c++) { ctx.beginPath(); ctx.moveTo(c * cw, 0); ctx.lineTo(c * cw, img.height); ctx.stroke(); }
+      for (let r = 1; r < rows; r++) { ctx.beginPath(); ctx.moveTo(0, r * rh); ctx.lineTo(img.width, r * rh); ctx.stroke(); }
 
-      // Column labels — centered in each column cell
       const labelSize = Math.max(11, img.width / 50);
-      ctx.fillStyle = "rgba(184,150,46,0.9)";
-      ctx.font = `700 ${labelSize}px Arial, sans-serif`;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "top";
-      for (let c = 0; c < cols; c++) {
-        ctx.fillText(colLetters[c], c * cw + cw / 2, 4);
-      }
+      ctx.fillStyle = "rgba(184,150,46,0.9)"; ctx.font = `700 ${labelSize}px Arial, sans-serif`;
+      ctx.textAlign = "center"; ctx.textBaseline = "top";
+      for (let c = 0; c < cols; c++) ctx.fillText(colLetters[c], c * cw + cw / 2, 4);
+      ctx.textAlign = "left"; ctx.textBaseline = "middle";
+      for (let r = 0; r < rows; r++) ctx.fillText(String(r + 1), 5, r * rh + rh / 2);
 
-      // Row labels — centered in each row cell
-      ctx.textAlign = "left";
-      ctx.textBaseline = "middle";
-      for (let r = 0; r < rows; r++) {
-        ctx.fillText(String(r + 1), 5, r * rh + rh / 2);
-      }
-
-      // Plant markers (After image only)
-      if (showMarkers && plants?.length > 0) {
-        const markerR = Math.max(14, img.width / 55);
-        const fontSize = Math.max(10, img.width / 65);
-        let fallbackIdx = 0;
-
-        plants.forEach((plant, idx) => {
-          let cx: number, cy: number;
-
-          if (plant.gridLocation) {
-            const loc = plant.gridLocation.trim().toUpperCase();
-            const match = loc.match(/^([A-F])(\d)/);
-            if (match) {
-              const colIdx = colLetters.indexOf(match[1]);
-              const rowIdx = parseInt(match[2]) - 1;
-              if (colIdx >= 0 && rowIdx >= 0 && rowIdx <= 5) {
-                cx = colIdx * cw + cw / 2;
-                cy = rowIdx * rh + rh / 2;
-              } else {
-                cx = (fallbackIdx % cols) * cw + cw / 2;
-                cy = Math.floor(fallbackIdx / cols) % rows * rh + rh / 2;
-                fallbackIdx++;
-              }
-            } else {
-              cx = (fallbackIdx % cols) * cw + cw / 2;
-              cy = Math.floor(fallbackIdx / cols) % rows * rh + rh / 2;
-              fallbackIdx++;
-            }
-          } else {
-            cx = (fallbackIdx % cols) * cw + cw / 2;
-            cy = Math.floor(fallbackIdx / cols) % rows * rh + rh / 2;
-            fallbackIdx++;
-          }
-
-          ctx.beginPath();
-          ctx.arc(cx, cy, markerR, 0, Math.PI * 2);
-          ctx.fillStyle = "rgba(10,61,43,0.92)";
-          ctx.fill();
-          ctx.strokeStyle = "#b8962e";
-          ctx.lineWidth = Math.max(2, img.width / 320);
-          ctx.stroke();
-
-          ctx.fillStyle = "#ffffff";
-          ctx.font = `700 ${fontSize}px Arial, sans-serif`;
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.fillText(String(idx + 1), cx, cy);
-        });
-      }
-
-      ctx.textBaseline = "alphabetic";
-      ctx.textAlign = "left";
+      if (showMarkers && plants?.length > 0) drawPlantMarkers(ctx, plants, img.width, img.height);
+      else { ctx.textBaseline = "alphabetic"; ctx.textAlign = "left"; }
     };
     img.onerror = () => {
       canvas.width = 600; canvas.height = 400;
@@ -504,6 +506,53 @@ function ReferenceTable({ plants }: { plants: any[] }) {
   );
 }
 
+function AfterPlantTable({ plants }: { plants: any[] }) {
+  const [hovered, setHovered] = useState<number | null>(null);
+  if (!plants?.length) return null;
+  return (
+    <div>
+      <div style={{ fontSize: px(12), color: C.inkMid, marginBottom: 8, fontStyle: 'italic' }}>
+        Plant Reference — hover a row to highlight its position
+      </div>
+      <div style={{ overflowX: "auto", borderRadius: C.rLg, border: `1px solid ${C.rule}` }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: C.font, fontSize: px(BASE - 1) }}>
+          <thead>
+            <tr style={{ background: C.brand }}>
+              <th style={{ padding: "9px 12px", color: "#fff", textAlign: "left", fontSize: px(12), fontWeight: 600, width: 36 }}>#</th>
+              <th style={{ padding: "9px 12px", color: "#fff", textAlign: "left", fontSize: px(12), fontWeight: 600 }}>Plant Name</th>
+              <th style={{ padding: "9px 12px", color: "#fff", textAlign: "left", fontSize: px(12), fontWeight: 600, width: 60 }}>Grid</th>
+              <th style={{ padding: "9px 12px", color: "#fff", textAlign: "left", fontSize: px(12), fontWeight: 600 }}>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            {plants.map((p: any, i: number) => (
+              <tr key={p.id || i}
+                onMouseEnter={() => setHovered(i)}
+                onMouseLeave={() => setHovered(null)}
+                style={{
+                  background: hovered === i ? C.brandLight : i % 2 === 0 ? C.surface : C.card,
+                  borderBottom: `1px solid ${C.rule}`, cursor: 'default', transition: 'background 0.1s',
+                }}>
+                <td style={{ padding: "9px 12px", color: C.accent, fontWeight: 700, fontSize: px(13) }}>{i + 1}</td>
+                <td style={{ padding: "9px 12px" }}>
+                  <div style={{ fontStyle: "italic", color: C.brand, fontWeight: 600, fontSize: px(13) }}>{p.botanicalName}</div>
+                  <div style={{ color: C.inkLight, fontSize: px(12) }}>{p.commonName}{p.cultivar ? ` '${p.cultivar}'` : ""}</div>
+                </td>
+                <td style={{ padding: "9px 12px" }}>
+                  <span style={{ background: C.brand, color: C.accent, borderRadius: C.r, padding: "2px 7px", fontSize: px(11), fontWeight: 700 }}>{p.gridLocation || "—"}</span>
+                </td>
+                <td style={{ padding: "9px 12px", color: C.inkMid, fontSize: px(12) }}>
+                  {p.type}{p.layer ? ` · ${p.layer}` : ''}{p.quantity > 1 ? ` · ×${p.quantity}` : ''}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 function CompassSelector({ value, onChange, required, hasAttempted }: { value: string; onChange: (dir: string) => void; required?: boolean; hasAttempted?: boolean }) {
   const directions = [
     { dir: "N",  label: "N",  x: 50, y: 12 },
@@ -582,9 +631,9 @@ function CompassSelector({ value, onChange, required, hasAttempted }: { value: s
   );
 }
 
-function CostTable({ costEstimate }: { costEstimate: any }) {
-  const [currency, setCurrency] = useState('EUR');
-  useEffect(() => { setCurrency(detectCurrency()); }, []);
+function CostTable({ costEstimate, currency: currencyProp }: { costEstimate: any; currency?: string }) {
+  const [currency, setCurrency] = useState(currencyProp || 'GBP');
+  useEffect(() => { setCurrency(currencyProp || detectCurrency()); }, [currencyProp]);
   if (!costEstimate?.lines?.length) return null;
   const lo = costEstimate.lines.reduce((s: number, l: any) => s + (l.low || 0), 0);
   const hi = costEstimate.lines.reduce((s: number, l: any) => s + (l.high || 0), 0);
@@ -651,94 +700,25 @@ function generateGridOverlay(src: string, plants: any[], showMarkers = true): Pr
     const img = new Image();
     img.crossOrigin = "anonymous";
     img.onload = () => {
-      canvas.width  = img.width;
-      canvas.height = img.height;
+      canvas.width = img.width; canvas.height = img.height;
       ctx.drawImage(img, 0, 0);
-
       const cols = 6, rows = 6;
-      const cw = img.width / cols;
-      const rh = img.height / rows;
+      const cw = img.width / cols, rh = img.height / rows;
       const colLetters = ["A","B","C","D","E","F"];
 
-      // Interior grid lines only (5 vertical, 5 horizontal)
-      ctx.strokeStyle = "rgba(184,150,46,0.55)";
-      ctx.lineWidth = Math.max(1, img.width / 600);
-      for (let c = 1; c < cols; c++) {
-        ctx.beginPath(); ctx.moveTo(c * cw, 0); ctx.lineTo(c * cw, img.height); ctx.stroke();
-      }
-      for (let r = 1; r < rows; r++) {
-        ctx.beginPath(); ctx.moveTo(0, r * rh); ctx.lineTo(img.width, r * rh); ctx.stroke();
-      }
+      ctx.strokeStyle = "rgba(184,150,46,0.55)"; ctx.lineWidth = Math.max(1, img.width / 600);
+      for (let c = 1; c < cols; c++) { ctx.beginPath(); ctx.moveTo(c * cw, 0); ctx.lineTo(c * cw, img.height); ctx.stroke(); }
+      for (let r = 1; r < rows; r++) { ctx.beginPath(); ctx.moveTo(0, r * rh); ctx.lineTo(img.width, r * rh); ctx.stroke(); }
 
-      // Column labels — centered in each cell
       const labelSize = Math.max(11, img.width / 50);
-      ctx.fillStyle = "rgba(184,150,46,0.9)";
-      ctx.font = `700 ${labelSize}px Arial, sans-serif`;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "top";
-      for (let c = 0; c < cols; c++) {
-        ctx.fillText(colLetters[c], c * cw + cw / 2, 4);
-      }
+      ctx.fillStyle = "rgba(184,150,46,0.9)"; ctx.font = `700 ${labelSize}px Arial, sans-serif`;
+      ctx.textAlign = "center"; ctx.textBaseline = "top";
+      for (let c = 0; c < cols; c++) ctx.fillText(colLetters[c], c * cw + cw / 2, 4);
+      ctx.textAlign = "left"; ctx.textBaseline = "middle";
+      for (let r = 0; r < rows; r++) ctx.fillText(String(r + 1), 5, r * rh + rh / 2);
 
-      // Row labels — centered in each row
-      ctx.textAlign = "left";
-      ctx.textBaseline = "middle";
-      for (let r = 0; r < rows; r++) {
-        ctx.fillText(String(r + 1), 5, r * rh + rh / 2);
-      }
-
-      // Plant number markers (showMarkers only)
-      if (showMarkers) {
-        const markerR = Math.max(14, img.width / 55);
-        const fontSize = Math.max(10, img.width / 65);
-        let fallbackIdx = 0;
-
-        plants.forEach((plant, idx) => {
-          let cx: number, cy: number;
-
-          if (plant.gridLocation) {
-            const loc = plant.gridLocation.trim().toUpperCase();
-            const match = loc.match(/^([A-F])(\d)/);
-            if (match) {
-              const colIdx = colLetters.indexOf(match[1]);
-              const rowIdx = parseInt(match[2]) - 1;
-              if (colIdx >= 0 && rowIdx >= 0 && rowIdx <= 5) {
-                cx = colIdx * cw + cw / 2;
-                cy = rowIdx * rh + rh / 2;
-              } else {
-                cx = (fallbackIdx % cols) * cw + cw / 2;
-                cy = Math.floor(fallbackIdx / cols) % rows * rh + rh / 2;
-                fallbackIdx++;
-              }
-            } else {
-              cx = (fallbackIdx % cols) * cw + cw / 2;
-              cy = Math.floor(fallbackIdx / cols) % rows * rh + rh / 2;
-              fallbackIdx++;
-            }
-          } else {
-            cx = (fallbackIdx % cols) * cw + cw / 2;
-            cy = Math.floor(fallbackIdx / cols) % rows * rh + rh / 2;
-            fallbackIdx++;
-          }
-
-          ctx.beginPath();
-          ctx.arc(cx, cy, markerR, 0, Math.PI * 2);
-          ctx.fillStyle = "rgba(10,61,43,0.92)";
-          ctx.fill();
-          ctx.strokeStyle = "#b8962e";
-          ctx.lineWidth = Math.max(2, img.width / 320);
-          ctx.stroke();
-
-          ctx.fillStyle = "#ffffff";
-          ctx.font = `700 ${fontSize}px Arial, sans-serif`;
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.fillText(String(idx + 1), cx, cy);
-        });
-      }
-
-      ctx.textBaseline = "alphabetic";
-      ctx.textAlign = "left";
+      if (showMarkers && plants.length > 0) drawPlantMarkers(ctx, plants, img.width, img.height);
+      else { ctx.textBaseline = "alphabetic"; ctx.textAlign = "left"; }
       resolve(canvas.toDataURL("image/png"));
     };
     img.onerror = () => resolve("");
@@ -789,9 +769,11 @@ export default function GardigApp() {
   const [aerialImageUrl, setAerialImageUrl]     = useState<string | null>(null);
   const [aerialGridImageUrl, setAerialGridImageUrl] = useState<string | null>(null);
   const [compositeLayoutUrl, setCompositeLayoutUrl] = useState<string | null>(null);
-  const [overlayOpacity, setOverlayOpacity]     = useState(0.72);
   const [layoutViewMode, setLayoutViewMode]     = useState<'overlay' | 'plan'>('overlay');
   const [validationResult, setValidationResult] = useState<{ result: any; retried: boolean } | null>(null);
+  const [turnstileToken, setTurnstileToken]     = useState('');
+  const [userCurrency, setUserCurrency]         = useState('GBP');
+  const [termsAccepted, setTermsAccepted]       = useState(false);
   const [loadingMsg, setLoadingMsg]   = useState("");
   const [error, setError]             = useState<string | null>(null);
   const [activeTab, setActiveTab]     = useState("overview");
@@ -806,13 +788,18 @@ export default function GardigApp() {
   const [hasAttempted, setHasAttempted]   = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  // Regenerate composite when opacity slider changes
+  // Register Turnstile success callback on window
   useEffect(() => {
-    if (!imageDataUrl || !aerialGridImageUrl) return;
-    compositeLayoutOnPhoto(imageDataUrl, aerialGridImageUrl, overlayOpacity).then(url => {
-      if (url) setCompositeLayoutUrl(url);
-    });
-  }, [overlayOpacity, imageDataUrl, aerialGridImageUrl]);
+    (window as any).onTurnstileSuccess = (token: string) => setTurnstileToken(token);
+  }, []);
+
+  // Detect currency from IP on mount
+  useEffect(() => {
+    fetch('http://ip-api.com/json/?fields=currency')
+      .then(r => r.json())
+      .then(d => { if (d.currency) setUserCurrency(d.currency); })
+      .catch(() => { /* keep default GBP */ });
+  }, []);
 
   const missingFields = () => {
     const missing: string[] = [];
@@ -820,6 +807,8 @@ export default function GardigApp() {
     if (!userEmail || !userEmail.includes('@') || !userEmail.includes('.')) missing.push("valid email address");
     if (!designLang) missing.push("design language");
     if (!gardenOrientation) missing.push("garden orientation");
+    if (process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && !turnstileToken) missing.push("security check");
+    if (!termsAccepted) missing.push("Terms of Use agreement");
     return missing;
   };
   const isFormValid = () => missingFields().length === 0;
@@ -855,6 +844,8 @@ export default function GardigApp() {
         designLang,
         clientName: clientName || 'Client',
         orientation: gardenOrientation || '',
+        turnstileToken,
+        currency: userCurrency,
       }),
     });
     if (!res.ok) {
@@ -938,7 +929,7 @@ export default function GardigApp() {
         // Composite aerial plan over the original photo
         if (imageDataUrl) {
           setLoadingMsg("Compositing layout overlay...");
-          const composite = await compositeLayoutOnPhoto(imageDataUrl, aerialOverlay || aerialBase64, 0.72);
+          const composite = await compositeLayoutOnPhoto(imageDataUrl, aerialOverlay || aerialBase64, 0.70);
           setCompositeLayoutUrl(composite || null);
         }
       }
@@ -1052,6 +1043,27 @@ export default function GardigApp() {
           </div>
         )}
 
+        {process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && (
+          <div style={{ display: "flex", justifyContent: "center", marginTop: 18 }}>
+            <div className="cf-turnstile"
+              data-sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+              data-callback="onTurnstileSuccess"
+            />
+          </div>
+        )}
+
+        <div style={{ textAlign: "center", marginTop: 18 }}>
+          <label style={{ display: "inline-flex", alignItems: "center", gap: 10, cursor: "pointer", fontSize: px(13), color: C.inkMid, fontFamily: C.font }}>
+            <input
+              type="checkbox"
+              checked={termsAccepted}
+              onChange={e => setTermsAccepted(e.target.checked)}
+              style={{ width: 16, height: 16, accentColor: C.brand, cursor: "pointer", flexShrink: 0 }}
+            />
+            <span>I agree to the <a href="/legal#terms" target="_blank" rel="noopener noreferrer" style={{ color: C.brand, textDecoration: "underline" }}>Terms of Use</a> and <a href="/legal#privacy" target="_blank" rel="noopener noreferrer" style={{ color: C.brand, textDecoration: "underline" }}>Privacy Policy</a></span>
+          </label>
+        </div>
+
         <div style={{ textAlign: "center", marginTop: 22 }}>
           <button onClick={handleAnalyse}
             style={{
@@ -1099,6 +1111,8 @@ export default function GardigApp() {
 
   const TABS = [
     { id: "overview",        label: "Overview" },
+    { id: "visuals",         label: "Visuals" },
+    { id: "layout-plan",     label: "Layout Plan" },
     { id: "site",            label: "Site Analysis" },
     { id: "concept",         label: "Design Concept" },
     { id: "spatial",         label: "Spatial Layout" },
@@ -1108,7 +1122,6 @@ export default function GardigApp() {
     { id: "implementation",  label: "Phasing" },
     { id: "maintenance",     label: "Maintenance" },
     { id: "costs",           label: "Cost Estimate" },
-    { id: "visuals",         label: "Visuals" },
   ];
 
   async function sendPlan(pdfBase64: string) {
@@ -1672,11 +1685,11 @@ export default function GardigApp() {
 
         {/* ── COSTS ── */}
         {activeTab === "costs" && <>
-          <SectionTitle n="10" title="What You&apos;ll Spend" />
+          <SectionTitle n="10" title="Approximation of Costs" />
           <div style={{ marginBottom: 16, padding: "12px 16px", background: C.brandLight, borderRadius: C.r, border: `1px solid rgba(10,61,43,0.15)`, fontSize: px(BASE - 1), color: C.inkMid, lineHeight: 1.6 }}>
             These are <strong>materials and plants costs</strong> for a self-implemented project — things you buy, not contractor rates. Spread it across weekends and tackle one phase at a time.
           </div>
-          <CostTable costEstimate={doc.costEstimate} />
+          <CostTable costEstimate={doc.costEstimate} currency={userCurrency} />
           {doc.costEstimate?.costingNotes && (
             <div style={{ marginTop: 14, padding: "11px 15px", background: C.accentLight, borderRadius: C.r, fontSize: px(BASE - 1), color: C.amber, border: `1px solid #e5d06a` }}>
               <strong>Notes: </strong>{doc.costEstimate.costingNotes}
@@ -1752,25 +1765,27 @@ export default function GardigApp() {
             )}
           </div>
 
-          {/* Plant reference table */}
+          {/* Plant reference */}
           {plants.length > 0 && (
-            <div style={{ marginBottom: 32 }}>
-              <Label>Plant Reference Table</Label>
-              <ReferenceTable plants={plants} />
+            <div style={{ marginBottom: 24 }}>
+              <Label>Plant Reference</Label>
+              <AfterPlantTable plants={plants} />
             </div>
           )}
+        </>}
 
-          {/* Aerial layout */}
-          {(aerialImageUrl || aerialGridImageUrl) && (
-            <div style={{ marginBottom: 24 }}>
-              <SectionTitle n="11b" title="Garden Layout Plan" />
-              <div style={{ marginBottom: 10, fontSize: px(BASE - 1), color: C.inkMid }}>Your planting guide — print this and take it outside</div>
+        {/* ── LAYOUT PLAN ── */}
+        {activeTab === "layout-plan" && <>
+          <SectionTitle n="11b" title="Garden Layout Plan" />
+          <div style={{ marginBottom: 14, fontSize: px(BASE - 1), color: C.inkMid }}>Your planting guide — print this and take it outside. Numbers correspond to the plant list below.</div>
 
+          {(aerialImageUrl || aerialGridImageUrl) ? (
+            <>
               {/* View mode toggle */}
-              <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
                 {(['overlay', 'plan'] as const).map(mode => (
                   <button key={mode} onClick={() => setLayoutViewMode(mode)} style={{
-                    padding: '5px 14px', fontSize: px(12), fontWeight: 600,
+                    padding: '6px 16px', fontSize: px(12), fontWeight: 600,
                     background: layoutViewMode === mode ? C.brand : 'transparent',
                     color: layoutViewMode === mode ? C.accent : C.inkMid,
                     border: `1px solid ${layoutViewMode === mode ? C.brand : C.inkMid}`,
@@ -1781,32 +1796,21 @@ export default function GardigApp() {
                 ))}
               </div>
 
-              {/* Opacity slider (overlay mode only) */}
-              {layoutViewMode === 'overlay' && compositeLayoutUrl && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-                  <span style={{ fontSize: px(12), color: C.inkMid, minWidth: 80 }}>Plan opacity</span>
-                  <input
-                    type="range" min={0.1} max={1} step={0.05}
-                    value={overlayOpacity}
-                    onChange={e => setOverlayOpacity(parseFloat(e.target.value))}
-                    style={{ flex: 1, maxWidth: 200 }}
-                  />
-                  <span style={{ fontSize: px(12), color: C.inkMid, minWidth: 35 }}>{Math.round(overlayOpacity * 100)}%</span>
-                </div>
-              )}
-
-              {/* Image */}
               {layoutViewMode === 'overlay' && compositeLayoutUrl
                 ? <GridOverlayImage src={compositeLayoutUrl} plants={plants} label="Layout Plan (Overlay)" />
                 : <GridOverlayImage src={aerialGridImageUrl || aerialImageUrl!} plants={plants} label="Layout Plan" />
               }
 
               {plants.length > 0 && (
-                <div style={{ marginTop: 18 }}>
-                  <Label>Layout Reference</Label>
-                  <ReferenceTable plants={plants} />
+                <div style={{ marginTop: 22 }}>
+                  <Label>Plant Reference — numbers match the plan above</Label>
+                  <AfterPlantTable plants={plants} />
                 </div>
               )}
+            </>
+          ) : (
+            <div style={{ background: C.surface, borderRadius: C.rLg, padding: 24, textAlign: 'center', color: C.inkLight, fontSize: px(BASE) }}>
+              Layout plan not yet generated. Run a garden analysis first.
             </div>
           )}
         </>}
@@ -1817,6 +1821,9 @@ export default function GardigApp() {
       <div style={{ background: C.brand, padding: "18px 28px", textAlign: "center", fontFamily: C.font, fontSize: px(13), color: "rgba(255,255,255,0.45)" }}>
         <span style={{ color: C.accent, fontWeight: 700 }}>dedrab.com</span> · Garden Design Platform ·
         Report generated {new Date().toLocaleDateString("en-GB", { day:"numeric", month:"long", year:"numeric" })}
+        <span style={{ marginLeft: 16, opacity: 0.6 }}>·</span>
+        <a href="/legal#terms" target="_blank" rel="noopener noreferrer" style={{ marginLeft: 12, color: "rgba(255,255,255,0.35)", textDecoration: "none", fontSize: px(11), letterSpacing: "0.08em" }}>Terms</a>
+        <a href="/legal#privacy" target="_blank" rel="noopener noreferrer" style={{ marginLeft: 12, color: "rgba(255,255,255,0.35)", textDecoration: "none", fontSize: px(11), letterSpacing: "0.08em" }}>Privacy</a>
       </div>
     </div>
   );

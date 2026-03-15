@@ -367,7 +367,21 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { image, designLang, clientName, orientation } = await request.json();
+    const { image, designLang, clientName, orientation, turnstileToken, currency } = await request.json();
+
+    // ── Turnstile verification (only when secret key is configured) ────────────
+    const turnstileSecret = process.env.TURNSTILE_SECRET_KEY;
+    if (turnstileSecret) {
+      const verifyRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ secret: turnstileSecret, response: turnstileToken || '' }),
+      });
+      const verifyData = await verifyRes.json();
+      if (!verifyData.success) {
+        return NextResponse.json({ error: 'Security check failed. Please refresh and try again.' }, { status: 403 });
+      }
+    }
 
     if (!image || !designLang) {
       return NextResponse.json(
@@ -384,7 +398,8 @@ export async function POST(request: Request) {
 Client: ${clientName || 'Private Client'}
 Design Language: ${designLang}
 Geographic Region: ${region}
-Plant Climate: Only suggest plants proven to thrive in ${country} — hardy to at least -10°C, tolerating wet winters and cool summers for this region.${orientation ? `\nGarden Orientation: ${orientation} — The garden faces ${orientation}. The photo was taken looking ${orientation}. Factor sun exposure accordingly.` : ''}
+Plant Climate: Only suggest plants proven to thrive in ${country} — hardy to at least -10°C, tolerating wet winters and cool summers for this region.
+Cost Currency: All cost estimates must be provided in ${currency || 'GBP'}. Use realistic local market prices for ${country}.${orientation ? `\nGarden Orientation: ${orientation} — The garden faces ${orientation}. The photo was taken looking ${orientation}. Factor sun exposure accordingly.` : ''}
 
 STEP 1 — Study the photograph:
 Identify every visible element: surfaces, structures, boundaries, plants, levels, light direction, shadows, existing trees, paths, drainage evidence, access points.
@@ -405,7 +420,7 @@ Minimum counts you must meet:
 - irrigationZones: 2+
 - implementationPlan tasks: 9+ across 3 phases
 - maintenanceSchedule tasks: 8+ across 4 seasons
-- costEstimate lines: 6+ with realistic non-zero GBP values
+- costEstimate lines: 6+ with realistic non-zero ${currency || 'GBP'} values
 
 SCHEMA:
 ${SCHEMA}`;

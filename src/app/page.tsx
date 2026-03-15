@@ -586,8 +586,8 @@ export default function LandingPage() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 60px', flexWrap: 'wrap', gap: 14 }}>
           <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.18)', letterSpacing: 1 }}>© 2025 Dedrab. Garden inspiration powered by AI.</span>
           <ul style={{ display: 'flex', gap: 28, listStyle: 'none', margin: 0, padding: 0 }}>
-            <li><a href="#" className="footer-legal-link">Privacy</a></li>
-            <li><a href="#" className="footer-legal-link">Terms</a></li>
+            <li><a href="/legal#privacy" className="footer-legal-link">Privacy</a></li>
+            <li><a href="/legal#terms" className="footer-legal-link">Terms</a></li>
           </ul>
         </div>
       </footer>
