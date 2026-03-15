@@ -203,73 +203,112 @@ const px = (n: number) => `${n}px`;
 
 // ─── GRID OVERLAY CANVAS ──────────────────────────────────────────────────────
 
-// ── Marker positioning helpers ────────────────────────────────────────────────
+function drawGridOverlay(
+  canvas: HTMLCanvasElement,
+  plants: any[],
+  showMarkers: boolean = true
+) {
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+  const W = canvas.width;
+  const H = canvas.height;
+  const COLS = 6, ROWS = 6;
+  const colW = W / COLS;
+  const rowH = H / ROWS;
+  const LABELS = ['A','B','C','D','E','F'];
 
-function clampMarkerPos(x: number, y: number, w: number, h: number) {
-  return { x: Math.max(30, Math.min(w - 30, x)), y: Math.max(h * 0.25, Math.min(h - 30, y)) };
-}
-
-function deoverlapPos(
-  placed: { x: number; y: number }[],
-  pos: { x: number; y: number },
-  w: number, h: number,
-): { x: number; y: number } {
-  let cur = { ...pos };
-  for (let i = 0; i < 8; i++) {
-    if (!placed.some(p => Math.abs(p.x - cur.x) < 40 && Math.abs(p.y - cur.y) < 40)) break;
-    cur.x += 46;
-    if (cur.x > w - 30) { cur.x = pos.x - 46; cur.y += 46; }
-    cur = clampMarkerPos(cur.x, cur.y, w, h);
+  // Interior grid lines only
+  ctx.strokeStyle = 'rgba(184,150,46,0.45)';
+  ctx.lineWidth = Math.max(1, W / 600);
+  for (let i = 1; i < COLS; i++) {
+    ctx.beginPath(); ctx.moveTo(i * colW, 0); ctx.lineTo(i * colW, H); ctx.stroke();
   }
-  return cur;
-}
+  for (let i = 1; i < ROWS; i++) {
+    ctx.beginPath(); ctx.moveTo(0, i * rowH); ctx.lineTo(W, i * rowH); ctx.stroke();
+  }
 
-function drawPlantMarkers(ctx: CanvasRenderingContext2D, plants: any[], cw: number, ch: number) {
-  const cols = 6, rows = 6;
-  const colW = cw / cols, rowH = ch / rows;
-  const colLetters = ["A","B","C","D","E","F"];
-  const markerR = Math.max(14, cw / 55);
-  const fontSize = Math.max(10, cw / 65);
-  let fallbackIdx = 0;
-  const placed: { x: number; y: number }[] = [];
+  // Column labels A-F with background pill
+  const labelSize = Math.max(11, W / 50);
+  ctx.font = `bold ${labelSize}px Arial, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  for (let i = 0; i < COLS; i++) {
+    const x = i * colW + colW / 2;
+    const label = LABELS[i];
+    const tw = ctx.measureText(label).width + 8;
+    ctx.fillStyle = 'rgba(184,150,46,0.18)';
+    ctx.fillRect(x - tw / 2, 2, tw, labelSize + 4);
+    ctx.fillStyle = 'rgba(184,150,46,0.95)';
+    ctx.fillText(label, x, 4);
+  }
 
-  plants.forEach((plant, idx) => {
-    let gridX = 0, gridY = 0;
+  // Row labels 1-6 with background
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  for (let i = 0; i < ROWS; i++) {
+    const y = i * rowH + rowH / 2;
+    const label = String(i + 1);
+    const tw = ctx.measureText(label).width + 8;
+    ctx.fillStyle = 'rgba(184,150,46,0.18)';
+    ctx.fillRect(2, y - (labelSize + 4) / 2, tw, labelSize + 4);
+    ctx.fillStyle = 'rgba(184,150,46,0.95)';
+    ctx.fillText(label, 4, y);
+  }
 
-    if (plant.gridLocation) {
-      const loc = plant.gridLocation.trim().toUpperCase();
-      const match = loc.match(/^([A-F])(\d)/);
-      if (match) {
-        const ci = colLetters.indexOf(match[1]);
-        const ri = parseInt(match[2]) - 1;
-        if (ci >= 0 && ri >= 0 && ri <= 5) {
-          gridX = ci * colW + colW / 2;
-          gridY = ri * rowH + rowH / 2;
-        } else { gridX = (fallbackIdx % cols) * colW + colW / 2; gridY = (Math.floor(fallbackIdx / cols) % rows) * rowH + rowH / 2; fallbackIdx++; }
-      } else { gridX = (fallbackIdx % cols) * colW + colW / 2; gridY = (Math.floor(fallbackIdx / cols) % rows) * rowH + rowH / 2; fallbackIdx++; }
-    } else { gridX = (fallbackIdx % cols) * colW + colW / 2; gridY = (Math.floor(fallbackIdx / cols) % rows) * rowH + rowH / 2; fallbackIdx++; }
+  if (!showMarkers || !plants?.length) {
+    ctx.textBaseline = 'alphabetic';
+    ctx.textAlign = 'left';
+    return;
+  }
 
-    let { x: cx, y: cy } = clampMarkerPos(gridX, gridY, cw, ch);
-    ({ x: cx, y: cy } = deoverlapPos(placed, { x: cx, y: cy }, cw, ch));
-    placed.push({ x: cx, y: cy });
+  // Plant markers
+  const FORBIDDEN_TOP = H * 0.28;
+  const MARKER_R = Math.max(14, W / 38);
+  const placed: Array<{x: number; y: number}> = [];
 
-    // Dashed connector line if marker was repositioned
-    if (Math.abs(cx - gridX) > 6 || Math.abs(cy - gridY) > 6) {
-      ctx.save();
-      ctx.beginPath(); ctx.moveTo(gridX, gridY); ctx.lineTo(cx, cy);
-      ctx.strokeStyle = 'rgba(184,150,46,0.5)'; ctx.lineWidth = 1; ctx.setLineDash([3, 3]); ctx.stroke();
-      ctx.setLineDash([]); ctx.restore();
+  plants.forEach((plant, index) => {
+    const loc = (plant.gridLocation || '').trim().toUpperCase();
+    const match = loc.match(/^([A-F])(\d)/);
+    let x: number, y: number;
+
+    if (match) {
+      const ci = Math.max(0, Math.min(5, match[1].charCodeAt(0) - 65));
+      const ri = Math.max(0, Math.min(5, parseInt(match[2]) - 1));
+      x = ci * colW + colW / 2;
+      y = ri * rowH + rowH / 2;
+    } else {
+      const cols = 4;
+      x = ((index % cols) + 1) * (W / (cols + 1));
+      y = (Math.floor(index / cols) + 2) * (H / 5);
     }
 
-    ctx.beginPath(); ctx.arc(cx, cy, markerR, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(10,61,43,0.92)"; ctx.fill();
-    ctx.strokeStyle = "#b8962e"; ctx.lineWidth = Math.max(2, cw / 320); ctx.stroke();
+    y = Math.max(FORBIDDEN_TOP, y);
+    x = Math.max(MARKER_R + 6, Math.min(W - MARKER_R - 6, x));
+    y = Math.max(FORBIDDEN_TOP, Math.min(H - MARKER_R - 6, y));
 
-    ctx.fillStyle = "#ffffff"; ctx.font = `700 ${fontSize}px Arial, sans-serif`;
-    ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    ctx.fillText(String(idx + 1), cx, cy);
+    let attempts = 0;
+    while (attempts < 10) {
+      const clash = placed.find(p => Math.hypot(p.x - x, p.y - y) < MARKER_R * 2.5);
+      if (!clash) break;
+      x += MARKER_R * 2.2;
+      if (x > W - MARKER_R - 6) { x = MARKER_R + 20; y += MARKER_R * 2.2; }
+      y = Math.max(FORBIDDEN_TOP, Math.min(H - MARKER_R - 6, y));
+      attempts++;
+    }
+    placed.push({x, y});
+
+    ctx.beginPath(); ctx.arc(x, y, MARKER_R, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(10,61,43,0.92)'; ctx.fill();
+    ctx.strokeStyle = '#b8962e'; ctx.lineWidth = Math.max(2, W / 320); ctx.stroke();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = `bold ${Math.max(10, MARKER_R * 0.85)}px Arial, sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(String(index + 1), x, y);
   });
-  ctx.textBaseline = "alphabetic"; ctx.textAlign = "left";
+
+  ctx.textBaseline = 'alphabetic';
+  ctx.textAlign = 'left';
 }
 
 function GridOverlayImage({ src, plants, label, showMarkers = true }: { src: string; plants: any[]; label: string; showMarkers?: boolean }) {
@@ -278,48 +317,33 @@ function GridOverlayImage({ src, plants, label, showMarkers = true }: { src: str
   useEffect(() => {
     if (!src || !canvasRef.current) return;
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d")!;
     const img = new Image();
-    img.crossOrigin = "anonymous";
+    img.crossOrigin = 'anonymous';
     img.onload = () => {
-      canvas.width = img.width; canvas.height = img.height;
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d')!;
       ctx.drawImage(img, 0, 0);
-      const cols = 6, rows = 6;
-      const cw = img.width / cols, rh = img.height / rows;
-      const colLetters = ["A","B","C","D","E","F"];
-
-      ctx.strokeStyle = "rgba(184,150,46,0.55)";
-      ctx.lineWidth = Math.max(1, img.width / 600);
-      for (let c = 1; c < cols; c++) { ctx.beginPath(); ctx.moveTo(c * cw, 0); ctx.lineTo(c * cw, img.height); ctx.stroke(); }
-      for (let r = 1; r < rows; r++) { ctx.beginPath(); ctx.moveTo(0, r * rh); ctx.lineTo(img.width, r * rh); ctx.stroke(); }
-
-      const labelSize = Math.max(11, img.width / 50);
-      ctx.fillStyle = "rgba(184,150,46,0.9)"; ctx.font = `700 ${labelSize}px Arial, sans-serif`;
-      ctx.textAlign = "center"; ctx.textBaseline = "top";
-      for (let c = 0; c < cols; c++) ctx.fillText(colLetters[c], c * cw + cw / 2, 4);
-      ctx.textAlign = "left"; ctx.textBaseline = "middle";
-      for (let r = 0; r < rows; r++) ctx.fillText(String(r + 1), 5, r * rh + rh / 2);
-
-      if (showMarkers && plants?.length > 0) drawPlantMarkers(ctx, plants, img.width, img.height);
-      else { ctx.textBaseline = "alphabetic"; ctx.textAlign = "left"; }
+      drawGridOverlay(canvas, plants, showMarkers);
     };
     img.onerror = () => {
       canvas.width = 600; canvas.height = 400;
-      ctx.fillStyle = "#1f2937"; ctx.fillRect(0,0,600,400);
-      ctx.fillStyle = "#6b7280"; ctx.font = "15px Arial, sans-serif";
-      ctx.textAlign = "center"; ctx.fillText("Image unavailable", 300, 200);
+      const ctx = canvas.getContext('2d')!;
+      ctx.fillStyle = '#1f2937'; ctx.fillRect(0, 0, 600, 400);
+      ctx.fillStyle = '#6b7280'; ctx.font = '15px Arial, sans-serif';
+      ctx.textAlign = 'center'; ctx.fillText('Image unavailable', 300, 200);
     };
     img.src = src;
   }, [src, plants, showMarkers]);
 
   return (
-    <div style={{ position: "relative" }}>
-      <canvas ref={canvasRef} style={{ width: "100%", height: "auto", display: "block", borderRadius: C.r, border: `1px solid ${C.rule}` }} />
+    <div style={{ position: 'relative' }}>
+      <canvas ref={canvasRef} style={{ width: '100%', height: 'auto', display: 'block', borderRadius: C.r, border: `1px solid ${C.rule}` }} />
       <div style={{
-        position: "absolute", top: 8, left: 8,
+        position: 'absolute', top: 8, left: 8,
         background: C.brand, color: C.accent,
-        fontSize: px(10), fontFamily: C.font, letterSpacing: "0.12em",
-        padding: "3px 10px", borderRadius: C.r, textTransform: "uppercase", fontWeight: 700
+        fontSize: px(10), fontFamily: C.font, letterSpacing: '0.12em',
+        padding: '3px 10px', borderRadius: C.r, textTransform: 'uppercase', fontWeight: 700,
       }}>{label}</div>
     </div>
   );
@@ -411,8 +435,8 @@ function PlantTable({ plants }: { plants: any[] }) {
               <td style={{ padding: "9px 13px" }}>
                 <span style={{ background: C.brand, color: C.accent, borderRadius: C.r, padding: "2px 8px", fontSize: px(12), fontWeight: 700 }}>{p.gridLocation || "—"}</span>
               </td>
-              <td style={{ padding: "9px 13px", fontStyle: "italic", color: C.brand, fontWeight: 600 }}>{p.botanicalName}</td>
-              <td style={{ padding: "9px 13px", color: C.ink }}>{p.commonName}{p.cultivar ? ` '${p.cultivar}'` : ""}</td>
+              <td style={{ padding: "9px 13px", fontStyle: "italic", color: C.brand, fontWeight: 600 }}>{cleanPlantName(p.botanicalName)}</td>
+              <td style={{ padding: "9px 13px", color: C.ink }}>{cleanPlantName(p.commonName)}{p.cultivar ? ` '${p.cultivar}'` : ""}</td>
               <td style={{ padding: "9px 13px" }}><Tag>{p.type}</Tag></td>
               <td style={{ padding: "9px 13px", textAlign: "center", fontWeight: 700, color: C.ink }}>{p.quantity}</td>
               <td style={{ padding: "9px 13px", color: C.inkMid }}>{p.layer}</td>
@@ -473,6 +497,11 @@ function detectCurrency(): string {
   return 'EUR';
 }
 
+function cleanPlantName(name: string): string {
+  if (!name) return name;
+  return name.replace(/('([^']+)')\s+\1/g, '$1').trim();
+}
+
 function ReferenceTable({ plants }: { plants: any[] }) {
   if (!plants?.length) return null;
   return (
@@ -495,8 +524,8 @@ function ReferenceTable({ plants }: { plants: any[] }) {
               </td>
               <td style={{ padding: "9px 12px", color: C.inkMid, fontSize: px(13) }}>{p.existingElement || "—"}</td>
               <td style={{ padding: "9px 12px" }}>
-                <div style={{ fontStyle: "italic", color: C.brand, fontWeight: 600, fontSize: px(13) }}>{p.botanicalName}</div>
-                <div style={{ color: C.inkLight, fontSize: px(12) }}>{p.commonName}{p.cultivar ? ` '${p.cultivar}'` : ""}</div>
+                <div style={{ fontStyle: "italic", color: C.brand, fontWeight: 600, fontSize: px(13) }}>{cleanPlantName(p.botanicalName)}</div>
+                <div style={{ color: C.inkLight, fontSize: px(12) }}>{cleanPlantName(p.commonName)}{p.cultivar ? ` '${p.cultivar}'` : ""}</div>
               </td>
             </tr>
           ))}
@@ -535,8 +564,8 @@ function AfterPlantTable({ plants }: { plants: any[] }) {
                 }}>
                 <td style={{ padding: "9px 12px", color: C.accent, fontWeight: 700, fontSize: px(13) }}>{i + 1}</td>
                 <td style={{ padding: "9px 12px" }}>
-                  <div style={{ fontStyle: "italic", color: C.brand, fontWeight: 600, fontSize: px(13) }}>{p.botanicalName}</div>
-                  <div style={{ color: C.inkLight, fontSize: px(12) }}>{p.commonName}{p.cultivar ? ` '${p.cultivar}'` : ""}</div>
+                  <div style={{ fontStyle: "italic", color: C.brand, fontWeight: 600, fontSize: px(13) }}>{cleanPlantName(p.botanicalName)}</div>
+                  <div style={{ color: C.inkLight, fontSize: px(12) }}>{cleanPlantName(p.commonName)}{p.cultivar ? ` '${p.cultivar}'` : ""}</div>
                 </td>
                 <td style={{ padding: "9px 12px" }}>
                   <span style={{ background: C.brand, color: C.accent, borderRadius: C.r, padding: "2px 7px", fontSize: px(11), fontWeight: 700 }}>{p.gridLocation || "—"}</span>
@@ -695,60 +724,19 @@ function CostTable({ costEstimate, currency: currencyProp }: { costEstimate: any
 
 function generateGridOverlay(src: string, plants: any[], showMarkers = true): Promise<string> {
   return new Promise((resolve) => {
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d")!;
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.onload = () => {
-      canvas.width = img.width; canvas.height = img.height;
-      ctx.drawImage(img, 0, 0);
-      const cols = 6, rows = 6;
-      const cw = img.width / cols, rh = img.height / rows;
-      const colLetters = ["A","B","C","D","E","F"];
-
-      ctx.strokeStyle = "rgba(184,150,46,0.55)"; ctx.lineWidth = Math.max(1, img.width / 600);
-      for (let c = 1; c < cols; c++) { ctx.beginPath(); ctx.moveTo(c * cw, 0); ctx.lineTo(c * cw, img.height); ctx.stroke(); }
-      for (let r = 1; r < rows; r++) { ctx.beginPath(); ctx.moveTo(0, r * rh); ctx.lineTo(img.width, r * rh); ctx.stroke(); }
-
-      const labelSize = Math.max(11, img.width / 50);
-      ctx.fillStyle = "rgba(184,150,46,0.9)"; ctx.font = `700 ${labelSize}px Arial, sans-serif`;
-      ctx.textAlign = "center"; ctx.textBaseline = "top";
-      for (let c = 0; c < cols; c++) ctx.fillText(colLetters[c], c * cw + cw / 2, 4);
-      ctx.textAlign = "left"; ctx.textBaseline = "middle";
-      for (let r = 0; r < rows; r++) ctx.fillText(String(r + 1), 5, r * rh + rh / 2);
-
-      if (showMarkers && plants.length > 0) drawPlantMarkers(ctx, plants, img.width, img.height);
-      else { ctx.textBaseline = "alphabetic"; ctx.textAlign = "left"; }
-      resolve(canvas.toDataURL("image/png"));
-    };
-    img.onerror = () => resolve("");
-    img.src = src;
-  });
-}
-
-function compositeLayoutOnPhoto(photoSrc: string, aerialSrc: string, opacity: number): Promise<string> {
-  return new Promise((resolve) => {
     const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d')!;
-    const photo = new Image();
-    photo.crossOrigin = 'anonymous';
-    photo.onload = () => {
-      canvas.width = photo.width;
-      canvas.height = photo.height;
-      ctx.drawImage(photo, 0, 0);
-      const aerial = new Image();
-      aerial.crossOrigin = 'anonymous';
-      aerial.onload = () => {
-        ctx.globalAlpha = opacity;
-        ctx.drawImage(aerial, 0, 0, canvas.width, canvas.height);
-        ctx.globalAlpha = 1;
-        resolve(canvas.toDataURL('image/png'));
-      };
-      aerial.onerror = () => resolve(canvas.toDataURL('image/png'));
-      aerial.src = aerialSrc;
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d')!;
+      ctx.drawImage(img, 0, 0);
+      drawGridOverlay(canvas, plants, showMarkers);
+      resolve(canvas.toDataURL('image/png'));
     };
-    photo.onerror = () => resolve('');
-    photo.src = photoSrc;
+    img.onerror = () => resolve('');
+    img.src = src;
   });
 }
 
@@ -768,8 +756,6 @@ export default function GardigApp() {
   const [gridImageUrl, setGridImageUrl]         = useState<string | null>(null);
   const [aerialImageUrl, setAerialImageUrl]     = useState<string | null>(null);
   const [aerialGridImageUrl, setAerialGridImageUrl] = useState<string | null>(null);
-  const [compositeLayoutUrl, setCompositeLayoutUrl] = useState<string | null>(null);
-  const [layoutViewMode, setLayoutViewMode]     = useState<'overlay' | 'plan'>('overlay');
   const [validationResult, setValidationResult] = useState<{ result: any; retried: boolean } | null>(null);
   const [turnstileToken, setTurnstileToken]     = useState('');
   const [userCurrency, setUserCurrency]         = useState('GBP');
@@ -858,6 +844,7 @@ export default function GardigApp() {
   const generateRender = async (visualPrompt: string, zones: any[], siteConstraints?: any, plantCount?: number) => {
     const originalBase64 = imageDataUrl ? imageDataUrl.split(',')[1] : undefined;
     const originalMimeType = imageDataUrl ? imageDataUrl.split(';')[0].split(':')[1] : undefined;
+    console.log('Sending orientation to redesign:', gardenOrientation);
     const response = await fetch('/api/redesign', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -866,7 +853,7 @@ export default function GardigApp() {
         visualPrompt,
         zones,
         siteConstraints,
-        orientation: gardenOrientation || undefined,
+        orientation: gardenOrientation || 'N',
         plantCount,
         originalImageBase64: originalBase64,
         originalImageMimeType: originalMimeType,
@@ -926,12 +913,6 @@ export default function GardigApp() {
       if (aerialBase64 && plants.length > 0) {
         const aerialOverlay = await generateGridOverlay(aerialBase64, plants);
         setAerialGridImageUrl(aerialOverlay || null);
-        // Composite aerial plan over the original photo
-        if (imageDataUrl) {
-          setLoadingMsg("Compositing layout overlay...");
-          const composite = await compositeLayoutOnPhoto(imageDataUrl, aerialOverlay || aerialBase64, 0.70);
-          setCompositeLayoutUrl(composite || null);
-        }
       }
       setLoadingMsg("Building proposal...");
       await new Promise(r => setTimeout(r, 300));
@@ -1206,7 +1187,7 @@ export default function GardigApp() {
             imageBase64={renderUrl || ''}
             imageDataUrl={imageDataUrl || undefined}
             gridImageUrl={gridImageUrl || undefined}
-            aerialImageUrl={compositeLayoutUrl || aerialGridImageUrl || undefined}
+            aerialImageUrl={aerialImageUrl || undefined}
             style={designLang}
             clientName={clientName || undefined}
           />
@@ -1215,7 +1196,7 @@ export default function GardigApp() {
             imageBase64={renderUrl || ''}
             imageDataUrl={imageDataUrl || undefined}
             gridImageUrl={gridImageUrl || undefined}
-            aerialImageUrl={compositeLayoutUrl || aerialGridImageUrl || undefined}
+            aerialImageUrl={aerialImageUrl || undefined}
             style={designLang}
             clientName={clientName || undefined}
             sendMode
@@ -1300,7 +1281,7 @@ export default function GardigApp() {
                       imageBase64={renderUrl || ''}
                       imageDataUrl={imageDataUrl || undefined}
                       gridImageUrl={gridImageUrl || undefined}
-                      aerialImageUrl={compositeLayoutUrl || aerialGridImageUrl || undefined}
+                      aerialImageUrl={aerialImageUrl || undefined}
                       style={designLang}
                       clientName={clientName || undefined}
                       onPdfReady={sendPlan}
@@ -1781,25 +1762,7 @@ export default function GardigApp() {
 
           {(aerialImageUrl || aerialGridImageUrl) ? (
             <>
-              {/* View mode toggle */}
-              <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
-                {(['overlay', 'plan'] as const).map(mode => (
-                  <button key={mode} onClick={() => setLayoutViewMode(mode)} style={{
-                    padding: '6px 16px', fontSize: px(12), fontWeight: 600,
-                    background: layoutViewMode === mode ? C.brand : 'transparent',
-                    color: layoutViewMode === mode ? C.accent : C.inkMid,
-                    border: `1px solid ${layoutViewMode === mode ? C.brand : C.inkMid}`,
-                    borderRadius: 3, cursor: 'pointer', fontFamily: C.font,
-                  }}>
-                    {mode === 'overlay' ? 'Overlay on photo' : 'Plan only'}
-                  </button>
-                ))}
-              </div>
-
-              {layoutViewMode === 'overlay' && compositeLayoutUrl
-                ? <GridOverlayImage src={compositeLayoutUrl} plants={plants} label="Layout Plan (Overlay)" />
-                : <GridOverlayImage src={aerialGridImageUrl || aerialImageUrl!} plants={plants} label="Layout Plan" />
-              }
+              <GridOverlayImage src={aerialGridImageUrl || aerialImageUrl!} plants={plants} label="Layout Plan" />
 
               {plants.length > 0 && (
                 <div style={{ marginTop: 22 }}>

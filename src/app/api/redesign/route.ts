@@ -164,7 +164,13 @@ FINAL CHECK BEFORE GENERATING:
 - Are all boundary walls in the same place? Must be YES
 - Does it look like the same garden? Must be YES
 
-Style: Photorealistic garden photography. Natural daylight. No text overlays. No compass. No grid. No annotations.`;
+Style: Photorealistic garden photography. Natural daylight. No text overlays. No compass. No grid. No annotations.
+
+IMAGE CLEANLINESS — MANDATORY:
+Do NOT draw any grid lines, column letters (A-F), row numbers (1-6), reference numbers, scale bars, numbered circles, or any alphanumeric annotation on the generated image.
+Do NOT add any markers, labels, or text inside the image.
+The image must contain ONLY the photorealistic garden scene — no overlays of any kind.
+All grids and annotations are added separately by the application.`;
 
     // ── Generate render ────────────────────────────────────────────────────────
     console.log('Starting render generation...');
@@ -211,66 +217,138 @@ Fix all of these in this new attempt. The result must pass all checks.`;
       }
     }
 
-    // ── Aerial sketch prompt ──────────────────────────────────────────────────
+    // ── Spatial Audit — analyse original photo to understand garden layout ────
     const gardenShape = sc.gardenShape || 'rectangular plot';
     const aspectRatio = sc.aspectRatio || '1:1';
-    const compassNote = orientation ? ` showing ${orientation} orientation` : '';
-    const boundaryDescription = sc.boundaries?.length
-      ? `Boundary walls: ${sc.boundaries.join(', ')}.`
-      : 'Standard rectangular garden.';
 
-    const aerialPrompt = `AERIAL GARDEN LAYOUT PLAN — STRICT REQUIREMENTS:
+    let spatialAudit: any = {};
+    if (originalImageBase64) {
+      const spatialAuditPrompt = `You are creating a garden layout plan.
+Analyse this garden photo and produce a precise SPATIAL AUDIT as a structured JSON object.
 
-VIEWPOINT: Exactly 10 metres directly above the centre point of the garden. Pure top-down orthographic view. No perspective. No angle. No isometric. Completely flat 2D plan view as if looking straight down.
+For each element in the garden, identify:
+1. Its position in the A-F column, 1-6 row grid (A=leftmost, F=rightmost, 1=top/rear, 6=bottom/front)
+2. Its approximate size relative to the garden
+3. Its relationship to boundary walls and other elements
 
-GARDEN SHAPE: ${gardenShape} with aspect ratio ${aspectRatio}.
-Draw the outline as a solid black border in the correct shape.
-If the garden is wider than tall, draw it wider than tall.
-If narrow and long, draw it narrow and long.
-MATCH THE ACTUAL PROPORTIONS EXACTLY.
+Return ONLY valid JSON, no markdown:
+{
+  "gardenShape": "description of overall shape",
+  "gardenOrientation": "${orientation || 'N'}",
+  "zones": [
+    {
+      "name": "zone name e.g. Main Lawn",
+      "type": "lawn/path/border/structure/patio",
+      "gridPosition": "e.g. B3 to E5",
+      "relativeSize": "e.g. covers 40% of garden",
+      "description": "brief spatial description"
+    }
+  ],
+  "plants": [
+    {
+      "number": 1,
+      "name": "plant name",
+      "gridPosition": "e.g. B2",
+      "nearestBoundary": "left wall / rear wall etc",
+      "distanceFromCenter": "e.g. 2m left of centre"
+    }
+  ],
+  "boundaries": {
+    "top": "description of top/rear boundary",
+    "bottom": "description of bottom/front boundary",
+    "left": "description of left boundary",
+    "right": "description of right boundary"
+  }
+}`;
 
-BOUNDARIES — draw as thick black lines:
-${boundaryDescription}
-Every wall, fence and fixed structure must appear in its correct position within the plan outline.
+      try {
+        const auditResponse = await ai.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: [{
+            role: 'user',
+            parts: [
+              { inlineData: { mimeType: originalImageMimeType || 'image/jpeg', data: originalImageBase64 } },
+              { text: spatialAuditPrompt },
+            ],
+          }],
+        });
+        const auditText = auditResponse.candidates?.[0]?.content?.parts?.find((p: any) => p.text)?.text || '';
+        const auditClean = auditText.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
+        spatialAudit = JSON.parse(auditClean);
+        console.log('Spatial audit complete:', JSON.stringify(spatialAudit).slice(0, 300));
+      } catch (err) {
+        console.error('Spatial audit failed, using defaults:', JSON.stringify(err));
+      }
+    }
 
-INTERNAL LAYOUT — must match the photorealistic render:
-- Path positions: draw paths in same location as render
-- Lawn area: draw in same position as render
-- Planting beds: draw bed outlines matching render positions
-- Any fixed structures (shed, patio, etc.): draw in correct position
+    // ── Compass orientation lock ───────────────────────────────────────────────
+    const compassLock = orientation ? `COMPASS ORIENTATION — CRITICAL:
+The user indicated their garden faces: ${orientation}
+Draw a compass rose in the top-right corner of the image.
+The compass rose MUST show ${orientation} as the PRIMARY direction (the main arrow must point toward ${orientation}).
+This compass must agree with the orientation selected by the user.
+DO NOT default to North-up if the user selected a different orientation.` : '';
 
-PLANT MARKERS:
-- Number each planting area 1 through ${numPlants}
-- Numbers must be INSIDE the garden boundary
-- NO numbers outside the garden outline
-- Each number must be inside or immediately beside a planting bed or plant symbol, never in empty space
+    // ── Aerial plan prompt using spatial audit ─────────────────────────────────
+    const aerialPrompt = `You are generating a precise architectural garden layout plan.
 
-GRID:
-- Draw columns A–F evenly across the garden width ONLY
-- Draw rows 1–6 evenly down the garden height ONLY
-- Grid lines stay INSIDE or ON the garden boundary
-- Column letters A–F along the TOP edge of the garden outline only
-- Row numbers 1–6 along the LEFT edge of the garden outline only
-- NO extra numbers or letters scattered outside the boundary
+SPATIAL AUDIT OF THIS GARDEN:
+${JSON.stringify(spatialAudit, null, 2)}
 
-COMPASS: Small neat compass rose in the top-right corner of the image, clearly outside the garden boundary. Show ${orientation || 'N'} as the primary direction.
+GENERATION RULES — READ ALL BEFORE DRAWING:
 
-SCALE: Simple scale bar at the bottom of the image.
+VIEWPOINT: Directly vertical, 90 degrees straight down. Pure 2D orthographic top-down view. No perspective. No isometric. No 3D. Completely flat.
 
-STYLE: Hand-drawn sketch on cream paper. Pencil and watercolour fills. Ink outlines for boundaries. Soft colour for zones.
+GARDEN SHAPE: ${spatialAudit.gardenShape || gardenShape}
+Draw the garden outline as a bold black shape that EXACTLY matches this shape and aspect ratio: ${aspectRatio}.
+If the garden is narrow, draw it narrow. If wide, draw it wide. Match the proportions precisely.
 
-CRITICAL RULES:
-1. ALL numbered markers inside garden boundary only
-2. Grid labels only on the edges of the garden outline
-3. No random numbers or letters scattered in margins
-4. Plan proportions must match actual garden proportions
-5. Internal layout must match the photorealistic render`;
+ORIENTATION: Garden faces ${orientation || 'N'}
+Top of the plan = the rear boundary (furthest from camera in the photo)
+Bottom of the plan = the front boundary (closest to camera in the photo)
 
-    // ── Generate aerial sketch ────────────────────────────────────────────────
+BOUNDARIES — draw as thick black lines (3px minimum):
+Top: ${spatialAudit.boundaries?.top || sc.rearBoundary || 'rear boundary'}
+Bottom: ${spatialAudit.boundaries?.bottom || sc.frontBoundary || 'front boundary'}
+Left: ${spatialAudit.boundaries?.left || sc.leftBoundary || 'left boundary'}
+Right: ${spatialAudit.boundaries?.right || sc.rightBoundary || 'right boundary'}
+
+ZONES — draw each zone in its correct position:
+${(spatialAudit.zones || []).map((z: any) => `- ${z.name}: at grid position ${z.gridPosition}, ${z.relativeSize || ''}, type: ${z.type}`).join('\n') || '- Distribute zones evenly within the garden boundary'}
+
+PLANTS — mark each plant position with a small numbered circle:
+${(spatialAudit.plants || []).map((p: any) => `- Plant ${p.number} (${p.name}): at grid position ${p.gridPosition}`).join('\n') || '- Place plant markers evenly in border areas'}
+ALL plant markers must be INSIDE the garden boundary. NO markers outside the boundary lines.
+
+STYLE:
+- Clean black ink outlines for all boundaries and beds
+- Light watercolour zone fills: Lawn = soft green, Paths/Paving = warm grey/sand, Planting beds = soft terracotta/blush, Structures = light blue-grey
+- Cream/off-white paper background
+- Hand-drawn sketch quality — precise but with slight hand-drawn character
+
+IMAGE CLEANLINESS — MANDATORY:
+Do NOT draw any grid lines, column letters (A-F), row numbers (1-6), reference numbers, scale bars, or any alphanumeric grid overlay on this image.
+Do NOT add any numbered circles or markers — these will be added by the application.
+Do NOT add any annotation text other than the zone labels and compass below.
+All grid lines and plant number markers will be added separately by the application.
+
+TEXT LABELS:
+- Label major zones only: LAWN, PATH, BORDER, PATIO, SHED
+- Single clean word labels, no codes or abbreviations
+- Maximum 6 text labels total
+
+${compassLock}
+
+SCALE BAR: Simple horizontal scale bar at bottom. Label it "Scale: 1cm = 1m" approximately.
+
+ACCURACY PRIORITY:
+Geometric accuracy of zone placement is more important than artistic quality. The zones must be in the right positions relative to each other and to the boundaries.`;
+
+    // ── Generate aerial sketch ─────────────────────────────────────────────────
     console.log('Starting aerial sketch generation...');
     let aerialImageBase64: string | null = null;
     try {
-      aerialImageBase64 = await generateImage(aerialPrompt);
+      aerialImageBase64 = await generateImage(aerialPrompt, originalImageBase64, originalImageMimeType);
       console.log('Aerial sketch complete, size:', aerialImageBase64?.length ?? 0);
     } catch (err) {
       console.error('Aerial sketch generation failed:', JSON.stringify(err));
