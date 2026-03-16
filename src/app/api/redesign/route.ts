@@ -155,6 +155,19 @@ const DESIGN_SCHEMA = `{
     "lightAspect": "apparent light direction and any obvious shade areas",
     "notes": "any other permanent constraints or utility features"
   },
+  "layoutDescription": {
+    "elements": [
+      {
+        "id": "LE1",
+        "type": "Zone|Path|Surface|Structure|PlantingArea|WaterFeature|FocalPoint",
+        "label": "descriptive name",
+        "gridLocation": "e.g. B2 or C3-E5 for areas spanning multiple squares",
+        "description": "what this element is, what it looks like, its materials or plants",
+        "material": "specific paving material, plant type, or surface treatment"
+      }
+    ],
+    "layoutNarrative": "2-3 sentence plain-language description of the complete spatial layout reading from front (row 6) to rear (row 1), and left (column A) to right (column F)"
+  },
   "visualPrompt": "PRESERVE EXACTLY: [list all walls, fences, buildings from photo]. Work WITHIN these structures. Only change planting, paving, and soft landscaping within the existing footprint.",
   "confidence": 0.85,
   "caveats": ["any assumptions made or limitations of this proposal"]
@@ -236,16 +249,23 @@ Be as precise as possible. This data will lock geometry in all subsequent genera
   return JSON.parse(clean);
 }
 
-// ─── STEP 2 — Concept Base Plan ────────────────────────────────────────────────
+// ─── STEP 3 — Concept Base Plan ────────────────────────────────────────────────
 // Generates a hand-drawn top-down architectural sketch with a labelled A–F × 1–6 grid.
-// This is returned as aerialImageBase64 and used as visual context for Step 3.
+// Receives the full design JSON from Step 2 and draws its layoutDescription exactly —
+// it must not invent anything that is not declared in the design synthesis.
 
-async function step2_conceptBasePlan(
+async function step3_conceptBasePlan(
   fingerprint: Record<string, any>,
+  designJSON: Record<string, any>,
   orientation: string,
 ): Promise<string | null> {
   const structuresList = (fingerprint.immovableStructures || []).map((s: string) => `- ${s}`).join('\n') || '- None identified';
   const vegetationList = (fingerprint.existingVegetation || []).map((v: string) => `- ${v}`).join('\n') || '- None identified';
+
+  const layoutElements = (designJSON.layoutDescription?.elements || [])
+    .map((el: any) => `- [${el.gridLocation || '?'}] ${el.label} (${el.type}): ${el.description}${el.material ? ' — ' + el.material : ''}`)
+    .join('\n') || '- No layout elements specified';
+  const layoutNarrative = designJSON.layoutDescription?.layoutNarrative || '';
 
   const prompt = `Generate a precise architectural garden base plan — a hand-drawn top-down 2D sketch.
 
@@ -262,11 +282,19 @@ ${structuresList}
 ${vegetationList}
 - Ground surface: ${fingerprint.groundSurface || 'mixed'}
 
+DESIGN LAYOUT — draw exactly these elements and nothing else:
+${layoutNarrative}
+
+ELEMENTS TO DRAW (each positioned on the A–F × 1–6 grid at the stated location):
+${layoutElements}
+
+CRITICAL DRAWING RULE: Every element listed above must appear on the plan at its stated grid position. Do not draw any zone, path, surface, structure, or feature that is not listed above. The plan is a faithful drawing of the design synthesis output — it must not invent anything independently.
+
 VIEWPOINT: Directly vertical, 90° straight down. Pure 2D orthographic top-down. No perspective. No 3D. Completely flat.
 
 ORIENTATION: Garden faces ${orientation || 'N'}
-- Top of plan = rear boundary (furthest from camera)
-- Bottom of plan = front boundary (closest to camera)
+- Top of plan = rear boundary (furthest from camera, row 1)
+- Bottom of plan = front boundary (closest to camera, row 6)
 
 GRID — draw a faint reference grid over the whole plan:
 - 6 columns labelled A–F left to right
@@ -286,6 +314,7 @@ STYLE:
 DO NOT add any plant markers, numbered circles, or plant labels.
 DO NOT add zone text labels.
 DO NOT add a compass rose or scale bar.
+DO NOT draw any element not listed in the ELEMENTS TO DRAW section above.
 The grid letters and numbers are the ONLY text on the image.
 Geometric accuracy of the boundary and garden shape is the top priority.`;
 
@@ -301,15 +330,15 @@ Geometric accuracy of the boundary and garden shape is the top priority.`;
   return `data:${mime};base64,${imagePart.inlineData.data}`;
 }
 
-// ─── STEP 3 — Garden Design ────────────────────────────────────────────────────
-// Produces the full design JSON using the original photo + concept base plan as
-// visual context, and the fingerprint as pre-confirmed site constraints.
+// ─── STEP 2 — Garden Design ────────────────────────────────────────────────────
+// Produces the full design JSON (including layoutDescription — the master spatial
+// record) from the original photo and fingerprint. Runs before the Concept Base
+// Plan so the design decisions are made once and both visual outputs draw from them.
 
-async function step3_gardenDesign(
+async function step2_gardenDesign(
   imageBase64: string,
   imageMimeType: string,
   fingerprint: Record<string, any>,
-  basePlanBase64: string | null,
   style: string,
   orientation: string,
   region: string,
@@ -397,6 +426,21 @@ HARD CONSTRAINT — GRID BOUNDS (absolutely non-negotiable):
 - If more than 12 plants are included, multiple plants MUST share grid squares or be grouped — do NOT invent out-of-range coordinates to fit them.
 
 ═══════════════════════════════════════════════════════════════
+CRITICAL RULE 8 — LAYOUT DESCRIPTION (master spatial record)
+═══════════════════════════════════════════════════════════════
+The layoutDescription field is the single source of truth for everything that appears in this garden design.
+Populate layoutDescription.elements with EVERY spatial element you are proposing:
+- Every zone (entertainment area, lawn, vegetable bed, seating area, etc.) — with its grid location
+- Every path and circulation route — with its grid location and surface material
+- Every surface treatment (paving, gravel, decking, lawn, bark chip area) — with its grid location
+- Every structural feature (pergola, raised bed, water feature, screen, trellis) — with its grid location
+- Every distinct planting bed or area — with its grid location
+- Every focal point — with its grid location
+Nothing may appear in the Concept Base Plan image or the photorealistic render that is not declared in layoutDescription.elements first.
+The layoutNarrative must be a plain-language spatial walkthrough of the complete design.
+Minimum 8 elements in layoutDescription.elements.
+
+═══════════════════════════════════════════════════════════════
 TONE
 ═══════════════════════════════════════════════════════════════
 Plain, direct, technical English. No poetry or flowery language.
@@ -425,8 +469,6 @@ This creativity level is NON-NEGOTIABLE. It defines the scope and ambition of ev
 PRE-EXTRACTED SITE FINGERPRINT (use this verbatim for siteConstraints):
 ${JSON.stringify(fingerprint, null, 2)}
 
-${basePlanBase64 ? 'The second image is the concept base plan generated from this fingerprint — use it as spatial reference for zone placement and plant positioning.' : ''}
-
 Return a single JSON object matching this exact schema. Every field must be populated. No nulls. No empty arrays. No empty strings.
 
 Minimum counts you must meet:
@@ -442,12 +484,8 @@ ${DESIGN_SCHEMA}`;
 
   const parts: any[] = [
     { inlineData: { mimeType: imageMimeType, data: imageBase64 } },
+    { text: userText },
   ];
-  if (basePlanBase64) {
-    const basePlanRaw = basePlanBase64.includes(',') ? basePlanBase64.split(',')[1] : basePlanBase64;
-    parts.push({ inlineData: { mimeType: 'image/png', data: basePlanRaw } });
-  }
-  parts.push({ text: userText });
 
   const response = await ai.models.generateContent({
     model: 'gemini-2.5-flash',
@@ -486,7 +524,7 @@ function clampGridLocation(loc: string | undefined | null): string {
 }
 
 function clampGridLocations(design: Record<string, any>): void {
-  const plants: any[] = design?.plants ?? [];
+  const plants: any[] = design?.plantingSpecification?.plants ?? [];
   for (const plant of plants) {
     if ('gridLocation' in plant) {
       plant.gridLocation = clampGridLocation(plant.gridLocation);
@@ -549,7 +587,21 @@ Every square metre of ground is deliberately treated — no bare soil, no remnan
 
   const creativityBlock = creativityInstructions[creativityLevel] || creativityInstructions[3];
 
-  // Build plant-by-position descriptions for spatial accuracy
+  // Build spatial layout from the design's master layoutDescription
+  const layoutElements: any[] = designJSON.layoutDescription?.elements || [];
+  const layoutNarrative = designJSON.layoutDescription?.layoutNarrative || '';
+
+  const spatialElements = layoutElements.map((el: any) => {
+    const loc = (el.gridLocation || '').toUpperCase();
+    const rowMatch = loc.match(/(\d)/);
+    const row = rowMatch ? parseInt(rowMatch[1]) : 3;
+    const depth = row <= 2 ? 'in the upper distance near the rear boundary'
+      : row <= 4 ? 'at mid-distance in the garden'
+      : 'close in the foreground';
+    return `- [${el.gridLocation || '?'}] ${el.label} (${el.type}) — ${depth}: ${el.description}${el.material ? ', ' + el.material : ''}`;
+  }).join('\n');
+
+  // Also list plant positions as supplementary detail
   const plants: any[] = designJSON.plantingSpecification?.plants || [];
   const plantPositions = plants.slice(0, 15).map((p: any, i: number) => {
     const loc = (p.gridLocation || '').toUpperCase();
@@ -588,6 +640,12 @@ EXISTING LARGE PLANTS — RETAIN UNLESS EXPLICITLY REMOVED:
 ${vegetationList}
 
 ${creativityBlock}
+
+DESIGN LAYOUT — THIS IS THE MASTER SPATIAL RECORD (the render is a photorealistic version of this layout):
+${layoutNarrative}
+
+SPATIAL ELEMENTS TO SHOW (every element listed here must appear at its stated depth in the scene — nothing else may be added):
+${spatialElements || '- Place elements as described in the design concept'}
 
 PLANT PLACEMENT IN SCENE (place each species at its correct perspective position):
 ${plantPositions || '- Place plants as described in the design concept'}
@@ -777,25 +835,15 @@ export async function POST(request: Request) {
       console.error('[Pipeline] Step 1 failed, continuing with empty fingerprint:', err);
     }
 
-    // ── Step 2 — Concept Base Plan ──────────────────────────────────────────────
-    console.log('[Pipeline] Step 2: Concept base plan...');
-    let aerialImageBase64: string | null = null;
-    try {
-      aerialImageBase64 = await step2_conceptBasePlan(fingerprint, effectiveOrientation);
-      console.log('[Pipeline] Step 2 complete, size:', aerialImageBase64?.length ?? 0);
-    } catch (err) {
-      console.error('[Pipeline] Step 2 failed:', err);
-    }
-
-    // ── Step 3 — Garden Design JSON ─────────────────────────────────────────────
-    console.log('[Pipeline] Step 3: Garden design...');
+    // ── Step 2 — Garden Design JSON (master source of truth) ───────────────────
+    // Runs before the Concept Base Plan so layoutDescription drives both visual outputs.
+    console.log('[Pipeline] Step 2: Garden design...');
     let designJSON: Record<string, any> = {};
     try {
-      designJSON = await step3_gardenDesign(
+      designJSON = await step2_gardenDesign(
         originalImageBase64,
         effectiveMimeType,
         fingerprint,
-        aerialImageBase64,
         style,
         effectiveOrientation,
         region,
@@ -805,10 +853,21 @@ export async function POST(request: Request) {
         creativityLevel,
         creativityDescription,
       );
-      console.log('[Pipeline] Step 3 complete, keys:', Object.keys(designJSON).join(', '));
+      console.log('[Pipeline] Step 2 complete, keys:', Object.keys(designJSON).join(', '));
+    } catch (err) {
+      console.error('[Pipeline] Step 2 failed:', err);
+      return NextResponse.json({ error: 'Garden design generation failed. Please try again.' }, { status: 500 });
+    }
+
+    // ── Step 3 — Concept Base Plan (draws the design layout description) ────────
+    // Receives designJSON so the plan is a faithful drawing of Step 2's decisions.
+    console.log('[Pipeline] Step 3: Concept base plan...');
+    let aerialImageBase64: string | null = null;
+    try {
+      aerialImageBase64 = await step3_conceptBasePlan(fingerprint, designJSON, effectiveOrientation);
+      console.log('[Pipeline] Step 3 complete, size:', aerialImageBase64?.length ?? 0);
     } catch (err) {
       console.error('[Pipeline] Step 3 failed:', err);
-      return NextResponse.json({ error: 'Garden design generation failed. Please try again.' }, { status: 500 });
     }
 
     // ── Step 4 — Build Visual Prompt ────────────────────────────────────────────
