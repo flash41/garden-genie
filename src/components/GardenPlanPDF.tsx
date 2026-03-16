@@ -723,7 +723,7 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
                     <View key={i} wrap={false} style={i % 2 === 0 ? S.tableRow : S.tableRowAlt}>
                       <Text style={[S.tableCellB, { flex: 0.4, color: T.accent }]}>{i + 1}</Text>
                       <Text style={[S.tableCellB, { flex: 0.8 }]}>{safe(p.gridLocation)}</Text>
-                      <Text style={[S.tableCellB, { flex: 3.2, fontSize: 7.5, fontStyle: 'italic' }]}>{safe(p.botanicalName)}{p.commonName && p.commonName !== p.botanicalName ? ` — ${p.commonName}` : ''}</Text>
+                      <Text style={[S.tableCellB, { flex: 3.2, fontSize: 7.5 }]}>{safe(p.botanicalName)}{p.commonName && p.commonName !== p.botanicalName ? ` — ${p.commonName}` : ''}</Text>
                       <Text style={[S.tableCell, { flex: 3.6, fontSize: 7.5 }]}>{safe(p.designRationale)}</Text>
                     </View>
                   ))}
