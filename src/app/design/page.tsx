@@ -821,49 +821,30 @@ export default function GardigApp() {
     if (file?.type.startsWith("image/")) handleFile(file);
   }, []);
 
-  const callGemini = async (base64Data: string, mimeType: string) => {
-    const res = await fetch('/api/analyse', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        image: `data:${mimeType};base64,${base64Data}`,
-        designLang,
-        clientName: clientName || 'Client',
-        orientation: gardenOrientation || '',
-        turnstileToken,
-        currency: userCurrency,
-      }),
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || `Analysis failed (${res.status})`);
-    }
-    return res.json();
-  };
-
-  const generateRender = async (visualPrompt: string, zones: any[], siteConstraints?: any, plantCount?: number) => {
-    const originalBase64 = imageDataUrl ? imageDataUrl.split(',')[1] : undefined;
-    const originalMimeType = imageDataUrl ? imageDataUrl.split(';')[0].split(':')[1] : undefined;
-    console.log('Sending orientation to redesign:', gardenOrientation);
+  const callUnifiedPipeline = async (base64Data: string, mimeType: string) => {
     const response = await fetch('/api/redesign', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        originalImageBase64: base64Data,
+        originalImageMimeType: mimeType,
         style: designLang,
-        visualPrompt,
-        zones,
-        siteConstraints,
         orientation: gardenOrientation || 'N',
-        plantCount,
-        originalImageBase64: originalBase64,
-        originalImageMimeType: originalMimeType,
+        clientName: clientName || 'Private Client',
+        turnstileToken,
+        currency: userCurrency,
       }),
     });
-    if (!response.ok) return { renderBase64: null, aerialBase64: null, validationResult: null, retried: false };
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.error || `Design pipeline failed (${response.status})`);
+    }
     const data = await response.json();
+    if (data.error) throw new Error(data.error);
     return {
-      renderBase64: (data.imageError ? null : data.imageBase64) || null,
-      aerialBase64: (data.imageError ? null : data.aerialImageBase64) || null,
+      designJSON: data.designJSON || null,
+      imageBase64: (data.imageError ? null : data.imageBase64) || null,
+      aerialImageBase64: (data.imageError ? null : data.aerialImageBase64) || null,
       validationResult: data.validationResult || null,
       retried: data.retried || false,
     };
@@ -885,41 +866,34 @@ export default function GardigApp() {
         setError("No image selected. Please upload a photo first.");
         return;
       }
-      setLoadingMsg("Analysing site photograph...");
+      setLoadingMsg("Designing your garden...");
       const base64 = imageDataUrl.split(",")[1];
       const mimeType = imageDataUrl.split(";")[0].split(":")[1];
-      const doc = await callGemini(base64, mimeType);
-      setDocData(doc);
-      setLoadingMsg("Generating design render and layout sketch...");
-      const plants = doc.plantingSpecification?.plants || [];
-      const zones  = doc.spatialLayout?.zones || [];
-      const siteConstraints = doc.siteConstraints || null;
-      let imgBase64: string | null = null;
-      let aerialBase64: string | null = null;
-      if (doc.visualPrompt) {
-        const result = await generateRender(doc.visualPrompt, zones, siteConstraints, plants.length || 10);
-        imgBase64   = result.renderBase64;
-        aerialBase64 = result.aerialBase64;
-        setRenderUrl(imgBase64);
-        setAerialImageUrl(aerialBase64);
-        if (result.validationResult !== undefined) {
-          setValidationResult({ result: result.validationResult, retried: result.retried });
-        }
+
+      const result = await callUnifiedPipeline(base64, mimeType);
+
+      setDocData(result.designJSON);
+      setRenderUrl(result.imageBase64);
+      setAerialImageUrl(result.aerialImageBase64);
+      if (result.validationResult !== undefined) {
+        setValidationResult({ result: result.validationResult, retried: result.retried });
       }
 
-      // Generate annotated grid overlays for PDF
-      setLoadingMsg("Annotating grid overlays...");
-      if (imgBase64 && plants.length > 0) {
-        const overlay = await generateGridOverlay(imgBase64, plants);
+      // Generate annotated grid overlays for PDF (client-side canvas)
+      setLoadingMsg("Annotating layout plans...");
+      const plants = result.designJSON?.plantingSpecification?.plants || [];
+      if (result.imageBase64 && plants.length > 0) {
+        const overlay = await generateGridOverlay(result.imageBase64, plants);
         setGridImageUrl(overlay || null);
       } else if (imageDataUrl && plants.length > 0) {
         const overlay = await generateGridOverlay(imageDataUrl, plants);
         setGridImageUrl(overlay || null);
       }
-      if (aerialBase64 && plants.length > 0) {
-        const aerialOverlay = await generateGridOverlay(aerialBase64, plants);
+      if (result.aerialImageBase64 && plants.length > 0) {
+        const aerialOverlay = await generateGridOverlay(result.aerialImageBase64, plants);
         setAerialGridImageUrl(aerialOverlay || null);
       }
+
       setLoadingMsg("Building proposal...");
       await new Promise(r => setTimeout(r, 300));
       setStep("result");
@@ -1083,7 +1057,7 @@ export default function GardigApp() {
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');@keyframes spin{to{transform:rotate(360deg)}}@keyframes ellipsis{0%,20%{content:'.'}40%,60%{content:'..'}80%,100%{content:'...'}} .ellipsis::after{content:'...';display:inline-block;animation:ellipsis 1.5s steps(3,end) infinite}`}</style>
       <div style={{ textAlign: "center", maxWidth: 400, padding: "0 24px" }}>
         <div style={{ width: 44, height: 44, borderRadius: "50%", border: `3px solid ${C.rule}`, borderTopColor: C.accent, margin: "0 auto 24px", animation: "spin 0.75s linear infinite" }} />
-        <div style={{ fontFamily: C.fontSerif, fontSize: px(22), fontWeight: 600, color: C.ink, marginBottom: 10 }}>Analysing Your Garden</div>
+        <div style={{ fontFamily: C.fontSerif, fontSize: px(22), fontWeight: 600, color: C.ink, marginBottom: 10 }}>Designing Your Garden</div>
         <div style={{ fontSize: px(14), color: C.inkLight, marginBottom: 20 }}>{loadingMsg}</div>
         <div style={{
           background: C.surface, border: `1px solid ${C.rule}`, borderLeft: `3px solid ${C.accent}`,
