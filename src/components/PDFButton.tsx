@@ -47,6 +47,7 @@ export default function PDFButton({
   ].filter(Boolean).join('_') + '.pdf';
 
   async function buildPdf(): Promise<Blob | null> {
+    console.log('[PDFButton] Starting PDF generation');
     const pdfDoc = (
       <GardenPlanPDF
         doc={doc}
@@ -61,25 +62,9 @@ export default function PDFButton({
       />
     );
     try {
-      const instance = pdf();
-      // Wait for the reconciler to commit the document tree before rendering PDF.
-      // Using updateContainer's callback avoids the race condition where
-      // container.document is still null when toBlob() is called (React 19 async reconciler).
-      await new Promise<void>((resolve, reject) => {
-        const timer = setTimeout(
-          () => reject(new Error('PDF generation timed out')),
-          60000,
-        );
-        instance.updateContainer(pdfDoc, () => {
-          clearTimeout(timer);
-          if (!instance.container.document) {
-            reject(new Error('PDF document not ready after commit'));
-            return;
-          }
-          resolve();
-        });
-      });
-      return await instance.toBlob();
+      const blob = await pdf(pdfDoc).toBlob();
+      console.log('[PDFButton] PDF generated, size:', blob.size);
+      return blob;
     } catch (err) {
       console.error('[PDFButton] PDF generation error:', err);
       return null;
