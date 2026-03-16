@@ -859,8 +859,8 @@ export default function GardigApp() {
         originalImageMimeType: originalMimeType,
       }),
     });
-    const data = await response.json();
     if (!response.ok) return { renderBase64: null, aerialBase64: null, validationResult: null, retried: false };
+    const data = await response.json();
     return {
       renderBase64: (data.imageError ? null : data.imageBase64) || null,
       aerialBase64: (data.imageError ? null : data.aerialImageBase64) || null,
@@ -873,6 +873,12 @@ export default function GardigApp() {
     setHasAttempted(true);
     if (!isFormValid()) return;
     setError(null);
+    setDocData(null);
+    setRenderUrl(null);
+    setGridImageUrl(null);
+    setAerialImageUrl(null);
+    setAerialGridImageUrl(null);
+    setValidationResult(null);
     setStep("loading");
     try {
       if (!imageDataUrl) {
@@ -1208,7 +1214,21 @@ export default function GardigApp() {
           <span style={{ fontSize: px(12), color: "rgba(255,255,255,0.4)", letterSpacing: "0.05em" }}>dedrab.com</span>
         </div>
         <div className="result-header-actions">
-          <button onClick={() => { setStep("upload"); setDocData(null); setRenderUrl(null); setGridImageUrl(null); }}
+          <button onClick={() => {
+            setStep("upload");
+            setDocData(null);
+            setRenderUrl(null);
+            setGridImageUrl(null);
+            setAerialImageUrl(null);
+            setAerialGridImageUrl(null);
+            setValidationResult(null);
+            setEmailModal(false);
+            setEmailStatus("idle");
+            setEmailError(null);
+            setSelfSendStatus("idle");
+            setSelfSendToast(null);
+            setShowBefore(false);
+          }}
             style={{ background: "rgba(255,255,255,0.08)", border: `1px solid rgba(255,255,255,0.2)`, color: "rgba(255,255,255,0.8)", padding: "7px 15px", borderRadius: C.r, cursor: "pointer", fontFamily: C.font, fontSize: px(13), fontWeight: 600 }}>
             ← New Analysis
           </button>
@@ -1302,7 +1322,7 @@ export default function GardigApp() {
                     <div style={{ marginTop: 10, fontSize: px(13), color: C.red }}>{emailError || 'Failed to send. Please try again.'}</div>
                   )}
                   <div style={{ marginTop: 16, fontSize: px(12), color: C.inkLight, lineHeight: 1.5 }}>
-                    The PDF plan will be attached to a branded Dedrab email sent from noreply@dedrab.com.
+                    The PDF plan will be attached to a branded Dedrab email sent from hello@dedrab.com.
                   </div>
                   <div style={{ marginTop: 20, display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
                     <button onClick={() => setEmailModal(false)} style={{ background: C.surface, border: `1px solid ${C.rule}`, color: C.inkMid, padding: '9px 18px', borderRadius: C.r, cursor: 'pointer', fontFamily: C.font, fontSize: px(13), fontWeight: 600 }}>Cancel</button>
