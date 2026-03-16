@@ -79,7 +79,7 @@ const DESIGN_SCHEMA = `{
         "designRationale": "why this plant suits this site",
         "existingElement": "what currently exists at this grid location in the before photo",
         "layer": "Canopy|Understorey|Shrub|Ground|Climber",
-        "gridLocation": "e.g. B3",
+        "gridLocation": "B3",
         "zoneIds": ["Z1"]
       }
     ],
@@ -413,9 +413,15 @@ The visualPrompt field MUST begin with: "Photorealistic garden design render. PR
 ═══════════════════════════════════════════════════════════════
 CRITICAL RULE 7 — GRID LOCATION ASSIGNMENT (non-negotiable)
 ═══════════════════════════════════════════════════════════════
-For EVERY plant, assign a gridLocation field.
-Grid: Columns A–F run left to right (A = far left, F = far right). Rows 1–6 run top to bottom (1 = rear, 6 = front).
-- Every plant MUST have a gridLocation (never null or empty)
+For EVERY plant in plantingSpecification.plants, populate the gridLocation field on the plant object itself.
+This gridLocation is NOT the same as layoutDescription — it is the specific grid cell this individual plant occupies.
+It is mandatory on every plant object. It is separate from and in addition to layoutDescription.elements.
+
+Format: exactly one column letter (A, B, C, D, E, or F) immediately followed by one row number (1, 2, 3, 4, 5, or 6).
+Correct examples: "B3", "D1", "A6", "F4". Wrong examples: null, "", "e.g. B3", "B 3", "Grid B3", "B-3".
+
+Grid orientation: Columns A–F run left to right (A = far left, F = far right). Rows 1–6 run top to bottom (1 = rear, 6 = front).
+- Every plant object MUST have gridLocation set to a valid two-character string — never null, never empty, never missing
 - Do not assign the same gridLocation to more than 2 plants
 - Spread plants across the full A–F, 1–6 grid
 
@@ -428,13 +434,14 @@ HARD CONSTRAINT — GRID BOUNDS (absolutely non-negotiable):
 ═══════════════════════════════════════════════════════════════
 CRITICAL RULE 8 — LAYOUT DESCRIPTION (master spatial record)
 ═══════════════════════════════════════════════════════════════
-The layoutDescription field is the single source of truth for everything that appears in this garden design.
-Populate layoutDescription.elements with EVERY spatial element you are proposing:
+The layoutDescription field declares the zones, paths, surfaces, and structural features of the design.
+Note: layoutDescription.elements covers AREAS and FEATURES — NOT individual plants. Individual plants have their own gridLocation field on each plant object (Rule 7 above).
+Populate layoutDescription.elements with EVERY spatial area or feature you are proposing:
 - Every zone (entertainment area, lawn, vegetable bed, seating area, etc.) — with its grid location
 - Every path and circulation route — with its grid location and surface material
 - Every surface treatment (paving, gravel, decking, lawn, bark chip area) — with its grid location
 - Every structural feature (pergola, raised bed, water feature, screen, trellis) — with its grid location
-- Every distinct planting bed or area — with its grid location
+- Every distinct planting bed or area (as an area, not individual plants) — with its grid location
 - Every focal point — with its grid location
 Nothing may appear in the Concept Base Plan image or the photorealistic render that is not declared in layoutDescription.elements first.
 The layoutNarrative must be a plain-language spatial walkthrough of the complete design.
@@ -511,23 +518,50 @@ ${DESIGN_SCHEMA}`;
 const VALID_COLUMNS = ['A', 'B', 'C', 'D', 'E', 'F'];
 
 function clampGridLocation(loc: string | undefined | null): string {
-  if (!loc || typeof loc !== 'string') return 'A1';
-  const match = loc.trim().toUpperCase().match(/^([A-Z]+)(\d+)$/);
-  if (!match) return 'A1';
-  const [, colRaw, rowRaw] = match;
-  // Clamp column: treat A=0…F=5, anything beyond F maps to F
-  const colIndex = Math.min(colRaw.charCodeAt(0) - 65, 5); // 65 = 'A'
-  const col = VALID_COLUMNS[Math.max(0, colIndex)];
-  // Clamp row: 1–6
-  const row = Math.min(Math.max(parseInt(rowRaw, 10), 1), 6);
-  return `${col}${row}`;
+  if (!loc || typeof loc !== 'string') return null as any; // signal: no value, caller decides fallback
+  const upper = loc.trim().toUpperCase();
+  // Strict match: letter(s) immediately followed by digit(s), nothing else
+  const strict = upper.match(/^([A-Z]+)(\d+)$/);
+  if (strict) {
+    const colIndex = Math.min(strict[1].charCodeAt(0) - 65, 5);
+    const col = VALID_COLUMNS[Math.max(0, colIndex)];
+    const row = Math.min(Math.max(parseInt(strict[2], 10), 1), 6);
+    return `${col}${row}`;
+  }
+  // Loose fallback: find an A-F letter and a 1-6 digit anywhere in the string
+  // Handles formats like "B 3", "Grid B3", "B-3", "col B row 3"
+  const colMatch = upper.match(/\b([A-F])\b/);
+  const rowMatch = upper.match(/\b([1-6])\b/);
+  if (colMatch && rowMatch) {
+    return `${colMatch[1]}${rowMatch[1]}`;
+  }
+  return null as any; // no usable value found
 }
 
 function clampGridLocations(design: Record<string, any>): void {
   const plants: any[] = design?.plantingSpecification?.plants ?? [];
+  // Build a list of positions already assigned so we can spread plants with missing locations
+  const used: string[] = plants
+    .map((p: any) => clampGridLocation(p.gridLocation))
+    .filter(Boolean);
+
+  // Precompute a spread sequence across the grid for fallback assignment
+  const allCells: string[] = [];
+  for (let r = 1; r <= 6; r++) for (const c of VALID_COLUMNS) allCells.push(`${c}${r}`);
+  let fallbackIdx = 0;
+
   for (const plant of plants) {
-    if ('gridLocation' in plant) {
-      plant.gridLocation = clampGridLocation(plant.gridLocation);
+    const clamped = clampGridLocation(plant.gridLocation);
+    if (clamped) {
+      plant.gridLocation = clamped;
+    } else {
+      // Assign the next unused cell so plants spread across the grid
+      while (fallbackIdx < allCells.length && used.filter(u => u === allCells[fallbackIdx]).length >= 2) {
+        fallbackIdx++;
+      }
+      plant.gridLocation = allCells[fallbackIdx % allCells.length] ?? 'A1';
+      used.push(plant.gridLocation);
+      fallbackIdx++;
     }
   }
 }
