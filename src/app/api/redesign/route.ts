@@ -390,6 +390,12 @@ Grid: Columns A–F run left to right (A = far left, F = far right). Rows 1–6 
 - Do not assign the same gridLocation to more than 2 plants
 - Spread plants across the full A–F, 1–6 grid
 
+HARD CONSTRAINT — GRID BOUNDS (absolutely non-negotiable):
+- Valid columns are A, B, C, D, E, F ONLY. Never use G, H, or any letter beyond F.
+- Valid rows are 1, 2, 3, 4, 5, 6 ONLY. Never use 7, 8, or any number higher than 6.
+- Any gridLocation outside A–F × 1–6 is INVALID and must not appear in your output.
+- If more than 12 plants are included, multiple plants MUST share grid squares or be grouped — do NOT invent out-of-range coordinates to fit them.
+
 ═══════════════════════════════════════════════════════════════
 TONE
 ═══════════════════════════════════════════════════════════════
@@ -456,7 +462,36 @@ ${DESIGN_SCHEMA}`;
 
   const text = response.candidates?.[0]?.content?.parts?.find((p: any) => p.text)?.text || '';
   const clean = text.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
-  return JSON.parse(clean);
+  const design = JSON.parse(clean);
+  clampGridLocations(design);
+  return design;
+}
+
+// ─── Grid location validator/clamper ──────────────────────────────────────────
+// Ensures every plant gridLocation is within A–F × 1–6, clamping any out-of-range
+// value before it reaches the frontend.
+const VALID_COLUMNS = ['A', 'B', 'C', 'D', 'E', 'F'];
+
+function clampGridLocation(loc: string | undefined | null): string {
+  if (!loc || typeof loc !== 'string') return 'A1';
+  const match = loc.trim().toUpperCase().match(/^([A-Z]+)(\d+)$/);
+  if (!match) return 'A1';
+  const [, colRaw, rowRaw] = match;
+  // Clamp column: treat A=0…F=5, anything beyond F maps to F
+  const colIndex = Math.min(colRaw.charCodeAt(0) - 65, 5); // 65 = 'A'
+  const col = VALID_COLUMNS[Math.max(0, colIndex)];
+  // Clamp row: 1–6
+  const row = Math.min(Math.max(parseInt(rowRaw, 10), 1), 6);
+  return `${col}${row}`;
+}
+
+function clampGridLocations(design: Record<string, any>): void {
+  const plants: any[] = design?.plants ?? [];
+  for (const plant of plants) {
+    if ('gridLocation' in plant) {
+      plant.gridLocation = clampGridLocation(plant.gridLocation);
+    }
+  }
 }
 
 // ─── STEP 4 — Build Visual Prompt (pure function) ─────────────────────────────
