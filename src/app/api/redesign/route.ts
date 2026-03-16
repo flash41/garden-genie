@@ -1,23 +1,3 @@
-// =============================================================
-// STABLE VERSION — Pre Spatial Pipeline Redesign
-// Branch checkpoint: main → feature/spatial-pipeline-redesign
-// Last tested and working: March 2026
-// 
-// Pipeline at this checkpoint:
-// 1. Receive image + design style from client
-// 2. Gemini multimodal call → returns plan (Markdown) + visualPrompt
-// 3. Pollinations image generation → garden render
-// 4. Gemini validation call → spatial consistency check + retry if fail
-// 5. Return render + plan to client for PDF assembly
-//
-// Known issues at this checkpoint:
-// - Share-by-email send button not working
-// - Grid reference numbers and plant markers not fully correlating
-// - Domain not yet connected to Vercel
-//
-// DO NOT MODIFY THIS FILE ON MAIN BRANCH
-// All pipeline changes go on: feature/spatial-pipeline-redesign
-// =============================================================
 import { GoogleGenAI } from '@google/genai';
 import { NextResponse } from 'next/server';
 
