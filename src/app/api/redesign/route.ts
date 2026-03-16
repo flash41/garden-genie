@@ -192,8 +192,32 @@ Return ONLY valid JSON (no markdown):
   "accessPoints": ["every visible entry/exit point"],
   "groundSurface": "current ground covering and any existing path positions",
   "lightAspect": "apparent light direction, shadow patterns, obvious shade areas",
-  "notes": "any other permanent constraints: utilities, drains, overhead wires, neighbouring structures"
+  "notes": "any other permanent constraints: utilities, drains, overhead wires, neighbouring structures",
+
+  "cameraElevationAngle": (number, estimated angle in degrees between camera lens and the horizon — typical garden photos range 5 to 35),
+  "horizonLinePercent": (number, 0–100 — vertical position of the horizon line as a percentage from the TOP of the image, e.g. 33 means horizon is one-third down),
+  "vanishingPointXPercent": (number, 0–100 — horizontal position of the vanishing point as a percentage across the image width; straight-on photos ≈ 50),
+  "foregroundToBackgroundRatio": (number, 0.0–1.0 — proportion of visible garden that is foreground vs distance; 1.0 = all foreground, 0.0 = all distance),
+
+  "boundaryPolygon": [
+    {"x": (number 0.0–1.0, normalised from LEFT edge of photo), "y": (number 0.0–1.0, normalised from TOP edge of photo)}
+  ]
 }
+
+PERSPECTIVE FIELD INSTRUCTIONS:
+- cameraElevationAngle: look at where the camera is relative to the ground. A photo taken at near-ground level looking slightly up = ~5-10 degrees. A photo taken standing, looking down = ~20-35 degrees.
+- horizonLinePercent: identify where the horizon (or the base of the rear wall/fence) sits in the image. If the rear wall base is at 30% from top, use 30. For typical garden photos taken standing up, this is usually 25-45.
+- vanishingPointXPercent: for straight-ahead shots this is ~50. For gardens shot at an angle it shifts left or right.
+- foregroundToBackgroundRatio: if most of the image shows the far end of the garden with little foreground, this is low (~0.3). If the foreground fills most of the image, this is high (~0.8).
+
+BOUNDARY POLYGON INSTRUCTIONS:
+The boundaryPolygon must trace the inner edge of the VISIBLE GARDEN BOUNDARY in this perspective photo.
+- Trace the fence line, wall line, or plot edge as it appears in the photo
+- Include the left boundary wall/fence, rear boundary, right boundary wall/fence, and front edge (near camera position)
+- Use at least 4 points, up to 12 for complex shapes
+- Points must be in order (clockwise preferred)
+- Normalise ALL coordinates: x=0.0 is LEFT edge of photo, x=1.0 is RIGHT edge; y=0.0 is TOP, y=1.0 is BOTTOM
+- The polygon must enclose ONLY the actual garden space, NOT the sky, adjacent buildings, or areas outside the garden
 
 Garden orientation (user-supplied): ${orientation || 'unknown'}
 Be as precise as possible. This data will lock geometry in all subsequent generation steps.`;
@@ -292,6 +316,8 @@ async function step3_gardenDesign(
   country: string,
   currency: string,
   clientName: string,
+  creativityLevel: number,
+  creativityDescription: string,
 ): Promise<Record<string, any>> {
   const systemInstruction = `You are a senior landscape architect and botanist producing a full professional garden design proposal document.
 
@@ -382,6 +408,14 @@ Geographic Region: ${region}
 Plant Climate: Only suggest plants proven to thrive in ${country} — hardy to at least -10°C, tolerating wet winters and cool summers for this region.
 Cost Currency: All cost estimates must be provided in ${currency}. Use realistic local market prices for ${country}.${orientation ? `\nGarden Orientation: ${orientation} — The garden faces ${orientation}. Factor sun exposure accordingly.` : ''}
 
+CREATIVITY LEVEL: ${creativityLevel} of 5 — ${creativityDescription}
+This creativity level is NON-NEGOTIABLE. It defines the scope and ambition of every part of the proposal:
+- The plant list must reflect this level: Level 1 = containers/pots only; Level 5 = full in-ground scheme with architectural specimens.
+- The hardscape specification must reflect this level: Level 1 = minor surface changes only; Level 5 = extensive new hard landscaping.
+- The implementation plan phasing must reflect this level of work.
+- The cost estimate must reflect this scope: Level 1 should be modest; Level 5 should reflect full transformation costs.
+- The visualPrompt field must explicitly describe the scope of change matching this level.
+
 PRE-EXTRACTED SITE FINGERPRINT (use this verbatim for siteConstraints):
 ${JSON.stringify(fingerprint, null, 2)}
 
@@ -433,6 +467,7 @@ function step4_buildVisualPrompt(
   designJSON: Record<string, any>,
   style: string,
   orientation: string,
+  creativityLevel: number,
 ): string {
   const sc = fingerprint;
   const structuresList = (sc.immovableStructures || []).map((s: string) => `- ${s}`).join('\n') || '- None identified';
@@ -441,6 +476,55 @@ function step4_buildVisualPrompt(
   const visualPromptBase = designJSON.visualPrompt
     ? `${designJSON.visualPrompt} ${style} style.`
     : `Photorealistic ${style} garden transformation. Professional landscape photography. Natural lighting.`;
+
+  // Creativity-level-specific planting and scope instructions
+  const creativityInstructions: Record<number, string> = {
+    1: `CREATIVITY LEVEL 1 — MINIMAL CHANGE:
+All plants must be in containers or pots only. No in-ground planting anywhere in the scene.
+No structural changes of any kind. No new paving, no new beds cut into the ground.
+Existing lawn, soil, and paving surfaces remain unchanged.
+Only add portable decorative elements: pots, containers, gravel on existing surfaces.
+The garden must look almost identical to the Before — just tidied and decorated with pots.`,
+    2: `CREATIVITY LEVEL 2 — SUBTLE:
+In-ground border planting is permitted along boundary walls and fences only.
+The lawn must be retained as the primary ground surface.
+No new structural elements, no raised beds, no new paving areas.
+Only one or two new surface materials may appear (e.g., gravel edging strip or stepping stones).
+No containers or pots visible. All plants are in-ground in border beds.`,
+    3: `CREATIVITY LEVEL 3 — CONSIDERED REDESIGN:
+Lawn may be partially replaced with ground cover, gravel, or defined planting beds.
+New path edging, defined bed edges, or a simple path treatment is visible.
+Moderate planting variety across multiple beds. A clearly designed garden.
+No large structural additions. Changes are clearly intentional but not radical.
+All plants are in-ground. No containers or pots.`,
+    4: `CREATIVITY LEVEL 4 — AMBITIOUS TRANSFORMATION:
+All planting is fully in-ground throughout the garden. No containers or pots.
+New hard surface areas are clearly visible (paved zone, gravel area, or decking).
+Structural shrubs and small trees are planted in-ground.
+A raised bed, level change, or defined structural feature may be present if space allows.
+The garden is clearly transformed. Maximum practical redesign within the existing boundaries.`,
+    5: `CREATIVITY LEVEL 5 — FULL TRANSFORMATION:
+All planting is fully in-ground. Absolutely no containers or pots anywhere in the scene.
+Extensive hard landscaping is visible: paved terraces, paths, gravel, edging, steps.
+Architectural plants and structural specimens dominate. Formal or dramatic planting scheme.
+A water feature, focal structure, or architectural element may be present.
+The garden is unrecognisable from the original. Maximum design ambition.
+Every square metre of ground is deliberately treated — no bare soil, no remnant lawn unless designed.`,
+  };
+
+  const creativityBlock = creativityInstructions[creativityLevel] || creativityInstructions[3];
+
+  // Build plant-by-position descriptions for spatial accuracy
+  const plants: any[] = designJSON.plantingSpecification?.plants || [];
+  const plantPositions = plants.slice(0, 15).map((p: any, i: number) => {
+    const loc = (p.gridLocation || '').toUpperCase();
+    const rowMatch = loc.match(/\d/);
+    const row = rowMatch ? parseInt(rowMatch[0]) : 3;
+    const depth = row <= 2 ? 'in the upper distance near the rear boundary'
+      : row <= 4 ? 'at mid-distance in the garden'
+      : 'close in the foreground';
+    return `- Plant ${i + 1}: ${p.botanicalName || p.commonName} (${p.type}) — ${depth}, grid ${p.gridLocation || '—'}`;
+  }).join('\n');
 
   return `SPATIAL LOCK — THIS RENDER MUST SHOW THE SAME GARDEN AS THE BEFORE PHOTO:
 
@@ -468,12 +552,10 @@ Do not remove, hide or replace these structures.
 EXISTING LARGE PLANTS — RETAIN UNLESS EXPLICITLY REMOVED:
 ${vegetationList}
 
-WHAT YOU ARE ALLOWED TO CHANGE:
-- Ground surface treatment within the existing footprint
-- Planting in beds along boundaries
-- Addition of small moveable elements (pots, furniture, lighting)
-- Surface of paths within existing layout
-- Addition of climbers on existing walls
+${creativityBlock}
+
+PLANT PLACEMENT IN SCENE (place each species at its correct perspective position):
+${plantPositions || '- Place plants as described in the design concept'}
 
 WHAT YOU MUST NOT CHANGE:
 - The shape or size of the garden space
@@ -490,6 +572,7 @@ FINAL CHECK BEFORE GENERATING:
 - Is the camera at the same position? Must be YES
 - Are all boundary walls in the same place? Must be YES
 - Does it look like the same garden? Must be YES
+- Does the planting style match creativity level ${creativityLevel}? Must be YES
 
 Style: Photorealistic garden photography. Natural daylight. No text overlays. No compass. No grid. No annotations.
 
@@ -610,7 +693,21 @@ export async function POST(request: Request) {
       clientName,
       turnstileToken,
       currency,
+      creativityLevel: rawCreativityLevel,
     } = await request.json();
+
+    const creativityLevel: number = typeof rawCreativityLevel === 'number'
+      ? Math.max(1, Math.min(5, Math.round(rawCreativityLevel)))
+      : 3;
+
+    const CREATIVITY_DESCRIPTIONS: Record<number, string> = {
+      1: 'Minimal: Potted plants, loose stone or gravel surfaces, minor soft landscaping only. No structural changes. Garden remains recognisably the same.',
+      2: 'Subtle: In-ground border planting added, lawn retained, simple low-maintenance planting scheme. One or two new surface materials introduced.',
+      3: 'Considered: Lawn partially replaced, defined planting zones, new path or edging treatment, moderate planting variety. A clearly designed garden but not radically different.',
+      4: 'Ambitious: Significant replanting, new hard surface areas, structural planting including shrubs and small trees, possible level change or raised bed. Garden transformed but practical.',
+      5: 'Full transformation: Complete redesign. Extensive hard landscaping, architectural planting, water features or focal structures possible, full in-ground planting scheme. Garden unrecognisable from original.',
+    };
+    const creativityDescription = CREATIVITY_DESCRIPTIONS[creativityLevel];
 
     // ── Turnstile verification ──────────────────────────────────────────────────
     const turnstileSecret = process.env.TURNSTILE_SECRET_KEY;
@@ -670,6 +767,8 @@ export async function POST(request: Request) {
         country,
         effectiveCurrency,
         effectiveClientName,
+        creativityLevel,
+        creativityDescription,
       );
       console.log('[Pipeline] Step 3 complete, keys:', Object.keys(designJSON).join(', '));
     } catch (err) {
@@ -679,7 +778,7 @@ export async function POST(request: Request) {
 
     // ── Step 4 — Build Visual Prompt ────────────────────────────────────────────
     console.log('[Pipeline] Step 4: Building visual prompt...');
-    const visualPrompt = step4_buildVisualPrompt(fingerprint, designJSON, style, effectiveOrientation);
+    const visualPrompt = step4_buildVisualPrompt(fingerprint, designJSON, style, effectiveOrientation, creativityLevel);
 
     // ── Step 5 — Generate Render ────────────────────────────────────────────────
     console.log('[Pipeline] Step 5: Generating render...');
@@ -722,7 +821,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ imageError: true });
     }
 
-    return NextResponse.json({ designJSON, imageBase64, aerialImageBase64, validationResult, retried });
+    return NextResponse.json({ designJSON, imageBase64, aerialImageBase64, validationResult, retried, fingerprint });
 
   } catch (error: unknown) {
     console.error('[Pipeline] Unhandled error:', error);

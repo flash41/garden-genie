@@ -5,6 +5,14 @@ import PDFButton from "@/components/PDFButton";
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 
+const CREATIVITY_LEVELS = [
+  { level: 1, name: "Minimal",          description: "Potted plants, loose stone or gravel surfaces, minor soft landscaping only. No structural changes. Garden remains recognisably the same." },
+  { level: 2, name: "Subtle",           description: "In-ground border planting added, lawn retained, simple low-maintenance planting scheme. One or two new surface materials introduced." },
+  { level: 3, name: "Considered",       description: "Lawn partially replaced, defined planting zones, new path or edging treatment, moderate planting variety. A clearly designed garden but not radically different." },
+  { level: 4, name: "Ambitious",        description: "Significant replanting, new hard surface areas, structural planting including shrubs and small trees, possible level change or raised bed. Garden transformed but practical." },
+  { level: 5, name: "Full transformation", description: "Complete redesign. Extensive hard landscaping, architectural planting, water features or focal structures possible, full in-ground planting scheme. Garden unrecognisable from original." },
+];
+
 const DESIGN_LANGUAGES = [
   { value: "japanese-zen",        label: "Japanese Zen" },
   { value: "english-cottage",     label: "English Cottage" },
@@ -203,10 +211,70 @@ const px = (n: number) => `${n}px`;
 
 // ─── GRID OVERLAY CANVAS ──────────────────────────────────────────────────────
 
+// ── Perspective + boundary helpers ────────────────────────────────────────────
+
+function pointInPolygon(px: number, py: number, poly: Array<{x: number; y: number}>): boolean {
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const xi = poly[i].x, yi = poly[i].y;
+    const xj = poly[j].x, yj = poly[j].y;
+    if ((yi > py) !== (yj > py) && px < ((xj - xi) * (py - yi)) / (yj - yi) + xi) {
+      inside = !inside;
+    }
+  }
+  return inside;
+}
+
+function clampToBoundary(
+  px: number, py: number,
+  poly: Array<{x: number; y: number}>,
+): {x: number; y: number} {
+  if (pointInPolygon(px, py, poly)) return { x: px, y: py };
+  const cx = poly.reduce((s, p) => s + p.x, 0) / poly.length;
+  const cy = poly.reduce((s, p) => s + p.y, 0) / poly.length;
+  // Binary search along line from centroid toward point — find last inside position
+  let lo = 0, hi = 1, t = 0.5;
+  for (let iter = 0; iter < 14; iter++) {
+    const tx = cx + (px - cx) * t;
+    const ty = cy + (py - cy) * t;
+    if (pointInPolygon(tx, ty, poly)) { lo = t; } else { hi = t; }
+    t = (lo + hi) / 2;
+  }
+  return { x: cx + (px - cx) * lo * 0.92, y: cy + (py - cy) * lo * 0.92 };
+}
+
+/** Maps a flat A–F × 1–6 grid position to perspective pixel coordinates on a photo. */
+function applyPerspectiveTransform(
+  colIndex: number,   // 0–5 (A=0, F=5)
+  rowIndex: number,   // 0–5 (row 1=0=rear, row 6=5=front)
+  W: number, H: number,
+  horizonLinePercent: number,
+  vanishingPointXPercent: number,
+): { x: number; y: number; scale: number } {
+  const horizonY = H * (horizonLinePercent / 100);
+  const frontY   = H * 0.90;
+  const vpX      = W * (vanishingPointXPercent / 100);
+  // t = 0 → rear (row 0), t = 1 → front (row 5)
+  const t = rowIndex / 5;
+  // Y: power curve compresses distant rows near the horizon
+  const y = horizonY + (frontY - horizonY) * Math.pow(t, 1.8);
+  // X: columns converge toward vanishing point at rear
+  const colNorm = (colIndex + 0.5) / 6;
+  const x = vpX + (colNorm * W - vpX) * t;
+  // Marker scale: smaller at rear, full-size at front
+  const scale = 0.50 + 0.50 * t;
+  return { x, y, scale };
+}
+
+interface PerspectiveData { horizonLinePercent: number; vanishingPointXPercent: number; }
+type BoundaryPolygon = Array<{ x: number; y: number }>;
+
 function drawGridOverlay(
   canvas: HTMLCanvasElement,
   plants: any[],
-  showMarkers: boolean = true
+  showMarkers: boolean = true,
+  perspectiveData?: PerspectiveData | null,
+  boundaryPolygon?: BoundaryPolygon | null,
 ) {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
@@ -261,48 +329,77 @@ function drawGridOverlay(
     return;
   }
 
-  // Plant markers
-  const FORBIDDEN_TOP = H * 0.28;
-  const MARKER_R = Math.max(14, W / 38);
-  const placed: Array<{x: number; y: number}> = [];
+  // Convert boundary polygon from normalised (0–1) to canvas pixels
+  const pixelPoly: BoundaryPolygon | null = (boundaryPolygon && boundaryPolygon.length >= 3)
+    ? boundaryPolygon.map(p => ({ x: p.x * W, y: p.y * H }))
+    : null;
+
+  const BASE_MARKER_R = Math.max(14, W / 38);
+  const placed: Array<{x: number; y: number; r: number}> = [];
 
   plants.forEach((plant, index) => {
     const loc = (plant.gridLocation || '').trim().toUpperCase();
     const match = loc.match(/^([A-F])(\d)/);
-    let x: number, y: number;
+    let x: number, y: number, effectiveR: number;
 
     if (match) {
       const ci = Math.max(0, Math.min(5, match[1].charCodeAt(0) - 65));
       const ri = Math.max(0, Math.min(5, parseInt(match[2]) - 1));
-      x = ci * colW + colW / 2;
-      y = ri * rowH + rowH / 2;
+
+      if (perspectiveData) {
+        // Perspective photo: transform grid coords to pixel coords
+        const pt = applyPerspectiveTransform(
+          ci, ri, W, H,
+          perspectiveData.horizonLinePercent,
+          perspectiveData.vanishingPointXPercent,
+        );
+        x = pt.x;
+        y = pt.y;
+        effectiveR = BASE_MARKER_R * pt.scale;
+      } else {
+        // Aerial / flat view: simple grid centre
+        x = ci * colW + colW / 2;
+        y = ri * rowH + rowH / 2;
+        effectiveR = BASE_MARKER_R;
+      }
     } else {
+      // Fallback: distribute evenly
       const cols = 4;
       x = ((index % cols) + 1) * (W / (cols + 1));
       y = (Math.floor(index / cols) + 2) * (H / 5);
+      effectiveR = BASE_MARKER_R;
     }
 
-    y = Math.max(FORBIDDEN_TOP, y);
-    x = Math.max(MARKER_R + 6, Math.min(W - MARKER_R - 6, x));
-    y = Math.max(FORBIDDEN_TOP, Math.min(H - MARKER_R - 6, y));
+    // Boundary polygon clamping — move any outside-boundary marker inside
+    if (pixelPoly) {
+      const clamped = clampToBoundary(x, y, pixelPoly);
+      x = clamped.x;
+      y = clamped.y;
+    }
 
+    // Basic canvas-edge clamping
+    x = Math.max(effectiveR + 4, Math.min(W - effectiveR - 4, x));
+    y = Math.max(effectiveR + 4, Math.min(H - effectiveR - 4, y));
+
+    // Clash avoidance
     let attempts = 0;
     while (attempts < 10) {
-      const clash = placed.find(p => Math.hypot(p.x - x, p.y - y) < MARKER_R * 2.5);
+      const clash = placed.find(p => Math.hypot(p.x - x, p.y - y) < (p.r + effectiveR) * 1.2);
       if (!clash) break;
-      x += MARKER_R * 2.2;
-      if (x > W - MARKER_R - 6) { x = MARKER_R + 20; y += MARKER_R * 2.2; }
-      y = Math.max(FORBIDDEN_TOP, Math.min(H - MARKER_R - 6, y));
+      x += effectiveR * 2.0;
+      if (x > W - effectiveR - 4) { x = effectiveR + 10; y += effectiveR * 2.0; }
+      x = Math.max(effectiveR + 4, Math.min(W - effectiveR - 4, x));
+      y = Math.max(effectiveR + 4, Math.min(H - effectiveR - 4, y));
       attempts++;
     }
-    placed.push({x, y});
+    placed.push({ x, y, r: effectiveR });
 
-    ctx.beginPath(); ctx.arc(x, y, MARKER_R, 0, Math.PI * 2);
+    ctx.beginPath(); ctx.arc(x, y, effectiveR, 0, Math.PI * 2);
     ctx.fillStyle = 'rgba(10,61,43,0.92)'; ctx.fill();
-    ctx.strokeStyle = '#b8962e'; ctx.lineWidth = Math.max(2, W / 320); ctx.stroke();
+    ctx.strokeStyle = '#b8962e'; ctx.lineWidth = Math.max(1.5, W / 360); ctx.stroke();
 
     ctx.fillStyle = '#ffffff';
-    ctx.font = `bold ${Math.max(10, MARKER_R * 0.85)}px Arial, sans-serif`;
+    ctx.font = `bold ${Math.max(9, effectiveR * 0.85)}px Arial, sans-serif`;
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText(String(index + 1), x, y);
   });
@@ -311,7 +408,11 @@ function drawGridOverlay(
   ctx.textAlign = 'left';
 }
 
-function GridOverlayImage({ src, plants, label, showMarkers = true }: { src: string; plants: any[]; label: string; showMarkers?: boolean }) {
+function GridOverlayImage({ src, plants, label, showMarkers = true, perspectiveData, boundaryPolygon }: {
+  src: string; plants: any[]; label: string; showMarkers?: boolean;
+  perspectiveData?: PerspectiveData | null;
+  boundaryPolygon?: BoundaryPolygon | null;
+}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -324,7 +425,7 @@ function GridOverlayImage({ src, plants, label, showMarkers = true }: { src: str
       canvas.height = img.height;
       const ctx = canvas.getContext('2d')!;
       ctx.drawImage(img, 0, 0);
-      drawGridOverlay(canvas, plants, showMarkers);
+      drawGridOverlay(canvas, plants, showMarkers, perspectiveData, boundaryPolygon);
     };
     img.onerror = () => {
       canvas.width = 600; canvas.height = 400;
@@ -334,7 +435,7 @@ function GridOverlayImage({ src, plants, label, showMarkers = true }: { src: str
       ctx.textAlign = 'center'; ctx.fillText('Image unavailable', 300, 200);
     };
     img.src = src;
-  }, [src, plants, showMarkers]);
+  }, [src, plants, showMarkers, perspectiveData, boundaryPolygon]);
 
   return (
     <div style={{ position: 'relative' }}>
@@ -722,7 +823,13 @@ function CostTable({ costEstimate, currency: currencyProp }: { costEstimate: any
 
 // ─── GRID OVERLAY GENERATOR (returns base64 data URL for PDF) ────────────────
 
-function generateGridOverlay(src: string, plants: any[], showMarkers = true): Promise<string> {
+function generateGridOverlay(
+  src: string,
+  plants: any[],
+  showMarkers = true,
+  perspectiveData?: PerspectiveData | null,
+  boundaryPolygon?: BoundaryPolygon | null,
+): Promise<string> {
   return new Promise((resolve) => {
     const canvas = document.createElement('canvas');
     const img = new Image();
@@ -732,7 +839,7 @@ function generateGridOverlay(src: string, plants: any[], showMarkers = true): Pr
       canvas.height = img.height;
       const ctx = canvas.getContext('2d')!;
       ctx.drawImage(img, 0, 0);
-      drawGridOverlay(canvas, plants, showMarkers);
+      drawGridOverlay(canvas, plants, showMarkers, perspectiveData, boundaryPolygon);
       resolve(canvas.toDataURL('image/png'));
     };
     img.onerror = () => resolve('');
@@ -772,6 +879,8 @@ export default function GardigApp() {
   const [selfSendToast, setSelfSendToast] = useState<string | null>(null);
   const [selfSendStatus, setSelfSendStatus] = useState<"idle"|"sending"|"sent"|"error">("idle");
   const [hasAttempted, setHasAttempted]   = useState(false);
+  const [creativityLevel, setCreativityLevel] = useState(3);
+  const [fingerprint, setFingerprint]         = useState<any>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   // Register Turnstile success callback on window
@@ -833,6 +942,7 @@ export default function GardigApp() {
         clientName: clientName || 'Private Client',
         turnstileToken,
         currency: userCurrency,
+        creativityLevel,
       }),
     });
     if (!response.ok) {
@@ -847,6 +957,7 @@ export default function GardigApp() {
       aerialImageBase64: (data.imageError ? null : data.aerialImageBase64) || null,
       validationResult: data.validationResult || null,
       retried: data.retried || false,
+      fingerprint: data.fingerprint || null,
     };
   };
 
@@ -860,6 +971,7 @@ export default function GardigApp() {
     setAerialImageUrl(null);
     setAerialGridImageUrl(null);
     setValidationResult(null);
+    setFingerprint(null);
     setStep("loading");
     try {
       if (!imageDataUrl) {
@@ -875,22 +987,32 @@ export default function GardigApp() {
       setDocData(result.designJSON);
       setRenderUrl(result.imageBase64);
       setAerialImageUrl(result.aerialImageBase64);
+      setFingerprint(result.fingerprint);
       if (result.validationResult !== undefined) {
         setValidationResult({ result: result.validationResult, retried: result.retried });
       }
+
+      // Build perspective data from fingerprint for photo-view overlays
+      const fp = result.fingerprint;
+      const perspData: PerspectiveData | null = (fp?.horizonLinePercent != null && fp?.vanishingPointXPercent != null)
+        ? { horizonLinePercent: fp.horizonLinePercent, vanishingPointXPercent: fp.vanishingPointXPercent }
+        : null;
+      const bPoly: BoundaryPolygon | null = (fp?.boundaryPolygon?.length >= 3) ? fp.boundaryPolygon : null;
 
       // Generate annotated grid overlays for PDF (client-side canvas)
       setLoadingMsg("Annotating layout plans...");
       const plants = result.designJSON?.plantingSpecification?.plants || [];
       if (result.imageBase64 && plants.length > 0) {
-        const overlay = await generateGridOverlay(result.imageBase64, plants);
+        // Perspective render: use perspective transform + boundary check
+        const overlay = await generateGridOverlay(result.imageBase64, plants, true, perspData, bPoly);
         setGridImageUrl(overlay || null);
       } else if (imageDataUrl && plants.length > 0) {
-        const overlay = await generateGridOverlay(imageDataUrl, plants);
+        const overlay = await generateGridOverlay(imageDataUrl, plants, true, perspData, bPoly);
         setGridImageUrl(overlay || null);
       }
       if (result.aerialImageBase64 && plants.length > 0) {
-        const aerialOverlay = await generateGridOverlay(result.aerialImageBase64, plants);
+        // Aerial sketch: flat grid, no perspective transform, no boundary polygon
+        const aerialOverlay = await generateGridOverlay(result.aerialImageBase64, plants, true, null, null);
         setAerialGridImageUrl(aerialOverlay || null);
       }
 
@@ -915,6 +1037,9 @@ export default function GardigApp() {
           .upload-form-grid{grid-template-columns:1fr}
           .upload-generate-btn{width:100%}
         }
+        .creativity-slider{-webkit-appearance:none;appearance:none;width:100%;height:5px;border-radius:3px;outline:none;cursor:pointer;background:linear-gradient(to right,#0a3d2b 0%,#0a3d2b var(--cp,50%),#d9cdb8 var(--cp,50%),#d9cdb8 100%)}
+        .creativity-slider::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#b8962e;border:2.5px solid #0a3d2b;cursor:pointer;box-shadow:0 1px 4px rgba(44,26,14,0.18)}
+        .creativity-slider::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:#b8962e;border:2.5px solid #0a3d2b;cursor:pointer;box-shadow:0 1px 4px rgba(44,26,14,0.18)}
       `}</style>
 
       {/* Top bar */}
@@ -999,6 +1124,39 @@ export default function GardigApp() {
             </div>
           </Card>
         </div>
+
+        {/* Creativity Level Slider */}
+        {(() => {
+          const cl = CREATIVITY_LEVELS[creativityLevel - 1];
+          const pct = `${(creativityLevel - 1) / 4 * 100}%`;
+          return (
+            <div style={{ marginTop: 22, background: C.card, border: `1px solid ${C.rule}`, borderLeft: `4px solid ${C.accent}`, borderRadius: C.rLg, padding: "18px 22px", boxShadow: C.shadow }}>
+              <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 12, gap: 12 }}>
+                <Label>03 — Creativity Level</Label>
+                <span style={{ fontFamily: C.fontSerif, fontSize: px(15), fontWeight: 600, color: C.brand, whiteSpace: "nowrap" }}>
+                  {creativityLevel} — {cl.name}
+                </span>
+              </div>
+              <input
+                type="range" min={1} max={5} step={1}
+                value={creativityLevel}
+                onChange={e => setCreativityLevel(Number(e.target.value))}
+                className="creativity-slider"
+                style={{ '--cp': pct } as React.CSSProperties}
+              />
+              <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4, marginBottom: 10 }}>
+                {CREATIVITY_LEVELS.map(l => (
+                  <span key={l.level} style={{ fontSize: px(10), color: l.level === creativityLevel ? C.accent : C.inkLight, fontWeight: l.level === creativityLevel ? 700 : 400, fontFamily: C.font, letterSpacing: "0.04em", textAlign: "center", flex: 1 }}>
+                    {l.level}
+                  </span>
+                ))}
+              </div>
+              <div style={{ fontSize: px(13), color: C.inkMid, lineHeight: 1.55, fontFamily: C.font, borderTop: `1px solid ${C.rule}`, paddingTop: 10 }}>
+                <span style={{ fontWeight: 600, color: C.brand }}>Level {creativityLevel}:</span> {cl.description}
+              </div>
+            </div>
+          );
+        })()}
 
         {error && (
           <div style={{ background: "#fef2f2", border: `1px solid #fca5a5`, borderRadius: C.r, padding: "11px 15px", color: C.red, fontSize: px(14), marginTop: 14 }}>
@@ -1196,6 +1354,7 @@ export default function GardigApp() {
             setAerialImageUrl(null);
             setAerialGridImageUrl(null);
             setValidationResult(null);
+            setFingerprint(null);
             setEmailModal(false);
             setEmailStatus("idle");
             setEmailError(null);
@@ -1759,13 +1918,17 @@ export default function GardigApp() {
             {imageDataUrl && (
               <div>
                 <div style={{ fontSize: px(12), color: C.inkLight, marginBottom: 7, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>Before — Annotated</div>
-                <GridOverlayImage src={imageDataUrl} plants={plants} label="Before" showMarkers={false} />
+                <GridOverlayImage src={imageDataUrl} plants={plants} label="Before" showMarkers={false}
+                  perspectiveData={fingerprint?.horizonLinePercent != null ? { horizonLinePercent: fingerprint.horizonLinePercent, vanishingPointXPercent: fingerprint.vanishingPointXPercent } : null}
+                  boundaryPolygon={fingerprint?.boundaryPolygon?.length >= 3 ? fingerprint.boundaryPolygon : null} />
               </div>
             )}
             {renderUrl && (
               <div>
                 <div style={{ fontSize: px(12), color: C.inkLight, marginBottom: 7, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>After — Annotated</div>
-                <GridOverlayImage src={renderUrl} plants={plants} label="After" />
+                <GridOverlayImage src={renderUrl} plants={plants} label="After"
+                  perspectiveData={fingerprint?.horizonLinePercent != null ? { horizonLinePercent: fingerprint.horizonLinePercent, vanishingPointXPercent: fingerprint.vanishingPointXPercent } : null}
+                  boundaryPolygon={fingerprint?.boundaryPolygon?.length >= 3 ? fingerprint.boundaryPolygon : null} />
               </div>
             )}
           </div>
@@ -1786,7 +1949,8 @@ export default function GardigApp() {
 
           {(aerialImageUrl || aerialGridImageUrl) ? (
             <>
-              <GridOverlayImage src={aerialGridImageUrl || aerialImageUrl!} plants={plants} label="Layout Plan" />
+              <GridOverlayImage src={aerialGridImageUrl || aerialImageUrl!} plants={plants} label="Layout Plan"
+                perspectiveData={null} boundaryPolygon={null} />
 
               {plants.length > 0 && (
                 <div style={{ marginTop: 22 }}>
