@@ -410,7 +410,9 @@ async function step3_conceptBasePlan(
     .join('\n') || '- No layout elements specified';
   const layoutNarrative = designJSON.layoutDescription?.layoutNarrative || '';
 
-  const prompt = `You are given the original garden photograph. This is the exact garden you must draw a top-down plan of. Study the photo carefully. The fingerprint below was extracted from this photo. Your plan must match the actual shape, boundaries, and permanent structures visible in this photo. Do not invent a generic garden — draw THIS garden.
+  const prompt = `YOU MUST LABEL THE COLUMNS EXACTLY AS A B C D E F FROM LEFT TO RIGHT. YOU MUST LABEL THE ROWS EXACTLY AS 1 2 3 4 5 6 FROM TOP TO BOTTOM. DO NOT USE ANY OTHER LETTERS OR NUMBERS FOR THE GRID. THE GRID HAS EXACTLY 6 COLUMNS AND 6 ROWS. NO MORE. NO LESS.
+
+You are given the original garden photograph. This is the exact garden you must draw a top-down plan of. Study the photo carefully. The fingerprint below was extracted from this photo. Your plan must match the actual shape, boundaries, and permanent structures visible in this photo. Do not invent a generic garden — draw THIS garden.
 
 Generate a precise architectural garden base plan — a hand-drawn top-down 2D sketch.
 
@@ -461,7 +463,9 @@ DO NOT add zone text labels.
 DO NOT add a compass rose or scale bar.
 DO NOT draw any element not listed in the ELEMENTS TO DRAW section above.
 The grid letters and numbers are the ONLY text on the image.
-Geometric accuracy of the boundary and garden shape is the top priority.`;
+Geometric accuracy of the boundary and garden shape is the top priority.
+
+FINAL CHECK BEFORE GENERATING — verify that your column labels are exactly A B C D E F and your row labels are exactly 1 2 3 4 5 6. If you have used any other characters, correct them before generating the image.`;
 
   const response = await ai.models.generateContent({
     model: 'gemini-2.5-flash-image',

@@ -318,8 +318,25 @@ function drawGridOverlay(
   if (showPerspectiveGrid && perspectiveData) {
     const { horizonLinePercent, vanishingPointXPercent, foregroundYPercent = 85 } = perspectiveData;
     const horizonY = H * (horizonLinePercent / 100);
-    const frontY   = H * (foregroundYPercent / 100);
     const vpX      = W * (vanishingPointXPercent / 100);
+
+    // Determine foreground Y and left/right extents from boundaryPolygon if available
+    let frontY: number;
+    let leftFrontX: number;
+    let rightFrontX: number;
+    if (boundaryPolygon && boundaryPolygon.length >= 3) {
+      const maxY = Math.max(...boundaryPolygon.map(p => p.y));
+      frontY = maxY;
+      // Find polygon points near the foreground edge (within 5% of image height)
+      const threshold = H * 0.05;
+      const frontPoints = boundaryPolygon.filter(p => p.y >= maxY - threshold);
+      leftFrontX  = Math.min(...frontPoints.map(p => p.x));
+      rightFrontX = Math.max(...frontPoints.map(p => p.x));
+    } else {
+      frontY      = H * (foregroundYPercent / 100);
+      leftFrontX  = 0;
+      rightFrontX = W;
+    }
 
     ctx.save();
     ctx.strokeStyle = 'rgba(255,255,255,0.85)';
@@ -329,12 +346,10 @@ function drawGridOverlay(
     // Vertical perspective lines: one per column edge (0 through COLS)
     for (let ci = 0; ci <= COLS; ci++) {
       const colNorm = ci / COLS;
-      // Top of line: at horizon, converging toward VP
-      const xTop = vpX + (colNorm * W - vpX) * 0;   // t=0 → at VP
-      // Bottom of line: at foreground, fanned out from VP
-      const xBot = vpX + (colNorm * W - vpX) * 1;   // t=1 → full width
+      // Bottom of line fans between leftFrontX and rightFrontX
+      const xBot = leftFrontX + colNorm * (rightFrontX - leftFrontX);
       ctx.beginPath();
-      ctx.moveTo(xTop, horizonY);
+      ctx.moveTo(vpX, horizonY);
       ctx.lineTo(xBot, frontY);
       ctx.stroke();
     }
@@ -342,10 +357,9 @@ function drawGridOverlay(
     // Horizontal transversal lines: one per row boundary (0 through ROWS)
     for (let ri = 0; ri <= ROWS; ri++) {
       const t = ri / ROWS;
-      const rowY = horizonY + (frontY - horizonY) * Math.pow(t, 1.8);
-      // Left and right ends converge slightly toward VP
-      const xLeft  = vpX + (0 - vpX) * t;
-      const xRight = vpX + (W - vpX) * t;
+      const rowY   = horizonY + (frontY - horizonY) * Math.pow(t, 1.8);
+      const xLeft  = vpX + (leftFrontX  - vpX) * t;
+      const xRight = vpX + (rightFrontX - vpX) * t;
       ctx.beginPath();
       ctx.moveTo(xLeft, rowY);
       ctx.lineTo(xRight, rowY);
@@ -353,8 +367,7 @@ function drawGridOverlay(
     }
 
     // Column letters at top of each column (between the vertical lines)
-   // Column letters at top of each column (between the vertical lines)
-   ctx.fillStyle = 'rgba(255,255,255,0.95)';
+    ctx.fillStyle = 'rgba(255,255,255,0.95)';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
     for (let ci = 0; ci < COLS; ci++) {
@@ -362,8 +375,8 @@ function drawGridOverlay(
       const t = 0.05;
       const leftNorm  = ci / COLS;
       const rightNorm = (ci + 1) / COLS;
-      const xLeft  = vpX + (leftNorm * W - vpX) * t;
-      const xRight = vpX + (rightNorm * W - vpX) * t;
+      const xLeft  = vpX + (leftFrontX  + leftNorm  * (rightFrontX - leftFrontX) - vpX) * t;
+      const xRight = vpX + (leftFrontX  + rightNorm * (rightFrontX - leftFrontX) - vpX) * t;
       const midX = (xLeft + xRight) / 2;
       const midY = horizonY + (frontY - horizonY) * Math.pow(t, 1.8);
       ctx.fillText(LABELS[ci], midX, midY + 2);
@@ -378,9 +391,8 @@ function drawGridOverlay(
       const yTop = horizonY + (frontY - horizonY) * Math.pow(tTop, 1.8);
       const yBot = horizonY + (frontY - horizonY) * Math.pow(tBot, 1.8);
       const midY = (yTop + yBot) / 2;
-      // Left edge x at midpoint t
       const tMid = (tTop + tBot) / 2;
-      const xEdge = vpX + (0 - vpX) * tMid;
+      const xEdge = vpX + (leftFrontX - vpX) * tMid;
       ctx.fillText(String(ri + 1), xEdge + 4, midY);
     }
 
@@ -651,7 +663,7 @@ function PlantTable({ plants }: { plants: any[] }) {
                 <span style={{ background: C.brand, color: C.accent, borderRadius: C.r, padding: "2px 8px", fontSize: px(12), fontWeight: 700 }}>{p.gridLocation || "—"}</span>
               </td>
               <td style={{ padding: "9px 13px", fontStyle: "italic", color: C.brand, fontWeight: 600 }}>{cleanPlantName(p.botanicalName)}</td>
-              <td style={{ padding: "9px 13px", color: C.ink }}>{cleanPlantName(p.commonName)}{p.cultivar ? ` '${p.cultivar}'` : ""}</td>
+              <td style={{ padding: "9px 13px", color: C.ink }}>{cleanPlantName(p.commonName)}{(p.cultivar && p.cultivar !== 'null' && p.cultivar !== '') ? ` '${p.cultivar}'` : ""}</td>
               <td style={{ padding: "9px 13px" }}><Tag>{p.type}</Tag></td>
               <td style={{ padding: "9px 13px", textAlign: "center", fontWeight: 700, color: C.ink }}>{p.quantity}</td>
               <td style={{ padding: "9px 13px", color: C.inkMid }}>{p.layer}</td>
@@ -740,7 +752,7 @@ function ReferenceTable({ plants }: { plants: any[] }) {
               <td style={{ padding: "9px 12px", color: C.inkMid, fontSize: px(13) }}>{p.existingElement || "—"}</td>
               <td style={{ padding: "9px 12px" }}>
                 <div style={{ fontStyle: "italic", color: C.brand, fontWeight: 600, fontSize: px(13) }}>{cleanPlantName(p.botanicalName)}</div>
-                <div style={{ color: C.inkLight, fontSize: px(12) }}>{cleanPlantName(p.commonName)}{p.cultivar ? ` '${p.cultivar}'` : ""}</div>
+                <div style={{ color: C.inkLight, fontSize: px(12) }}>{cleanPlantName(p.commonName)}{(p.cultivar && p.cultivar !== 'null' && p.cultivar !== '') ? ` '${p.cultivar}'` : ""}</div>
               </td>
             </tr>
           ))}
@@ -780,7 +792,7 @@ function AfterPlantTable({ plants }: { plants: any[] }) {
                 <td style={{ padding: "9px 12px", color: C.accent, fontWeight: 700, fontSize: px(13) }}>{i + 1}</td>
                 <td style={{ padding: "9px 12px" }}>
                   <div style={{ fontStyle: "italic", color: C.brand, fontWeight: 600, fontSize: px(13) }}>{cleanPlantName(p.botanicalName)}</div>
-                  <div style={{ color: C.inkLight, fontSize: px(12) }}>{cleanPlantName(p.commonName)}{p.cultivar ? ` '${p.cultivar}'` : ""}</div>
+                  <div style={{ color: C.inkLight, fontSize: px(12) }}>{cleanPlantName(p.commonName)}{(p.cultivar && p.cultivar !== 'null' && p.cultivar !== '') ? ` '${p.cultivar}'` : ""}</div>
                 </td>
                 <td style={{ padding: "9px 12px" }}>
                   <span style={{ background: C.brand, color: C.accent, borderRadius: C.r, padding: "2px 7px", fontSize: px(11), fontWeight: 700 }}>{p.gridLocation || "—"}</span>
@@ -1841,7 +1853,7 @@ export default function GardigApp() {
                 <div>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "baseline", marginBottom: 6 }}>
                     <span style={{ fontStyle: "italic", color: C.brand, fontWeight: 600, fontSize: px(BASE) }}>{p.botanicalName}</span>
-                    {p.cultivar && <span style={{ color: C.inkLight, fontSize: px(BASE - 1) }}>'{p.cultivar}'</span>}
+                    {(p.cultivar && p.cultivar !== 'null' && p.cultivar !== '') && <span style={{ color: C.inkLight, fontSize: px(BASE - 1) }}>'{p.cultivar}'</span>}
                     <span style={{ color: C.inkMid, fontSize: px(BASE - 1) }}>— {p.commonName}</span>
                     <Tag>{p.type}</Tag>
                   </div>
