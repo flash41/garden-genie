@@ -80,6 +80,7 @@ const DESIGN_SCHEMA = `{
         "existingElement": "what currently exists at this grid location in the before photo",
         "layer": "Canopy|Understorey|Shrub|Ground|Climber",
         "gridLocation": "B3",
+        "gridZ": 0.0,
         "zoneIds": ["Z1"]
       }
     ],
@@ -208,9 +209,29 @@ Return ONLY valid JSON (no markdown):
   "notes": "any other permanent constraints: utilities, drains, overhead wires, neighbouring structures",
 
   "cameraElevationAngle": (number, estimated angle in degrees between camera lens and the horizon — typical garden photos range 5 to 35),
-  "horizonLinePercent": (number, 0–100 — vertical position of the horizon line as a percentage from the TOP of the image, e.g. 33 means horizon is one-third down),
+  "horizonLinePercent": (number, 0–100 — vertical position of the horizon line as a percentage from the TOP of the image. If the true horizon is obscured, use the base of the rear boundary wall or fence as a proxy. e.g. 33 means horizon is one-third down),
   "vanishingPointXPercent": (number, 0–100 — horizontal position of the vanishing point as a percentage across the image width; straight-on photos ≈ 50),
   "foregroundToBackgroundRatio": (number, 0.0–1.0 — proportion of visible garden that is foreground vs distance; 1.0 = all foreground, 0.0 = all distance),
+
+  "scaleCalibrationObject": "description of the object used to calibrate real-world scale — e.g. 'concrete block wall, 5 courses visible', 'standard fence panel', 'brick pier'",
+  "scaleCalibrationHeightMetres": (number — estimated real-world height of the calibration object in metres. Concrete block course = 0.215m, brick course = 0.075m, standard fence panel = 1.8m, standard door = 2.0m),
+  "scaleCalibrationPixelHeightPercent": (number 0–100 — the pixel height of the calibration object as a percentage of the total image height),
+
+  "plotWidthMetres": (number — estimated real-world width of the garden plot in metres, derived from scale calibration and perspective geometry),
+  "plotDepthMetres": (number — estimated real-world depth of the garden plot in metres, derived from scale calibration and perspective geometry),
+  "perspectiveGridColumns": (number — estimated number of 1m-wide columns that fit across the plot width),
+  "perspectiveGridRows": (number — estimated number of 1m-deep rows that fit from foreground to rear boundary),
+
+  "elevationData": [
+    {
+      "elementType": "RetainingWall|RaisedBed|Steps|Terrace|Wall|Pergola|Arbour|Structure",
+      "boundaryFace": "rear|left|right|freestanding",
+      "baseHeightMetres": (number — height of the base of this element above the lowest site ground level),
+      "elementHeightMetres": (number — height of this element itself, not cumulative),
+      "gridPosition": "grid reference e.g. A1-A3 or B2",
+      "description": "brief description of the element"
+    }
+  ],
 
   "boundaryPolygon": [
     {"x": (number 0.0–1.0, normalised from LEFT edge of photo), "y": (number 0.0–1.0, normalised from TOP edge of photo)}
@@ -222,6 +243,11 @@ PERSPECTIVE FIELD INSTRUCTIONS:
 - horizonLinePercent: identify where the horizon (or the base of the rear wall/fence) sits in the image. If the rear wall base is at 30% from top, use 30. For typical garden photos taken standing up, this is usually 25-45.
 - vanishingPointXPercent: for straight-ahead shots this is ~50. For gardens shot at an angle it shifts left or right.
 - foregroundToBackgroundRatio: if most of the image shows the far end of the garden with little foreground, this is low (~0.3). If the foreground fills most of the image, this is high (~0.8).
+- scaleCalibrationObject: find the most reliable scale reference in the photo. Prefer objects with standardised dimensions: fence panels (1.8m high), concrete block courses (0.215m each), brick courses (0.075m each), standard doors (2.0m). Count courses or panels visible to derive real-world height.
+- scaleCalibrationPixelHeightPercent: measure the pixel height of the calibration object as a fraction of the total image height, expressed as a percentage 0–100.
+- plotWidthMetres / plotDepthMetres: using the scale calibration and the perspective geometry (horizon line + vanishing point), estimate the real-world site dimensions. Cross-check against gardenWidth and gardenDepth text fields.
+- perspectiveGridColumns / perspectiveGridRows: divide plotWidthMetres and plotDepthMetres by 1.0 to get grid counts. Round to nearest integer, minimum 2.
+- elevationData: list every element that sits above the main ground plane. Include retaining walls, raised beds, steps, terraces, boundary walls with climbers, pergolas, and any structure that raises planting or features. For boundary walls, baseHeightMetres is typically 0.0 (they start at ground). For raised beds, baseHeightMetres is 0.0 and elementHeightMetres is the raised bed wall height (e.g. 0.45m). If no raised elements are visible, return an empty array [].
 
 BOUNDARY POLYGON INSTRUCTIONS:
 The boundaryPolygon must trace the inner edge of the VISIBLE GARDEN BOUNDARY in this perspective photo.
@@ -562,6 +588,10 @@ function clampGridLocations(design: Record<string, any>): void {
       plant.gridLocation = allCells[fallbackIdx % allCells.length] ?? 'A1';
       used.push(plant.gridLocation);
       fallbackIdx++;
+    }
+    // Default gridZ to 0.0 for ground-level elements if not set
+    if (plant.gridZ == null || typeof plant.gridZ !== 'number') {
+      plant.gridZ = 0.0;
     }
   }
 }

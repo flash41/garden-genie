@@ -243,13 +243,20 @@ function clampToBoundary(
   return { x: cx + (px - cx) * lo * 0.92, y: cy + (py - cy) * lo * 0.92 };
 }
 
-/** Maps a flat A–F × 1–6 grid position to perspective pixel coordinates on a photo. */
+/** Maps a flat A–F × 1–6 grid position to perspective pixel coordinates on a photo.
+ *  gridZ: real-world height above ground in metres (0.0 = ground level).
+ *  calibHeightMetres: real height of the scale calibration object.
+ *  calibPixelHeightPct: pixel height of calibration object as % of image height.
+ */
 function applyPerspectiveTransform(
   colIndex: number,   // 0–5 (A=0, F=5)
   rowIndex: number,   // 0–5 (row 1=0=rear, row 6=5=front)
   W: number, H: number,
   horizonLinePercent: number,
   vanishingPointXPercent: number,
+  gridZ: number = 0,
+  calibHeightMetres: number = 1.8,
+  calibPixelHeightPct: number = 20,
 ): { x: number; y: number; scale: number } {
   const horizonY = H * (horizonLinePercent / 100);
   const frontY   = H * 0.90;
@@ -257,16 +264,33 @@ function applyPerspectiveTransform(
   // t = 0 → rear (row 0), t = 1 → front (row 5)
   const t = rowIndex / 5;
   // Y: power curve compresses distant rows near the horizon
-  const y = horizonY + (frontY - horizonY) * Math.pow(t, 1.8);
+  const groundY = horizonY + (frontY - horizonY) * Math.pow(t, 1.8);
   // X: columns converge toward vanishing point at rear
   const colNorm = (colIndex + 0.5) / 6;
   const x = vpX + (colNorm * W - vpX) * t;
   // Marker scale: smaller at rear, full-size at front
   const scale = 0.50 + 0.50 * t;
+
+  // Height offset: raised elements (gridZ > 0) appear higher in the photo.
+  // Calibration gives pixels-per-metre at the rear (where calibration objects typically sit).
+  // At depth t, apparent size scales with perspective (rear scale = 0.5, front = 1.0).
+  let y = groundY;
+  if (gridZ > 0 && calibHeightMetres > 0 && calibPixelHeightPct > 0) {
+    const pixelsPerMetreBase = (H * calibPixelHeightPct / 100) / calibHeightMetres;
+    const perspectiveScale = scale / 0.5; // normalise relative to rear scale
+    y = groundY - gridZ * pixelsPerMetreBase * perspectiveScale;
+  }
+
   return { x, y, scale };
 }
 
-interface PerspectiveData { horizonLinePercent: number; vanishingPointXPercent: number; }
+interface PerspectiveData {
+  horizonLinePercent: number;
+  vanishingPointXPercent: number;
+  cameraElevationAngle?: number;
+  scaleCalibrationHeightMetres?: number;
+  scaleCalibrationPixelHeightPercent?: number;
+}
 type BoundaryPolygon = Array<{ x: number; y: number }>;
 
 function drawGridOverlay(
@@ -350,11 +374,14 @@ function drawGridOverlay(
       const ri = Math.max(0, Math.min(5, parseInt(match[2]) - 1));
 
       if (perspectiveData) {
-        // Perspective photo: transform grid coords to pixel coords
+        // Perspective photo: transform grid coords to pixel coords (with height offset for gridZ)
         const pt = applyPerspectiveTransform(
           ci, ri, W, H,
           perspectiveData.horizonLinePercent,
           perspectiveData.vanishingPointXPercent,
+          plant.gridZ || 0,
+          perspectiveData.scaleCalibrationHeightMetres || 1.8,
+          perspectiveData.scaleCalibrationPixelHeightPercent || 20,
         );
         x = pt.x;
         y = pt.y;
@@ -1004,7 +1031,13 @@ export default function GardigApp() {
       // Build perspective data from fingerprint for photo-view overlays
       const fp = result.fingerprint;
       const perspData: PerspectiveData | null = (fp?.horizonLinePercent != null && fp?.vanishingPointXPercent != null)
-        ? { horizonLinePercent: fp.horizonLinePercent, vanishingPointXPercent: fp.vanishingPointXPercent }
+        ? {
+            horizonLinePercent: fp.horizonLinePercent,
+            vanishingPointXPercent: fp.vanishingPointXPercent,
+            cameraElevationAngle: fp.cameraElevationAngle,
+            scaleCalibrationHeightMetres: fp.scaleCalibrationHeightMetres,
+            scaleCalibrationPixelHeightPercent: fp.scaleCalibrationPixelHeightPercent,
+          }
         : null;
       const bPoly: BoundaryPolygon | null = (fp?.boundaryPolygon?.length >= 3) ? fp.boundaryPolygon : null;
 
@@ -1929,7 +1962,7 @@ export default function GardigApp() {
               <div>
                 <div style={{ fontSize: px(12), color: C.inkLight, marginBottom: 7, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>Before — Annotated</div>
                 <GridOverlayImage src={imageDataUrl} plants={plants} label="Before" showMarkers={false} showGrid={false}
-                  perspectiveData={fingerprint?.horizonLinePercent != null ? { horizonLinePercent: fingerprint.horizonLinePercent, vanishingPointXPercent: fingerprint.vanishingPointXPercent } : null}
+                  perspectiveData={fingerprint?.horizonLinePercent != null ? { horizonLinePercent: fingerprint.horizonLinePercent, vanishingPointXPercent: fingerprint.vanishingPointXPercent, cameraElevationAngle: fingerprint.cameraElevationAngle, scaleCalibrationHeightMetres: fingerprint.scaleCalibrationHeightMetres, scaleCalibrationPixelHeightPercent: fingerprint.scaleCalibrationPixelHeightPercent } : null}
                   boundaryPolygon={fingerprint?.boundaryPolygon?.length >= 3 ? fingerprint.boundaryPolygon : null} />
               </div>
             )}
@@ -1937,7 +1970,7 @@ export default function GardigApp() {
               <div>
                 <div style={{ fontSize: px(12), color: C.inkLight, marginBottom: 7, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>After — Annotated</div>
                 <GridOverlayImage src={renderUrl} plants={plants} label="After" showGrid={false}
-                  perspectiveData={fingerprint?.horizonLinePercent != null ? { horizonLinePercent: fingerprint.horizonLinePercent, vanishingPointXPercent: fingerprint.vanishingPointXPercent } : null}
+                  perspectiveData={fingerprint?.horizonLinePercent != null ? { horizonLinePercent: fingerprint.horizonLinePercent, vanishingPointXPercent: fingerprint.vanishingPointXPercent, cameraElevationAngle: fingerprint.cameraElevationAngle, scaleCalibrationHeightMetres: fingerprint.scaleCalibrationHeightMetres, scaleCalibrationPixelHeightPercent: fingerprint.scaleCalibrationPixelHeightPercent } : null}
                   boundaryPolygon={fingerprint?.boundaryPolygon?.length >= 3 ? fingerprint.boundaryPolygon : null} />
               </div>
             )}
