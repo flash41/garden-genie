@@ -247,6 +247,7 @@ function clampToBoundary(
  *  gridZ: real-world height above ground in metres (0.0 = ground level).
  *  calibHeightMetres: real height of the scale calibration object.
  *  calibPixelHeightPct: pixel height of calibration object as % of image height.
+ *  foregroundYPercent: Y position of the foreground edge as % from top (default 85).
  */
 function applyPerspectiveTransform(
   colIndex: number,   // 0–5 (A=0, F=5)
@@ -257,9 +258,10 @@ function applyPerspectiveTransform(
   gridZ: number = 0,
   calibHeightMetres: number = 1.8,
   calibPixelHeightPct: number = 20,
+  foregroundYPercent: number = 85,
 ): { x: number; y: number; scale: number } {
   const horizonY = H * (horizonLinePercent / 100);
-  const frontY   = H * 0.90;
+  const frontY   = H * (foregroundYPercent / 100);
   const vpX      = W * (vanishingPointXPercent / 100);
   // t = 0 → rear (row 0), t = 1 → front (row 5)
   const t = rowIndex / 5;
@@ -290,6 +292,7 @@ interface PerspectiveData {
   cameraElevationAngle?: number;
   scaleCalibrationHeightMetres?: number;
   scaleCalibrationPixelHeightPercent?: number;
+  foregroundYPercent?: number;
 }
 type BoundaryPolygon = Array<{ x: number; y: number }>;
 
@@ -382,6 +385,7 @@ function drawGridOverlay(
           plant.gridZ || 0,
           perspectiveData.scaleCalibrationHeightMetres || 1.8,
           perspectiveData.scaleCalibrationPixelHeightPercent || 20,
+          perspectiveData.foregroundYPercent || 85,
         );
         x = pt.x;
         y = pt.y;
@@ -1037,6 +1041,9 @@ export default function GardigApp() {
             cameraElevationAngle: fp.cameraElevationAngle,
             scaleCalibrationHeightMetres: fp.scaleCalibrationHeightMetres,
             scaleCalibrationPixelHeightPercent: fp.scaleCalibrationPixelHeightPercent,
+            foregroundYPercent: fp.foregroundToBackgroundRatio != null
+              ? 55 + (fp.foregroundToBackgroundRatio * 35)
+              : 85,
           }
         : null;
       const bPoly: BoundaryPolygon | null = (fp?.boundaryPolygon?.length >= 3) ? fp.boundaryPolygon : null;
@@ -1962,7 +1969,7 @@ export default function GardigApp() {
               <div>
                 <div style={{ fontSize: px(12), color: C.inkLight, marginBottom: 7, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>Before — Annotated</div>
                 <GridOverlayImage src={imageDataUrl} plants={plants} label="Before" showMarkers={false} showGrid={false}
-                  perspectiveData={fingerprint?.horizonLinePercent != null ? { horizonLinePercent: fingerprint.horizonLinePercent, vanishingPointXPercent: fingerprint.vanishingPointXPercent, cameraElevationAngle: fingerprint.cameraElevationAngle, scaleCalibrationHeightMetres: fingerprint.scaleCalibrationHeightMetres, scaleCalibrationPixelHeightPercent: fingerprint.scaleCalibrationPixelHeightPercent } : null}
+                  perspectiveData={fingerprint?.horizonLinePercent != null ? { horizonLinePercent: fingerprint.horizonLinePercent, vanishingPointXPercent: fingerprint.vanishingPointXPercent, cameraElevationAngle: fingerprint.cameraElevationAngle, scaleCalibrationHeightMetres: fingerprint.scaleCalibrationHeightMetres, scaleCalibrationPixelHeightPercent: fingerprint.scaleCalibrationPixelHeightPercent, foregroundYPercent: fingerprint.foregroundToBackgroundRatio != null ? 55 + (fingerprint.foregroundToBackgroundRatio * 35) : 85 } : null}
                   boundaryPolygon={fingerprint?.boundaryPolygon?.length >= 3 ? fingerprint.boundaryPolygon : null} />
               </div>
             )}
@@ -1970,7 +1977,7 @@ export default function GardigApp() {
               <div>
                 <div style={{ fontSize: px(12), color: C.inkLight, marginBottom: 7, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>After — Annotated</div>
                 <GridOverlayImage src={renderUrl} plants={plants} label="After" showGrid={false}
-                  perspectiveData={fingerprint?.horizonLinePercent != null ? { horizonLinePercent: fingerprint.horizonLinePercent, vanishingPointXPercent: fingerprint.vanishingPointXPercent, cameraElevationAngle: fingerprint.cameraElevationAngle, scaleCalibrationHeightMetres: fingerprint.scaleCalibrationHeightMetres, scaleCalibrationPixelHeightPercent: fingerprint.scaleCalibrationPixelHeightPercent } : null}
+                  perspectiveData={fingerprint?.horizonLinePercent != null ? { horizonLinePercent: fingerprint.horizonLinePercent, vanishingPointXPercent: fingerprint.vanishingPointXPercent, cameraElevationAngle: fingerprint.cameraElevationAngle, scaleCalibrationHeightMetres: fingerprint.scaleCalibrationHeightMetres, scaleCalibrationPixelHeightPercent: fingerprint.scaleCalibrationPixelHeightPercent, foregroundYPercent: fingerprint.foregroundToBackgroundRatio != null ? 55 + (fingerprint.foregroundToBackgroundRatio * 35) : 85 } : null}
                   boundaryPolygon={fingerprint?.boundaryPolygon?.length >= 3 ? fingerprint.boundaryPolygon : null} />
               </div>
             )}
