@@ -303,6 +303,7 @@ function drawGridOverlay(
   perspectiveData?: PerspectiveData | null,
   boundaryPolygon?: BoundaryPolygon | null,
   showGrid: boolean = true,
+  showPerspectiveGrid: boolean = false,
 ) {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
@@ -312,6 +313,78 @@ function drawGridOverlay(
   const colW = W / COLS;
   const rowH = H / ROWS;
   const LABELS = ['A','B','C','D','E','F'];
+
+  // Perspective grid overlay (testing/verification only)
+  if (showPerspectiveGrid && perspectiveData) {
+    const { horizonLinePercent, vanishingPointXPercent, foregroundYPercent = 85 } = perspectiveData;
+    const horizonY = H * (horizonLinePercent / 100);
+    const frontY   = H * (foregroundYPercent / 100);
+    const vpX      = W * (vanishingPointXPercent / 100);
+
+    ctx.save();
+    ctx.strokeStyle = 'rgba(184,150,46,0.30)';
+    ctx.lineWidth = 0.8;
+    ctx.font = 'bold 11px Arial, sans-serif';
+
+    // Vertical perspective lines: one per column edge (0 through COLS)
+    for (let ci = 0; ci <= COLS; ci++) {
+      const colNorm = ci / COLS;
+      // Top of line: at horizon, converging toward VP
+      const xTop = vpX + (colNorm * W - vpX) * 0;   // t=0 → at VP
+      // Bottom of line: at foreground, fanned out from VP
+      const xBot = vpX + (colNorm * W - vpX) * 1;   // t=1 → full width
+      ctx.beginPath();
+      ctx.moveTo(xTop, horizonY);
+      ctx.lineTo(xBot, frontY);
+      ctx.stroke();
+    }
+
+    // Horizontal transversal lines: one per row boundary (0 through ROWS)
+    for (let ri = 0; ri <= ROWS; ri++) {
+      const t = ri / ROWS;
+      const rowY = horizonY + (frontY - horizonY) * Math.pow(t, 1.8);
+      // Left and right ends converge slightly toward VP
+      const xLeft  = vpX + (0 - vpX) * t;
+      const xRight = vpX + (W - vpX) * t;
+      ctx.beginPath();
+      ctx.moveTo(xLeft, rowY);
+      ctx.lineTo(xRight, rowY);
+      ctx.stroke();
+    }
+
+    // Column letters at top of each column (between the vertical lines)
+    ctx.fillStyle = 'rgba(184,150,46,0.85)';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    for (let ci = 0; ci < COLS; ci++) {
+      // Centre of column at t=0.05 (just below horizon)
+      const t = 0.05;
+      const leftNorm  = ci / COLS;
+      const rightNorm = (ci + 1) / COLS;
+      const xLeft  = vpX + (leftNorm * W - vpX) * t;
+      const xRight = vpX + (rightNorm * W - vpX) * t;
+      const midX = (xLeft + xRight) / 2;
+      const midY = horizonY + (frontY - horizonY) * Math.pow(t, 1.8);
+      ctx.fillText(LABELS[ci], midX, midY + 2);
+    }
+
+    // Row numbers at left edge of each row (between the horizontal lines)
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    for (let ri = 0; ri < ROWS; ri++) {
+      const tTop = ri / ROWS;
+      const tBot = (ri + 1) / ROWS;
+      const yTop = horizonY + (frontY - horizonY) * Math.pow(tTop, 1.8);
+      const yBot = horizonY + (frontY - horizonY) * Math.pow(tBot, 1.8);
+      const midY = (yTop + yBot) / 2;
+      // Left edge x at midpoint t
+      const tMid = (tTop + tBot) / 2;
+      const xEdge = vpX + (0 - vpX) * tMid;
+      ctx.fillText(String(ri + 1), xEdge + 4, midY);
+    }
+
+    ctx.restore();
+  }
 
   if (showGrid) {
     // Interior grid lines only
@@ -446,11 +519,12 @@ function drawGridOverlay(
   ctx.textAlign = 'left';
 }
 
-function GridOverlayImage({ src, plants, label, showMarkers = true, perspectiveData, boundaryPolygon, showGrid = true }: {
+function GridOverlayImage({ src, plants, label, showMarkers = true, perspectiveData, boundaryPolygon, showGrid = true, showPerspectiveGrid = false }: {
   src: string; plants: any[]; label: string; showMarkers?: boolean;
   perspectiveData?: PerspectiveData | null;
   boundaryPolygon?: BoundaryPolygon | null;
   showGrid?: boolean;
+  showPerspectiveGrid?: boolean;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -464,7 +538,7 @@ function GridOverlayImage({ src, plants, label, showMarkers = true, perspectiveD
       canvas.height = img.height;
       const ctx = canvas.getContext('2d')!;
       ctx.drawImage(img, 0, 0);
-      drawGridOverlay(canvas, plants, showMarkers, perspectiveData, boundaryPolygon, showGrid);
+      drawGridOverlay(canvas, plants, showMarkers, perspectiveData, boundaryPolygon, showGrid, showPerspectiveGrid);
     };
     img.onerror = () => {
       canvas.width = 600; canvas.height = 400;
@@ -474,7 +548,7 @@ function GridOverlayImage({ src, plants, label, showMarkers = true, perspectiveD
       ctx.textAlign = 'center'; ctx.fillText('Image unavailable', 300, 200);
     };
     img.src = src;
-  }, [src, plants, showMarkers, perspectiveData, boundaryPolygon, showGrid]);
+  }, [src, plants, showMarkers, perspectiveData, boundaryPolygon, showGrid, showPerspectiveGrid]);
 
   return (
     <div style={{ position: 'relative' }}>
@@ -915,6 +989,7 @@ export default function GardigApp() {
   const [emailStatus, setEmailStatus] = useState<"idle"|"sending"|"sent"|"error">("idle");
   const [emailError, setEmailError]   = useState<string | null>(null);
   const [showBefore, setShowBefore]   = useState(false);
+  const [showPerspGrid, setShowPerspGrid] = useState(false);
   const [fileSizeError, setFileSizeError] = useState(false);
   const [selfSendToast, setSelfSendToast] = useState<string | null>(null);
   const [selfSendStatus, setSelfSendStatus] = useState<"idle"|"sending"|"sent"|"error">("idle");
@@ -1977,8 +2052,22 @@ export default function GardigApp() {
               <div>
                 <div style={{ fontSize: px(12), color: C.inkLight, marginBottom: 7, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>After — Annotated</div>
                 <GridOverlayImage src={renderUrl} plants={plants} label="After" showGrid={false}
+                  showPerspectiveGrid={showPerspGrid}
                   perspectiveData={fingerprint?.horizonLinePercent != null ? { horizonLinePercent: fingerprint.horizonLinePercent, vanishingPointXPercent: fingerprint.vanishingPointXPercent, cameraElevationAngle: fingerprint.cameraElevationAngle, scaleCalibrationHeightMetres: fingerprint.scaleCalibrationHeightMetres, scaleCalibrationPixelHeightPercent: fingerprint.scaleCalibrationPixelHeightPercent, foregroundYPercent: fingerprint.foregroundToBackgroundRatio != null ? 55 + (fingerprint.foregroundToBackgroundRatio * 35) : 85 } : null}
                   boundaryPolygon={fingerprint?.boundaryPolygon?.length >= 3 ? fingerprint.boundaryPolygon : null} />
+                <button
+                  onClick={() => setShowPerspGrid(v => !v)}
+                  style={{
+                    marginTop: 6, fontSize: px(11), fontFamily: C.font, fontWeight: 600,
+                    color: showPerspGrid ? C.accent : C.inkLight,
+                    background: showPerspGrid ? C.brand : 'transparent',
+                    border: `1px solid ${showPerspGrid ? C.accent : C.rule}`,
+                    borderRadius: C.r, padding: '4px 10px', cursor: 'pointer',
+                    letterSpacing: '0.04em', transition: 'all 0.15s',
+                  }}
+                >
+                  {showPerspGrid ? '✓ Hide perspective grid' : 'Show perspective grid'}
+                </button>
               </div>
             )}
           </div>
