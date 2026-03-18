@@ -322,9 +322,9 @@ function drawGridOverlay(
     const vpX      = W * (vanishingPointXPercent / 100);
 
     ctx.save();
-    ctx.strokeStyle = 'rgba(184,150,46,0.30)';
-    ctx.lineWidth = 0.8;
-    ctx.font = 'bold 11px Arial, sans-serif';
+    ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+    ctx.lineWidth = 2;
+    ctx.font = 'bold 13px Arial, sans-serif';
 
     // Vertical perspective lines: one per column edge (0 through COLS)
     for (let ci = 0; ci <= COLS; ci++) {
@@ -353,7 +353,8 @@ function drawGridOverlay(
     }
 
     // Column letters at top of each column (between the vertical lines)
-    ctx.fillStyle = 'rgba(184,150,46,0.85)';
+   // Column letters at top of each column (between the vertical lines)
+   ctx.fillStyle = 'rgba(255,255,255,0.95)';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
     for (let ci = 0; ci < COLS; ci++) {
