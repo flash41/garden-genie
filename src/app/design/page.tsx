@@ -5,7 +5,7 @@ import PDFButton from "@/components/PDFButton";
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 
-const CREATIVITY_LEVELS = [
+const TRANSFORMATION_LEVELS = [
   { level: 1, name: "Minimal",          description: "Potted plants, loose stone or gravel surfaces, minor soft landscaping only. No structural changes. Garden remains recognisably the same." },
   { level: 2, name: "Subtle",           description: "In-ground border planting added, lawn retained, simple low-maintenance planting scheme. One or two new surface materials introduced." },
   { level: 3, name: "Considered",       description: "Lawn partially replaced, defined planting zones, new path or edging treatment, moderate planting variety. A clearly designed garden but not radically different." },
@@ -991,11 +991,13 @@ export default function GardigApp() {
   const [emailError, setEmailError]   = useState<string | null>(null);
   const [showBefore, setShowBefore]   = useState(false);
   const [showPerspGrid, setShowPerspGrid] = useState(false);
+  const [showPlantMarkers, setShowPlantMarkers] = useState(false);
   const [fileSizeError, setFileSizeError] = useState(false);
   const [selfSendToast, setSelfSendToast] = useState<string | null>(null);
   const [selfSendStatus, setSelfSendStatus] = useState<"idle"|"sending"|"sent"|"error">("idle");
   const [hasAttempted, setHasAttempted]   = useState(false);
-  const [creativityLevel, setCreativityLevel] = useState(3);
+  const [transformationLevel, setTransformationLevel] = useState(3);
+  const [hardinessZone, setHardinessZone]     = useState('');
   const [fingerprint, setFingerprint]         = useState<any>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -1058,7 +1060,8 @@ export default function GardigApp() {
         clientName: clientName || 'Private Client',
         turnstileToken,
         currency: userCurrency,
-        creativityLevel,
+        hardinessZone: hardinessZone || null,
+        transformationLevel,
       }),
     });
     if (!response.ok) {
@@ -1244,6 +1247,31 @@ export default function GardigApp() {
                   {DESIGN_LANGUAGES.map(l => <option key={l.value} value={l.label}>{l.label}</option>)}
                 </select>
               </div>
+              <div>
+                <label style={{ display: "block", fontSize: px(12), color: C.inkLight, marginBottom: 5, fontWeight: 600 }}>
+                  Hardiness Zone <span style={{ color: C.inkLight, fontWeight: 400 }}>(optional)</span>
+                </label>
+                <select value={hardinessZone} onChange={(e: any) => setHardinessZone(e.target.value)}
+                  style={{ width: "100%", padding: "9px 11px", border: `1px solid ${C.rule}`, borderRadius: C.r, fontFamily: C.font, fontSize: px(BASE - 1), background: C.card, color: hardinessZone ? C.ink : C.inkLight, outline: "none" }}>
+                  <option value="">Select zone…</option>
+                  <option value="Zone 1">Zone 1 — below −46°C (below −51°F)</option>
+                  <option value="Zone 2">Zone 2 — −46 to −40°C (−51 to −40°F)</option>
+                  <option value="Zone 3">Zone 3 — −40 to −34°C (−40 to −30°F)</option>
+                  <option value="Zone 4">Zone 4 — −34 to −29°C (−30 to −20°F)</option>
+                  <option value="Zone 5">Zone 5 — −29 to −23°C (−20 to −10°F)</option>
+                  <option value="Zone 6">Zone 6 — −23 to −18°C (−10 to 0°F)</option>
+                  <option value="Zone 7">Zone 7 — −18 to −12°C (0 to 10°F)</option>
+                  <option value="Zone 8">Zone 8 — −12 to −7°C (10 to 20°F)</option>
+                  <option value="Zone 9">Zone 9 — −7 to −1°C (20 to 30°F)</option>
+                  <option value="Zone 10">Zone 10 — −1 to 4°C (30 to 40°F)</option>
+                  <option value="Zone 11">Zone 11 — 4 to 10°C (40 to 50°F)</option>
+                  <option value="Zone 12">Zone 12 — 10 to 16°C (50 to 60°F)</option>
+                  <option value="Zone 13">Zone 13 — above 16°C (above 60°F)</option>
+                </select>
+                <div style={{ fontSize: px(11), color: C.inkLight, marginTop: 4 }}>
+                  Not sure? <a href="https://www.plantmaps.com/" target="_blank" rel="noopener noreferrer" style={{ color: C.accent, textDecoration: "underline" }}>Find your hardiness zone</a>
+                </div>
+              </div>
               <div style={{ borderTop: `1px solid ${hasAttempted && !gardenOrientation ? "#fca5a5" : C.rule}`, paddingTop: 14 }}>
                 <CompassSelector value={gardenOrientation} onChange={setGardenOrientation} required hasAttempted={hasAttempted} />
               </div>
@@ -1251,34 +1279,34 @@ export default function GardigApp() {
           </Card>
         </div>
 
-        {/* Creativity Level Slider */}
+        {/* Level of Transformation Slider */}
         {(() => {
-          const cl = CREATIVITY_LEVELS[creativityLevel - 1];
-          const pct = `${(creativityLevel - 1) / 4 * 100}%`;
+          const cl = TRANSFORMATION_LEVELS[transformationLevel - 1];
+          const pct = `${(transformationLevel - 1) / 4 * 100}%`;
           return (
             <div style={{ marginTop: 22, background: C.card, border: `1px solid ${C.rule}`, borderLeft: `4px solid ${C.accent}`, borderRadius: C.rLg, padding: "18px 22px", boxShadow: C.shadow }}>
               <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 12, gap: 12 }}>
-                <Label>03 — Creativity Level</Label>
+                <Label>03 — Level of Transformation</Label>
                 <span style={{ fontFamily: C.fontSerif, fontSize: px(15), fontWeight: 600, color: C.brand, whiteSpace: "nowrap" }}>
-                  {creativityLevel} — {cl.name}
+                  {transformationLevel} — {cl.name}
                 </span>
               </div>
               <input
                 type="range" min={1} max={5} step={1}
-                value={creativityLevel}
-                onChange={e => setCreativityLevel(Number(e.target.value))}
+                value={transformationLevel}
+                onChange={e => setTransformationLevel(Number(e.target.value))}
                 className="creativity-slider"
                 style={{ '--cp': pct } as React.CSSProperties}
               />
-              <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4, marginBottom: 10 }}>
-                {CREATIVITY_LEVELS.map(l => (
-                  <span key={l.level} style={{ fontSize: px(10), color: l.level === creativityLevel ? C.accent : C.inkLight, fontWeight: l.level === creativityLevel ? 700 : 400, fontFamily: C.font, letterSpacing: "0.04em", textAlign: "center", flex: 1 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4, marginBottom: 10, padding: "0 11px" }}>
+                {TRANSFORMATION_LEVELS.map(l => (
+                  <span key={l.level} style={{ fontSize: px(10), color: l.level === transformationLevel ? C.accent : C.inkLight, fontWeight: l.level === transformationLevel ? 700 : 400, fontFamily: C.font, letterSpacing: "0.04em", textAlign: "center", flex: 1 }}>
                     {l.level}
                   </span>
                 ))}
               </div>
               <div style={{ fontSize: px(13), color: C.inkMid, lineHeight: 1.55, fontFamily: C.font, borderTop: `1px solid ${C.rule}`, paddingTop: 10 }}>
-                <span style={{ fontWeight: 600, color: C.brand }}>Level {creativityLevel}:</span> {cl.description}
+                <span style={{ fontWeight: 600, color: C.brand }}>Level {transformationLevel}:</span> {cl.description}
               </div>
             </div>
           );
@@ -2033,9 +2061,28 @@ export default function GardigApp() {
             {showBefore
               ? imageDataUrl && <img src={imageDataUrl} alt="Before" style={{ width: "100%", borderRadius: C.rLg, maxHeight: 480, objectFit: "cover", border: `1px solid ${C.rule}` }} />
               : renderUrl
-                ? <img src={renderUrl} alt="Proposed Vision" style={{ width: "100%", borderRadius: C.rLg, maxHeight: 480, objectFit: "cover", border: `1px solid ${C.rule}` }} />
+                ? showPlantMarkers
+                  ? <GridOverlayImage src={renderUrl} plants={plants} label="After" showGrid={false}
+                      perspectiveData={fingerprint?.horizonLinePercent != null ? { horizonLinePercent: fingerprint.horizonLinePercent, vanishingPointXPercent: fingerprint.vanishingPointXPercent, cameraElevationAngle: fingerprint.cameraElevationAngle, scaleCalibrationHeightMetres: fingerprint.scaleCalibrationHeightMetres, scaleCalibrationPixelHeightPercent: fingerprint.scaleCalibrationPixelHeightPercent, foregroundYPercent: fingerprint.foregroundToBackgroundRatio != null ? 55 + (fingerprint.foregroundToBackgroundRatio * 35) : 85 } : null}
+                      boundaryPolygon={fingerprint?.boundaryPolygon?.length >= 3 ? fingerprint.boundaryPolygon : null} />
+                  : <img src={renderUrl} alt="Proposed Vision" style={{ width: "100%", borderRadius: C.rLg, maxHeight: 480, objectFit: "cover", border: `1px solid ${C.rule}` }} />
                 : <div style={{ background: C.surface, borderRadius: C.rLg, height: 260, display: "flex", alignItems: "center", justifyContent: "center", color: C.inkLight, fontSize: px(BASE), border: `1px solid ${C.rule}` }}>Render not available</div>
             }
+            {!showBefore && renderUrl && (
+              <button
+                onClick={() => setShowPlantMarkers(v => !v)}
+                style={{
+                  marginTop: 8, fontSize: px(11), fontFamily: C.font, fontWeight: 600,
+                  color: showPlantMarkers ? C.accent : C.inkLight,
+                  background: showPlantMarkers ? C.brand : 'transparent',
+                  border: `1px solid ${showPlantMarkers ? C.accent : C.rule}`,
+                  borderRadius: C.r, padding: '4px 10px', cursor: 'pointer',
+                  letterSpacing: '0.04em', transition: 'all 0.15s',
+                }}
+              >
+                {showPlantMarkers ? '✓ Hide plant markers' : 'Show plant markers'}
+              </button>
+            )}
           </div>
 
           {/* Grid overlays */}

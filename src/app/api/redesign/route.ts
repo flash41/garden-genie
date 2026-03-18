@@ -274,7 +274,120 @@ Be as precise as possible. This data will lock geometry in all subsequent genera
   const clean = text.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
   return JSON.parse(clean);
 }
+// ─── COORDINATE PROJECTION ENGINE ─────────────────────────────────────────────
+// Converts real-world metric X,Y,Z coordinates to normalised image positions.
+// Origin: front-left corner of garden at ground level.
+// X = metres across (left to right), Y = metres deep (front to rear), Z = metres up.
 
+interface ProjectedPoint {
+  xNorm: number;  // 0.0–1.0 normalised from left edge of image
+  yNorm: number;  // 0.0–1.0 normalised from top edge of image
+  scale: number;  // relative scale factor (1.0 = foreground, 0.0 = horizon)
+}
+
+function projectToImage(
+  xMetres: number,
+  yMetres: number,
+  zMetres: number,
+  fingerprint: Record<string, any>,
+): ProjectedPoint {
+  const horizonYNorm    = (fingerprint.horizonLinePercent ?? 35) / 100;
+  const foregroundYNorm = (fingerprint.foregroundBoundaryYPercent ?? 85) / 100;
+  const vpXNorm         = (fingerprint.vanishingPointXPercent ?? 50) / 100;
+  const plotWidth       = fingerprint.plotWidthMetres  ?? 6;
+  const plotDepth       = fingerprint.plotDepthMetres  ?? 8;
+  const calibHeight     = fingerprint.scaleCalibrationHeightMetres ?? 1.8;
+  const calibPixelPct   = fingerprint.scaleCalibrationPixelHeightPercent ?? 20;
+
+  // Depth ratio: 0.0 = at rear boundary, 1.0 = at foreground
+  // yMetres=0 is front, yMetres=plotDepth is rear
+  const depthRatio = Math.max(0, Math.min(1, 1 - (yMetres / plotDepth)));
+
+  // Y position in image using power curve for perspective compression
+  const groundYNorm = horizonYNorm +
+    (foregroundYNorm - horizonYNorm) * Math.pow(depthRatio, 1.6);
+
+  // X position: columns converge toward vanishing point at rear
+  const xNorm01 = Math.max(0, Math.min(1, xMetres / plotWidth));
+  const xNorm   = vpXNorm + (xNorm01 - vpXNorm) * depthRatio;
+
+  // Z offset: raised elements appear higher in the image
+  // pixels-per-metre derived from scale calibration
+  const imageHeightProxy = 1.0; // working in normalised units
+  const pixelsPerMetreNorm =
+    (calibPixelPct / 100) / calibHeight;
+  const perspectiveScale = 0.3 + 0.7 * depthRatio;
+  const zOffsetNorm = zMetres * pixelsPerMetreNorm * perspectiveScale;
+
+  const yNorm = Math.max(0.01, Math.min(0.99,
+    groundYNorm - zOffsetNorm
+  ));
+
+  return {
+    xNorm: Math.max(0.01, Math.min(0.99, xNorm)),
+    yNorm,
+    scale: perspectiveScale,
+  };
+}
+
+// Converts a grid reference like "C3" to metric X,Y centre coordinates
+function gridRefToMetres(
+  gridRef: string,
+  plotWidthMetres: number,
+  plotDepthMetres: number,
+): { x: number; y: number } {
+  const clean = (gridRef || 'C3').toUpperCase().trim();
+  const col = clean.charCodeAt(0) - 65; // A=0, F=5
+  const row = parseInt(clean[1] || '3') - 1; // 1=0(rear), 6=5(front)
+  const clampedCol = Math.max(0, Math.min(5, col));
+  const clampedRow = Math.max(0, Math.min(5, row));
+  // Row 1 = rear = plotDepth metres deep, Row 6 = front = 0 metres deep
+  const x = (clampedCol + 0.5) * (plotWidthMetres / 6);
+  const y = (5 - clampedRow + 0.5) * (plotDepthMetres / 6);
+  return { x, y };
+}
+
+// Projects all plants and layout elements to normalised image coordinates
+function projectAllElements(
+  designJSON: Record<string, any>,
+  fingerprint: Record<string, any>,
+): Array<{
+  index: number;
+  name: string;
+  gridRef: string;
+  xMetres: number;
+  yMetres: number;
+  zMetres: number;
+  xNorm: number;
+  yNorm: number;
+  scale: number;
+  xPct: string;
+  yPct: string;
+}> {
+  const plants = designJSON?.plantingSpecification?.plants || [];
+  const plotW = fingerprint.plotWidthMetres ?? 6;
+  const plotD = fingerprint.plotDepthMetres ?? 8;
+
+  return plants.map((plant: any, i: number) => {
+    const gridRef = plant.gridLocation || 'C3';
+    const { x, y } = gridRefToMetres(gridRef, plotW, plotD);
+    const z = plant.gridZ ?? 0;
+    const proj = projectToImage(x, y, z, fingerprint);
+    return {
+      index: i + 1,
+      name: plant.botanicalName || plant.commonName || `Plant ${i + 1}`,
+      gridRef,
+      xMetres: Math.round(x * 10) / 10,
+      yMetres: Math.round(y * 10) / 10,
+      zMetres: z,
+      xNorm: proj.xNorm,
+      yNorm: proj.yNorm,
+      scale: proj.scale,
+      xPct: `${Math.round(proj.xNorm * 100)}%`,
+      yPct: `${Math.round(proj.yNorm * 100)}%`,
+    };
+  });
+}
 // ─── STEP 3 — Concept Base Plan ────────────────────────────────────────────────
 // Generates a hand-drawn top-down architectural sketch with a labelled A–F × 1–6 grid.
 // Receives the full design JSON from Step 2 and draws its layoutDescription exactly —
@@ -373,6 +486,7 @@ async function step2_gardenDesign(
   clientName: string,
   creativityLevel: number,
   creativityDescription: string,
+  hardinessZone?: string | null,
 ): Promise<Record<string, any>> {
   const systemInstruction = `You are a senior landscape architect and botanist producing a full professional garden design proposal document.
 
@@ -488,7 +602,7 @@ Return ONLY valid JSON. No markdown fences. No commentary.`;
 Client: ${clientName}
 Design Language: ${style}
 Geographic Region: ${region}
-Plant Climate: Only suggest plants proven to thrive in ${country} — hardy to at least -10°C, tolerating wet winters and cool summers for this region.
+Plant Climate: ${hardinessZone ? `Only suggest plants rated for USDA ${hardinessZone} or colder. All plants must be fully hardy to the minimum temperatures of ${hardinessZone}.` : `Only suggest plants proven to thrive in ${country} — hardy to at least -10°C, tolerating wet winters and cool summers for this region.`}
 Cost Currency: All cost estimates must be provided in ${currency}. Use realistic local market prices for ${country}.${orientation ? `\nGarden Orientation: ${orientation} — The garden faces ${orientation}. Factor sun exposure accordingly.` : ''}
 
 CREATIVITY LEVEL: ${creativityLevel} of 5 — ${creativityDescription}
@@ -850,21 +964,22 @@ export async function POST(request: Request) {
       clientName,
       turnstileToken,
       currency,
-      creativityLevel: rawCreativityLevel,
+      hardinessZone,
+      transformationLevel: rawTransformationLevel,
     } = await request.json();
 
-    const creativityLevel: number = typeof rawCreativityLevel === 'number'
-      ? Math.max(1, Math.min(5, Math.round(rawCreativityLevel)))
+    const creativityLevel: number = typeof rawTransformationLevel === 'number'
+      ? Math.max(1, Math.min(5, Math.round(rawTransformationLevel)))
       : 3;
 
-    const CREATIVITY_DESCRIPTIONS: Record<number, string> = {
+    const TRANSFORMATION_DESCRIPTIONS: Record<number, string> = {
       1: 'Minimal: Potted plants, loose stone or gravel surfaces, minor soft landscaping only. No structural changes. Garden remains recognisably the same.',
       2: 'Subtle: In-ground border planting added, lawn retained, simple low-maintenance planting scheme. One or two new surface materials introduced.',
       3: 'Considered: Lawn partially replaced, defined planting zones, new path or edging treatment, moderate planting variety. A clearly designed garden but not radically different.',
       4: 'Ambitious: Significant replanting, new hard surface areas, structural planting including shrubs and small trees, possible level change or raised bed. Garden transformed but practical.',
       5: 'Full transformation: Complete redesign. Extensive hard landscaping, architectural planting, water features or focal structures possible, full in-ground planting scheme. Garden unrecognisable from original.',
     };
-    const creativityDescription = CREATIVITY_DESCRIPTIONS[creativityLevel];
+    const creativityDescription = TRANSFORMATION_DESCRIPTIONS[creativityLevel];
 
     // ── Turnstile verification ──────────────────────────────────────────────────
     const turnstileSecret = process.env.TURNSTILE_SECRET_KEY;
@@ -894,6 +1009,7 @@ export async function POST(request: Request) {
     let fingerprint: Record<string, any> = {};
     try {
       fingerprint = await step1_spatialFingerprint(originalImageBase64, effectiveMimeType, effectiveOrientation);
+      if (hardinessZone) fingerprint.hardinessZone = hardinessZone;
       console.log('[Pipeline] Step 1 complete:', JSON.stringify(fingerprint).slice(0, 200));
     } catch (err) {
       console.error('[Pipeline] Step 1 failed, continuing with empty fingerprint:', err);
@@ -916,6 +1032,7 @@ export async function POST(request: Request) {
         effectiveClientName,
         creativityLevel,
         creativityDescription,
+        hardinessZone,
       );
       console.log('[Pipeline] Step 2 complete, keys:', Object.keys(designJSON).join(', '));
     } catch (err) {
