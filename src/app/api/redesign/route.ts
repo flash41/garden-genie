@@ -212,6 +212,7 @@ Return ONLY valid JSON (no markdown):
   "horizonLinePercent": (number, 0–100 — vertical position of the horizon line as a percentage from the TOP of the image. If the true horizon is obscured, use the base of the rear boundary wall or fence as a proxy. e.g. 33 means horizon is one-third down),
   "vanishingPointXPercent": (number, 0–100 — horizontal position of the vanishing point as a percentage across the image width; straight-on photos ≈ 50),
   "foregroundToBackgroundRatio": (number, 0.0–1.0 — proportion of visible garden that is foreground vs distance; 1.0 = all foreground, 0.0 = all distance),
+  "foregroundBoundaryYPercent": (number 0-100 — the vertical position of the foreground edge of the garden as a percentage from the TOP of the image. This is the bottom edge of the visible ground plane where the garden meets the camera position. For photos where the garden foreground fills the lower portion of the frame this will be 75-90. For elevated camera positions it may be 60-70.),
 
   "scaleCalibrationObject": "description of the object used to calibrate real-world scale — e.g. 'concrete block wall, 5 courses visible', 'standard fence panel', 'brick pier'",
   "scaleCalibrationHeightMetres": (number — estimated real-world height of the calibration object in metres. Concrete block course = 0.215m, brick course = 0.075m, standard fence panel = 1.8m, standard door = 2.0m),
@@ -243,6 +244,7 @@ PERSPECTIVE FIELD INSTRUCTIONS:
 - horizonLinePercent: identify where the horizon (or the base of the rear wall/fence) sits in the image. If the rear wall base is at 30% from top, use 30. For typical garden photos taken standing up, this is usually 25-45.
 - vanishingPointXPercent: for straight-ahead shots this is ~50. For gardens shot at an angle it shifts left or right.
 - foregroundToBackgroundRatio: if most of the image shows the far end of the garden with little foreground, this is low (~0.3). If the foreground fills most of the image, this is high (~0.8).
+- foregroundBoundaryYPercent: identify the lowest visible point of the garden ground plane in the image. This is typically near the bottom of the frame for ground-level photos. Express as a percentage from the top of the image.
 - scaleCalibrationObject: find the most reliable scale reference in the photo. Prefer objects with standardised dimensions: fence panels (1.8m high), concrete block courses (0.215m each), brick courses (0.075m each), standard doors (2.0m). Count courses or panels visible to derive real-world height.
 - scaleCalibrationPixelHeightPercent: measure the pixel height of the calibration object as a fraction of the total image height, expressed as a percentage 0–100.
 - plotWidthMetres / plotDepthMetres: using the scale calibration and the perspective geometry (horizon line + vanishing point), estimate the real-world site dimensions. Cross-check against gardenWidth and gardenDepth text fields.
@@ -397,6 +399,8 @@ async function step3_conceptBasePlan(
   fingerprint: Record<string, any>,
   designJSON: Record<string, any>,
   orientation: string,
+  imageBase64: string,
+  imageMimeType: string,
 ): Promise<string | null> {
   const structuresList = (fingerprint.immovableStructures || []).map((s: string) => `- ${s}`).join('\n') || '- None identified';
   const vegetationList = (fingerprint.existingVegetation || []).map((v: string) => `- ${v}`).join('\n') || '- None identified';
@@ -406,7 +410,9 @@ async function step3_conceptBasePlan(
     .join('\n') || '- No layout elements specified';
   const layoutNarrative = designJSON.layoutDescription?.layoutNarrative || '';
 
-  const prompt = `Generate a precise architectural garden base plan — a hand-drawn top-down 2D sketch.
+  const prompt = `You are given the original garden photograph. This is the exact garden you must draw a top-down plan of. Study the photo carefully. The fingerprint below was extracted from this photo. Your plan must match the actual shape, boundaries, and permanent structures visible in this photo. Do not invent a generic garden — draw THIS garden.
+
+Generate a precise architectural garden base plan — a hand-drawn top-down 2D sketch.
 
 SPATIAL FINGERPRINT (use these exact dimensions and positions):
 - Garden shape: ${fingerprint.gardenShape || 'rectangular plot'}
@@ -459,7 +465,10 @@ Geometric accuracy of the boundary and garden shape is the top priority.`;
 
   const response = await ai.models.generateContent({
     model: 'gemini-2.5-flash-image',
-    contents: [{ role: 'user', parts: [{ text: prompt }] }],
+    contents: [{ role: 'user', parts: [
+      { inlineData: { mimeType: imageMimeType, data: imageBase64 } },
+      { text: prompt },
+    ]}],
     config: { responseModalities: ['Text', 'Image'] },
   });
 
@@ -719,6 +728,7 @@ function step4_buildVisualPrompt(
   style: string,
   orientation: string,
   creativityLevel: number,
+  projectedPositionsText?: string,
 ): string {
   const sc = fingerprint;
   const structuresList = (sc.immovableStructures || []).map((s: string) => `- ${s}`).join('\n') || '- None identified';
@@ -827,6 +837,12 @@ ${spatialElements || '- Place elements as described in the design concept'}
 
 PLANT PLACEMENT IN SCENE (place each species at its correct perspective position):
 ${plantPositions || '- Place plants as described in the design concept'}
+${projectedPositionsText ? `
+PRECISE ELEMENT POSITIONS IN THIS IMAGE FRAME:
+The following positions are mathematically derived from the camera geometry. Place each element as close as possible to these positions:
+${projectedPositionsText}
+
+These percentages represent position across (left-right) and down (top-bottom) the image frame. An element at 50% across and 40% down sits in the horizontal centre of the frame roughly one third down from the top.` : ''}
 
 WHAT YOU MUST NOT CHANGE:
 - The shape or size of the garden space
@@ -929,6 +945,54 @@ Return ONLY valid JSON, no markdown:
   const text = response.candidates?.[0]?.content?.parts?.find((p: any) => p.text)?.text || '';
   const clean = text.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
   return JSON.parse(clean);
+}
+
+// ─── STEP 2B — Validate Projected Layout ──────────────────────────────────────
+// Vision check: verifies that projected element positions make spatial sense
+// against the actual photo. Non-blocking — corrections are appended to the prompt.
+
+async function step2b_validateProjectedLayout(
+  imageBase64: string,
+  imageMimeType: string,
+  fingerprint: Record<string, any>,
+  projectedElements: Array<any>,
+): Promise<{ passed: boolean; corrections: string; confidence: number }> {
+  const elementList = projectedElements
+    .map(el => `Plant ${el.index} (${el.name}, grid ${el.gridRef}): ${el.xPct} across, ${el.yPct} down — at ${el.xMetres}m × ${el.yMetres}m × ${el.zMetres}m`)
+    .join('\n');
+
+  const prompt = `You are a spatial accuracy checker. You are given a garden photograph and a list of projected element positions derived mathematically from the camera geometry. Check whether each position makes spatial sense for this garden.
+
+Garden fingerprint summary: plot width ${fingerprint.plotWidthMetres ?? 'unknown'}m, depth ${fingerprint.plotDepthMetres ?? 'unknown'}m, horizon at ${fingerprint.horizonLinePercent ?? 'unknown'}% from top, foreground at ${fingerprint.foregroundBoundaryYPercent ?? 'unknown'}% from top.
+
+Projected positions to validate:
+${elementList}
+
+For each element, check: is this position inside the garden boundary? Is the depth (Y position) consistent with the row number — rear elements should be near the top of the frame, foreground elements near the bottom? Is the height offset (Z) plausible for this element type?
+
+Return ONLY valid JSON:
+{
+  "passed": true,
+  "confidence": 85,
+  "corrections": "any specific corrections needed as a plain text string, or empty string if passed"
+}`;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: [{ role: 'user', parts: [
+        { inlineData: { mimeType: imageMimeType, data: imageBase64 } },
+        { text: prompt },
+      ]}],
+      config: { responseMimeType: 'application/json', temperature: 0.1 },
+    });
+    const text = response.candidates?.[0]?.content?.parts?.find((p: any) => p.text)?.text || '';
+    const clean = text.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
+    return JSON.parse(clean);
+  } catch (err) {
+    console.error('[Step2b] Validation failed:', err);
+    return { passed: true, corrections: '', confidence: 0 };
+  }
 }
 
 // ─── POST HANDLER ──────────────────────────────────────────────────────────────
@@ -1040,12 +1104,32 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Garden design generation failed. Please try again.' }, { status: 500 });
     }
 
+    // ── Step 2B — Project element coordinates + validate ────────────────────────
+    const projectedElements = projectAllElements(designJSON, fingerprint);
+    let projectedPositionsText = projectedElements
+      .map(el => `Plant ${el.index} (${el.name}, grid ${el.gridRef}): ${el.xPct} across, ${el.yPct} down the image frame, at ${el.xMetres}m × ${el.yMetres}m × ${el.zMetres}m`)
+      .join('\n');
+
+    console.log('[Pipeline] Step 2B: Validating projected layout...');
+    try {
+      const validation = await step2b_validateProjectedLayout(
+        originalImageBase64, effectiveMimeType, fingerprint, projectedElements,
+      );
+      console.log('[Pipeline] Step 2B complete, passed:', validation.passed, 'confidence:', validation.confidence);
+      if (!validation.passed && validation.corrections) {
+        console.log('[Pipeline] Step 2B corrections:', validation.corrections);
+        projectedPositionsText += `\n\nSPATIAL CORRECTIONS FROM VALIDATION:\n${validation.corrections}`;
+      }
+    } catch (err) {
+      console.error('[Pipeline] Step 2B failed, continuing:', err);
+    }
+
     // ── Step 3 — Concept Base Plan (draws the design layout description) ────────
     // Receives designJSON so the plan is a faithful drawing of Step 2's decisions.
     console.log('[Pipeline] Step 3: Concept base plan...');
     let aerialImageBase64: string | null = null;
     try {
-      aerialImageBase64 = await step3_conceptBasePlan(fingerprint, designJSON, effectiveOrientation);
+      aerialImageBase64 = await step3_conceptBasePlan(fingerprint, designJSON, effectiveOrientation, originalImageBase64, effectiveMimeType);
       console.log('[Pipeline] Step 3 complete, size:', aerialImageBase64?.length ?? 0);
     } catch (err) {
       console.error('[Pipeline] Step 3 failed:', err);
@@ -1053,7 +1137,7 @@ export async function POST(request: Request) {
 
     // ── Step 4 — Build Visual Prompt ────────────────────────────────────────────
     console.log('[Pipeline] Step 4: Building visual prompt...');
-    const visualPrompt = step4_buildVisualPrompt(fingerprint, designJSON, style, effectiveOrientation, creativityLevel);
+    const visualPrompt = step4_buildVisualPrompt(fingerprint, designJSON, style, effectiveOrientation, creativityLevel, projectedPositionsText);
 
     // ── Step 5 — Generate Render ────────────────────────────────────────────────
     console.log('[Pipeline] Step 5: Generating render...');
