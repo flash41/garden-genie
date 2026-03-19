@@ -396,103 +396,41 @@ async function step2_generatePerspectiveGrid(
   mimeType: string,
   fingerprint: Record<string, any>,
 ): Promise<string | null> {
-  const prompt = `Act as a site surveyor and architectural visualizer. I am providing an image of a garden.
-
-CRITICAL INSTRUCTION: The grid you draw must be anchored to these four specific boundary points. Do not draw the grid anywhere else. Do not centre the grid in the image. The grid must follow the actual garden boundaries visible in the photo.
-
-STEP 1 — LOCATE THE FOUR ANCHOR POINTS:
-Before drawing a single line, find these four exact points in the image:
-
-ANCHOR POINT 1 — FOREGROUND LEFT:
-The exact point where the left boundary wall or fence meets the foreground edge of the garden ground plane — the bottom-left corner of the garden area as seen from the camera. This is where your bottom-left grid corner must be placed.
-
-ANCHOR POINT 2 — FOREGROUND RIGHT:
-The exact point where the right boundary wall or fence meets the foreground edge of the garden ground plane — the bottom-right corner of the garden area as seen from the camera. This is where your bottom-right grid corner must be placed.
-
-ANCHOR POINT 3 — REAR LEFT:
-The exact point where the left boundary wall or fence meets the base of the far boundary wall — the top-left corner of the garden ground plane as seen from the camera. This is where your top-left grid corner must be placed.
-
-ANCHOR POINT 4 — REAR RIGHT:
-The exact point where the right boundary wall or fence meets the base of the far boundary wall — the top-right corner of the garden ground plane as seen from the camera. This is where your top-right grid corner must be placed.
-
-These four anchor points define the exact quadrilateral shape of the garden ground plane as seen in perspective. Your entire grid must fit precisely inside this quadrilateral. The grid must not extend outside it. The grid must not be smaller than it. The grid corners must sit exactly on these four anchor points.
-
-STEP 2 — FIND THE VANISHING POINT:
-Draw imaginary lines from ANCHOR POINT 1 to ANCHOR POINT 3 (left boundary line) and from ANCHOR POINT 2 to ANCHOR POINT 4 (right boundary line). Extend both lines until they meet. That meeting point is the vanishing point. All front-to-back grid lines must converge toward this exact vanishing point. It may be above the far wall, at the horizon, or outside the image frame entirely.
-
-STEP 3 — DRAW THE VERTICAL GRID LINES (running front to back):
-- Draw one line from ANCHOR POINT 1 to ANCHOR POINT 3 along the left boundary
-- Draw one line from ANCHOR POINT 2 to ANCHOR POINT 4 along the right boundary
-- Divide the foreground edge (ANCHOR POINT 1 to ANCHOR POINT 2) into equal 1m intervals
-- From each division point on the foreground edge, draw a line converging toward the vanishing point, ending at the rear boundary line
-- These lines represent each 1m column of the grid
-
-STEP 4 — DRAW THE HORIZONTAL TRANSVERSAL LINES (running left to right):
-- Draw one line connecting ANCHOR POINT 1 to ANCHOR POINT 2 along the foreground boundary
-- Draw one line connecting ANCHOR POINT 3 to ANCHOR POINT 4 along the rear boundary base
-- Between these two lines, draw equally spaced transversal lines representing each 1m row
-- Each transversal line must run from the left boundary line to the right boundary line at that depth
-- The lines must get progressively closer together toward the rear boundary due to perspective compression
-
-STEP 5 — STYLE AND LABELS:
-- Grid lines: white, 2px weight
-- The grid covers ONLY the garden ground surface between the four anchor points
-- Nothing outside the four anchor points gets a grid line
-- Label '1m x 1m Ground Grid Overlay' at top left in white text on a dark semi-transparent background pill
-- Label 'SURVEY AND SPACE ANALYSIS OVERLAY' at bottom centre in small white text
-- Add a metric scale bar at bottom right: 0m, 1m, 2m
-- Place leader lines and small text labels at each of the four anchor points: 'Left Boundary', 'Right Boundary', 'Far Boundary', 'Foreground'
-
-FINAL CHECK BEFORE OUTPUTTING:
-- Does the bottom-left corner of the grid sit exactly on ANCHOR POINT 1? It must.
-- Does the bottom-right corner of the grid sit exactly on ANCHOR POINT 2? It must.
-- Does the top-left corner of the grid sit exactly on ANCHOR POINT 3? It must.
-- Does the top-right corner of the grid sit exactly on ANCHOR POINT 4? It must.
-- Do all front-to-back lines converge at the same vanishing point? They must.
-- Is the grid completely flat on the ground plane? It must look as if a physical grid of 1m x 1m squares has been laid flat on the garden ground and photographed from this exact camera position.
-
-Additional reference data from spatial analysis of this image:
-- Approximate horizon line position: ${fingerprint.horizonLinePercent ?? 35}% from top of image
-- Approximate vanishing point horizontal position: ${fingerprint.vanishingPointXPercent ?? 50}% across image width
-- Approximate foreground boundary position: ${fingerprint.foregroundBoundaryYPercent ?? 85}% from top of image
-- Left boundary: ${fingerprint.leftBoundary || 'wall or fence on left side'}
-- Right boundary: ${fingerprint.rightBoundary || 'wall or fence on right side'}
-- Rear boundary: ${fingerprint.rearBoundary || 'wall or fence at rear'}`;
-
-  try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash-image',
-      contents: [{ role: 'user', parts: [
-        { inlineData: { mimeType, data: imageBase64 } },
-        { text: prompt },
-      ]}],
-      config: { responseModalities: ['Text', 'Image'] },
-    });
-    const imagePart = response.candidates?.[0]?.content?.parts?.find((p: any) => p.inlineData);
-    if (!imagePart?.inlineData?.data) return null;
-    const mime = imagePart.inlineData.mimeType || 'image/png';
-    return `data:${mime};base64,${imagePart.inlineData.data}`;
-  } catch (err) {
-    console.error('[Step2_G1] Perspective grid generation failed:', err);
-    return null;
-  }
+  // step2_generatePerspectiveGrid now returns null
+  // The perspective grid is drawn client-side using control points from step2b
+  // This function is kept for compatibility but does minimal work
+  return null;
 }
 
 async function step2b_extractControlPoints(
-  perspectiveGridBase64: string,
+  imageBase64: string,
+  mimeType: string,
   fingerprint: Record<string, any>,
 ): Promise<Record<string, any>> {
-  const prompt = `You are given an image of a garden with a 1m x 1m perspective grid overlaid on it as white lines.
+  const prompt = `You are a precise computer vision system analyzing a garden photograph.
 
-Identify the four corner points of the grid — the four outermost intersection points where the boundary lines of the grid meet. These are:
-- Front-left: where the left boundary grid line meets the foreground transversal line
-- Front-right: where the right boundary grid line meets the foreground transversal line
-- Rear-left: where the left boundary grid line meets the rear transversal line
-- Rear-right: where the right boundary grid line meets the rear transversal line
+Your task is to identify the exact pixel coordinates of four specific corner points that define the garden ground plane boundary. These four points are the corners of the actual garden area visible on the ground.
 
-For each corner, provide the pixel coordinates as normalised values where 0.0 is the left or top edge and 1.0 is the right or bottom edge of the image.
+POINT 1 — FOREGROUND LEFT CORNER:
+The exact point on the ground where the left boundary wall or fence meets the nearest edge of the garden to the camera. This is the bottom-left corner of the garden ground area. It sits at ground level where the left wall base meets the foreground.
 
-Return ONLY this exact JSON with no markdown, no explanation:
+POINT 2 — FOREGROUND RIGHT CORNER:
+The exact point on the ground where the right boundary wall or fence meets the nearest edge of the garden to the camera. This is the bottom-right corner of the garden ground area. It sits at ground level where the right wall base meets the foreground.
+
+POINT 3 — REAR LEFT CORNER:
+The exact point on the ground where the left boundary wall or fence meets the base of the far boundary wall. This is the top-left corner of the garden ground area as seen from the camera.
+
+POINT 4 — REAR RIGHT CORNER:
+The exact point on the ground where the right boundary wall or fence meets the base of the far boundary wall. This is the top-right corner of the garden ground area as seen from the camera.
+
+These four points form a quadrilateral that represents the garden ground plane in perspective.
+
+Also estimate:
+- How many 1m columns fit across the garden width
+- How many 1m rows fit from foreground to rear boundary
+- The approximate real-world width and depth in metres
+
+Return ONLY this exact JSON with no markdown:
 {
   "frontLeft":  { "xNorm": 0.0, "yNorm": 0.0 },
   "frontRight": { "xNorm": 0.0, "yNorm": 0.0 },
@@ -504,22 +442,17 @@ Return ONLY this exact JSON with no markdown, no explanation:
   "plotDepthMetres": 8.0
 }
 
-Replace the 0.0 values with the actual normalised coordinates you identify in the image.
-gridColumnsCount and gridRowsCount are the number of 1m grid squares visible across and deep.
-plotWidthMetres and plotDepthMetres are the estimated real-world dimensions.`;
+All xNorm and yNorm values must be between 0.0 and 1.0 where:
+- xNorm 0.0 = left edge of image, xNorm 1.0 = right edge of image
+- yNorm 0.0 = top edge of image, yNorm 1.0 = bottom edge of image
+
+Be as precise as possible. These coordinates will be used for geometric calculations.`;
 
   try {
-    const gridData = perspectiveGridBase64.includes(',')
-      ? perspectiveGridBase64.split(',')[1]
-      : perspectiveGridBase64;
-    const gridMime = perspectiveGridBase64.includes(';')
-      ? perspectiveGridBase64.split(';')[0].split(':')[1]
-      : 'image/png';
-
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: [{ role: 'user', parts: [
-        { inlineData: { mimeType: gridMime, data: gridData } },
+        { inlineData: { mimeType, data: imageBase64 } },
         { text: prompt },
       ]}],
       config: { responseMimeType: 'application/json', temperature: 0.1 },
@@ -1339,27 +1272,21 @@ export async function POST(request: Request) {
       console.error('[Pipeline] Step 1 failed, continuing with empty fingerprint:', err);
     }
 
-    // ── Stage G1 — Perspective Grid Generation ──────────────────────────────────
-    console.log('[Pipeline] G1: Generating perspective grid...');
-    let perspectiveGridBase64: string | null = null;
+    // ── Stage G1 — Extract boundary control points directly from original photo
+    console.log('[Pipeline] G1: Extracting boundary control points...');
     let controlPoints: Record<string, any> = {};
     let g2Grid: Record<string, any> = {};
+    let perspectiveGridBase64: string | null = null;
 
     try {
-      perspectiveGridBase64 = await step2_generatePerspectiveGrid(
+      controlPoints = await step2b_extractControlPoints(
         originalImageBase64, effectiveMimeType, fingerprint
       );
-      console.log('[Pipeline] G1 complete, size:', perspectiveGridBase64?.length ?? 0);
+      console.log('[Pipeline] G1b complete:', JSON.stringify(controlPoints));
 
-      if (perspectiveGridBase64) {
-        console.log('[Pipeline] G1b: Extracting control points...');
-        controlPoints = await step2b_extractControlPoints(perspectiveGridBase64, fingerprint);
-        console.log('[Pipeline] G1b complete:', JSON.stringify(controlPoints));
-
-        console.log('[Pipeline] G2: Computing homography and deriving grid...');
-        g2Grid = deriveG2Grid(controlPoints);
-        console.log('[Pipeline] G2 complete, intersections:', g2Grid.intersections?.length ?? 0);
-      }
+      console.log('[Pipeline] G2: Computing homography and deriving grid...');
+      g2Grid = deriveG2Grid(controlPoints);
+      console.log('[Pipeline] G2 complete, intersections:', g2Grid.intersections?.length ?? 0);
     } catch (err) {
       console.error('[Pipeline] G1/G2 failed, continuing without grid data:', err);
     }

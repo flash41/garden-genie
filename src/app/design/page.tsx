@@ -286,6 +286,53 @@ function applyPerspectiveTransform(
   return { x, y, scale };
 }
 
+function g2ToG1Position(
+  gridRef: string,
+  g2Grid: Record<string, any>,
+  imageWidth: number,
+  imageHeight: number,
+): { x: number; y: number; scale: number } {
+  if (!g2Grid?.intersections?.length) return { x: imageWidth / 2, y: imageHeight / 2, scale: 0.7 };
+  const clean = (gridRef || 'C3').toUpperCase().trim();
+  const col = Math.max(0, Math.min(clean.charCodeAt(0) - 65, g2Grid.columnsCount - 1));
+  const row = Math.max(0, Math.min(parseInt(clean[1] || '3') - 1, g2Grid.rowsCount - 1));
+  const rowFromFront = g2Grid.rowsCount - 1 - row;
+  const intersection = g2Grid.intersections.find(
+    (i: any) => i.col === col && i.row === rowFromFront
+  );
+  if (!intersection) return { x: imageWidth / 2, y: imageHeight / 2, scale: 0.7 };
+  const depthRatio = rowFromFront / Math.max(g2Grid.rowsCount - 1, 1);
+  return {
+    x: intersection.g1XNorm * imageWidth,
+    y: intersection.g1YNorm * imageHeight,
+    scale: 0.35 + 0.65 * depthRatio,
+  };
+}
+
+function gridRefToG2Position(
+  gridRef: string,
+  g2Grid: Record<string, any>,
+  canvasWidth: number,
+  canvasHeight: number,
+  marginPct: number = 0.08,
+): { x: number; y: number } {
+  if (!g2Grid?.intersections?.length) return { x: canvasWidth / 2, y: canvasHeight / 2 };
+  const clean = (gridRef || 'C3').toUpperCase().trim();
+  const col = Math.max(0, Math.min(clean.charCodeAt(0) - 65, g2Grid.columnsCount - 1));
+  const row = Math.max(0, Math.min(parseInt(clean[1] || '3') - 1, g2Grid.rowsCount - 1));
+  const rowFromFront = g2Grid.rowsCount - 1 - row;
+  const intersection = g2Grid.intersections.find(
+    (i: any) => i.col === col && i.row === rowFromFront
+  );
+  if (!intersection) return { x: canvasWidth / 2, y: canvasHeight / 2 };
+  const usableW = canvasWidth * (1 - 2 * marginPct);
+  const usableH = canvasHeight * (1 - 2 * marginPct);
+  return {
+    x: canvasWidth * marginPct + intersection.g2XNorm * usableW,
+    y: canvasHeight * marginPct + intersection.g2YNorm * usableH,
+  };
+}
+
 interface PerspectiveData {
   horizonLinePercent: number;
   vanishingPointXPercent: number;
@@ -305,6 +352,7 @@ function drawGridOverlay(
   boundaryPolygon?: BoundaryPolygon | null,
   showGrid: boolean = true,
   showPerspectiveGrid: boolean = false,
+  g2Grid?: Record<string, any> | null,
 ) {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
@@ -315,13 +363,70 @@ function drawGridOverlay(
   const rowH = H / ROWS;
   const LABELS = ['A','B','C','D','E','F'];
 
-  // Perspective grid overlay (testing/verification only)
-  if (showPerspectiveGrid && perspectiveData) {
+  // Perspective grid overlay
+  if (showPerspectiveGrid && g2Grid?.intersections?.length && g2Grid.controlPoints) {
+    const cp = g2Grid.controlPoints;
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+    ctx.lineWidth = 2;
+    ctx.fillStyle = 'rgba(255,255,255,0.95)';
+    ctx.font = 'bold 13px Arial, sans-serif';
+
+    const cols = g2Grid.columnsCount || 6;
+    const rows = g2Grid.rowsCount || 6;
+
+    // Draw vertical lines using homography — from foreground to rear for each column
+    for (let ci = 0; ci <= cols; ci++) {
+      const t = ci / cols;
+      const foreX = (cp.frontLeft.xNorm + t * (cp.frontRight.xNorm - cp.frontLeft.xNorm)) * W;
+      const foreY = (cp.frontLeft.yNorm + t * (cp.frontRight.yNorm - cp.frontLeft.yNorm)) * H;
+      const rearX = (cp.rearLeft.xNorm + t * (cp.rearRight.xNorm - cp.rearLeft.xNorm)) * W;
+      const rearY = (cp.rearLeft.yNorm + t * (cp.rearRight.yNorm - cp.rearLeft.yNorm)) * H;
+      ctx.beginPath();
+      ctx.moveTo(foreX, foreY);
+      ctx.lineTo(rearX, rearY);
+      ctx.stroke();
+    }
+
+    // Draw horizontal transversal lines for each row
+    for (let ri = 0; ri <= rows; ri++) {
+      const t = ri / rows;
+      const leftX = (cp.frontLeft.xNorm + t * (cp.rearLeft.xNorm - cp.frontLeft.xNorm)) * W;
+      const leftY = (cp.frontLeft.yNorm + t * (cp.rearLeft.yNorm - cp.frontLeft.yNorm)) * H;
+      const rightX = (cp.frontRight.xNorm + t * (cp.rearRight.xNorm - cp.frontRight.xNorm)) * W;
+      const rightY = (cp.frontRight.yNorm + t * (cp.rearRight.yNorm - cp.frontRight.yNorm)) * H;
+      ctx.beginPath();
+      ctx.moveTo(leftX, leftY);
+      ctx.lineTo(rightX, rightY);
+      ctx.stroke();
+    }
+
+    // Column labels
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    for (let ci = 0; ci < cols; ci++) {
+      const t = (ci + 0.5) / cols;
+      const x = (cp.rearLeft.xNorm + t * (cp.rearRight.xNorm - cp.rearLeft.xNorm)) * W;
+      const y = (cp.rearLeft.yNorm + t * (cp.rearRight.yNorm - cp.rearLeft.yNorm)) * H - 4;
+      if (ci < LABELS.length) ctx.fillText(LABELS[ci], x, y);
+    }
+
+    // Row labels
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    for (let ri = 0; ri < rows; ri++) {
+      const t = (ri + 0.5) / rows;
+      const x = (cp.frontLeft.xNorm + t * (cp.rearLeft.xNorm - cp.frontLeft.xNorm)) * W - 4;
+      const y = (cp.frontLeft.yNorm + t * (cp.rearLeft.yNorm - cp.frontLeft.yNorm)) * H;
+      ctx.fillText(String(ri + 1), x, y);
+    }
+
+    ctx.restore();
+  } else if (showPerspectiveGrid && perspectiveData) {
+    // Fallback to old mathematical grid if no G2Grid available
     const { horizonLinePercent, vanishingPointXPercent, foregroundYPercent = 85 } = perspectiveData;
     const horizonY = H * (horizonLinePercent / 100);
     const vpX      = W * (vanishingPointXPercent / 100);
-
-    // Determine foreground Y and left/right extents from boundaryPolygon if available
     let frontY: number;
     let leftFrontX: number;
     let rightFrontX: number;
@@ -337,24 +442,18 @@ function drawGridOverlay(
       leftFrontX  = 0;
       rightFrontX = W;
     }
-
     ctx.save();
     ctx.strokeStyle = 'rgba(255,255,255,0.85)';
     ctx.lineWidth = 2;
     ctx.font = 'bold 13px Arial, sans-serif';
-
-    // Vertical perspective lines: one per column edge (0 through COLS)
     for (let ci = 0; ci <= COLS; ci++) {
       const colNorm = ci / COLS;
-      // Bottom of line fans between leftFrontX and rightFrontX
       const xBot = leftFrontX + colNorm * (rightFrontX - leftFrontX);
       ctx.beginPath();
       ctx.moveTo(vpX, horizonY);
       ctx.lineTo(xBot, frontY);
       ctx.stroke();
     }
-
-    // Horizontal transversal lines: one per row boundary (0 through ROWS)
     for (let ri = 0; ri <= ROWS; ri++) {
       const t = ri / ROWS;
       const rowY   = horizonY + (frontY - horizonY) * Math.pow(t, 1.8);
@@ -365,37 +464,6 @@ function drawGridOverlay(
       ctx.lineTo(xRight, rowY);
       ctx.stroke();
     }
-
-    // Column letters at top of each column (between the vertical lines)
-    ctx.fillStyle = 'rgba(255,255,255,0.95)';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'top';
-    for (let ci = 0; ci < COLS; ci++) {
-      // Centre of column at t=0.05 (just below horizon)
-      const t = 0.05;
-      const leftNorm  = ci / COLS;
-      const rightNorm = (ci + 1) / COLS;
-      const xLeft  = vpX + (leftFrontX  + leftNorm  * (rightFrontX - leftFrontX) - vpX) * t;
-      const xRight = vpX + (leftFrontX  + rightNorm * (rightFrontX - leftFrontX) - vpX) * t;
-      const midX = (xLeft + xRight) / 2;
-      const midY = horizonY + (frontY - horizonY) * Math.pow(t, 1.8);
-      ctx.fillText(LABELS[ci], midX, midY + 2);
-    }
-
-    // Row numbers at left edge of each row (between the horizontal lines)
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'middle';
-    for (let ri = 0; ri < ROWS; ri++) {
-      const tTop = ri / ROWS;
-      const tBot = (ri + 1) / ROWS;
-      const yTop = horizonY + (frontY - horizonY) * Math.pow(tTop, 1.8);
-      const yBot = horizonY + (frontY - horizonY) * Math.pow(tBot, 1.8);
-      const midY = (yTop + yBot) / 2;
-      const tMid = (tTop + tBot) / 2;
-      const xEdge = vpX + (leftFrontX - vpX) * tMid;
-      ctx.fillText(String(ri + 1), xEdge + 4, midY);
-    }
-
     ctx.restore();
   }
 
@@ -462,7 +530,14 @@ function drawGridOverlay(
       const ci = Math.max(0, Math.min(5, match[1].charCodeAt(0) - 65));
       const ri = Math.max(0, Math.min(5, parseInt(match[2]) - 1));
 
-      if (perspectiveData) {
+      if (perspectiveData && g2Grid?.intersections?.length) {
+        // Use homography-derived position from G2Grid
+        const pos = g2ToG1Position(loc, g2Grid, W, H);
+        x = pos.x;
+        y = pos.y;
+        effectiveR = BASE_MARKER_R * pos.scale;
+      } else if (perspectiveData) {
+        // Fall back to mathematical projection if no G2Grid
         const pt = applyPerspectiveTransform(
           ci, ri, W, H,
           perspectiveData.horizonLinePercent,
@@ -476,13 +551,15 @@ function drawGridOverlay(
         y = pt.y;
         effectiveR = BASE_MARKER_R * pt.scale;
       } else {
-        // Aerial / flat view: inset 10% so markers stay inside drawn garden boundary
-        const insetX = W * 0.10;
-        const insetY = H * 0.10;
-        const availW = W - insetX * 2;
-        const availH = H - insetY * 2;
-        x = insetX + ci * (availW / COLS) + (availW / COLS) / 2;
-        y = insetY + ri * (availH / ROWS) + (availH / ROWS) / 2;
+        // Aerial flat view — use G2Grid orthogonal position if available
+        if (g2Grid?.intersections?.length) {
+          const pos = gridRefToG2Position(loc, g2Grid, W, H);
+          x = pos.x;
+          y = pos.y;
+        } else {
+          x = ci * colW + colW / 2;
+          y = ri * rowH + rowH / 2;
+        }
         effectiveR = BASE_MARKER_R;
       }
     } else {
@@ -536,6 +613,7 @@ function drawAerialGridOverlay(
   plants: any[],
   boundaryPolygon?: BoundaryPolygon | null,
   orientation: string = 'N',
+  g2Grid?: Record<string, any> | null,
 ) {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
@@ -616,11 +694,29 @@ function drawAerialGridOverlay(
     const loc = (plant.gridLocation || '').trim().toUpperCase();
     const match = loc.match(/^([A-F])(\d)/);
     let x: number, y: number;
+    let markerX: number;
+    let markerY: number;
+
+    if (g2Grid?.intersections?.length) {
+      const pos = gridRefToG2Position(
+        plant.gridLocation || 'C3',
+        g2Grid,
+        canvas.width,
+        canvas.height,
+        0.08,
+      );
+      markerX = pos.x;
+      markerY = pos.y;
+    } else {
+      const col = Math.max(0, Math.min(5, (plant.gridLocation || 'C3').toUpperCase().charCodeAt(0) - 65));
+      const row = Math.max(0, Math.min(5, parseInt((plant.gridLocation || 'C3')[1] || '3') - 1));
+      markerX = gL + (col + 0.5) * colW;
+      markerY = gT + (row + 0.5) * rowH;
+    }
+
     if (match) {
-      const ci = Math.max(0, Math.min(5, match[1].charCodeAt(0) - 65));
-      const ri = Math.max(0, Math.min(5, parseInt(match[2]) - 1));
-      x = gL + (ci + 0.5) * colW;
-      y = gT + (ri + 0.5) * rowH;
+      x = markerX;
+      y = markerY;
     } else {
       const cols = 4;
       x = ((index % cols) + 1) * (W / (cols + 1));
@@ -705,7 +801,7 @@ function drawAerialGridOverlay(
   ctx.restore();
 }
 
-function GridOverlayImage({ src, plants, label, showMarkers = true, perspectiveData, boundaryPolygon, showGrid = true, showPerspectiveGrid = false, isAerial = false, fingerprint, orientation }: {
+function GridOverlayImage({ src, plants, label, showMarkers = true, perspectiveData, boundaryPolygon, showGrid = true, showPerspectiveGrid = false, isAerial = false, fingerprint, orientation, g2Grid }: {
   src: string; plants: any[]; label: string; showMarkers?: boolean;
   perspectiveData?: PerspectiveData | null;
   boundaryPolygon?: BoundaryPolygon | null;
@@ -714,6 +810,7 @@ function GridOverlayImage({ src, plants, label, showMarkers = true, perspectiveD
   isAerial?: boolean;
   fingerprint?: any;
   orientation?: string;
+  g2Grid?: Record<string, any> | null;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -729,9 +826,9 @@ function GridOverlayImage({ src, plants, label, showMarkers = true, perspectiveD
       ctx.drawImage(img, 0, 0);
       if (isAerial) {
         const bPoly = fingerprint?.boundaryPolygon?.length >= 3 ? fingerprint.boundaryPolygon : null;
-        drawAerialGridOverlay(canvas, plants, bPoly, orientation || 'N');
+        drawAerialGridOverlay(canvas, plants, bPoly, orientation || 'N', g2Grid);
       } else {
-        drawGridOverlay(canvas, plants, showMarkers, perspectiveData, boundaryPolygon, showGrid, showPerspectiveGrid);
+        drawGridOverlay(canvas, plants, showMarkers, perspectiveData, boundaryPolygon, showGrid, showPerspectiveGrid, g2Grid);
       }
     };
     img.onerror = () => {
@@ -742,7 +839,7 @@ function GridOverlayImage({ src, plants, label, showMarkers = true, perspectiveD
       ctx.textAlign = 'center'; ctx.fillText('Image unavailable', 300, 200);
     };
     img.src = src;
-  }, [src, plants, showMarkers, perspectiveData, boundaryPolygon, showGrid, showPerspectiveGrid, isAerial, fingerprint, orientation]);
+  }, [src, plants, showMarkers, perspectiveData, boundaryPolygon, showGrid, showPerspectiveGrid, isAerial, fingerprint, orientation, g2Grid]);
 
   return (
     <div style={{ position: 'relative' }}>
@@ -1140,6 +1237,7 @@ function generateGridOverlay(
   isAerial = false,
   fingerprint?: any,
   orientation = 'N',
+  g2Grid?: Record<string, any> | null,
 ): Promise<string> {
   return new Promise((resolve) => {
     const canvas = document.createElement('canvas');
@@ -1152,9 +1250,9 @@ function generateGridOverlay(
       ctx.drawImage(img, 0, 0);
       if (isAerial) {
         const bPoly = fingerprint?.boundaryPolygon?.length >= 3 ? fingerprint.boundaryPolygon : boundaryPolygon || null;
-        drawAerialGridOverlay(canvas, plants, bPoly, orientation);
+        drawAerialGridOverlay(canvas, plants, bPoly, orientation, g2Grid);
       } else {
-        drawGridOverlay(canvas, plants, showMarkers, perspectiveData, boundaryPolygon, showGrid);
+        drawGridOverlay(canvas, plants, showMarkers, perspectiveData, boundaryPolygon, showGrid, false, g2Grid);
       }
       resolve(canvas.toDataURL('image/png'));
     };
@@ -1200,7 +1298,6 @@ export default function GardigApp() {
   const [transformationLevel, setTransformationLevel] = useState(3);
   const [hardinessZone, setHardinessZone]     = useState('');
   const [fingerprint, setFingerprint]         = useState<any>(null);
-  const [perspectiveGridUrl, setPerspectiveGridUrl] = useState<string | null>(null);
   const [controlPoints, setControlPoints]     = useState<Record<string, any>>({});
   const [g2Grid, setG2Grid]                   = useState<Record<string, any>>({});
   const fileRef = useRef<HTMLInputElement>(null);
@@ -1298,7 +1395,7 @@ export default function GardigApp() {
     setAerialGridImageUrl(null);
     setValidationResult(null);
     setFingerprint(null);
-    setPerspectiveGridUrl(null);
+
     setControlPoints({});
     setG2Grid({});
     setStep("loading");
@@ -1317,7 +1414,6 @@ export default function GardigApp() {
       setRenderUrl(result.imageBase64);
       setAerialImageUrl(result.aerialImageBase64);
       setFingerprint(result.fingerprint);
-      setPerspectiveGridUrl(result.perspectiveGridBase64 || null);
       setControlPoints(result.controlPoints || {});
       setG2Grid(result.g2Grid || {});
       if (result.validationResult !== undefined) {
@@ -1346,16 +1442,16 @@ export default function GardigApp() {
       const plants = result.designJSON?.plantingSpecification?.plants || [];
       if (result.imageBase64 && plants.length > 0) {
         // Perspective render: markers only, no grid lines
-        const overlay = await generateGridOverlay(result.imageBase64, plants, true, perspData, bPoly, false);
+        const overlay = await generateGridOverlay(result.imageBase64, plants, true, perspData, bPoly, false, false, undefined, 'N', g2Grid);
         setGridImageUrl(overlay || null);
       } else if (imageDataUrl && plants.length > 0) {
-        const overlay = await generateGridOverlay(imageDataUrl, plants, true, perspData, bPoly, false);
+        const overlay = await generateGridOverlay(imageDataUrl, plants, true, perspData, bPoly, false, false, undefined, 'N', g2Grid);
         setGridImageUrl(overlay || null);
       }
       if (result.aerialImageBase64 && plants.length > 0) {
         // Aerial sketch: programmatic grid overlay via drawAerialGridOverlay
         console.log('[Aerial overlay] plants gridLocations:', plants.map((p: any) => `${p.commonName}: ${p.gridLocation}`));
-        const aerialOverlay = await generateGridOverlay(result.aerialImageBase64, plants, true, null, bPoly, true, true, fp, gardenOrientation || 'N');
+        const aerialOverlay = await generateGridOverlay(result.aerialImageBase64, plants, true, null, bPoly, true, true, fp, gardenOrientation || 'N', g2Grid);
         setAerialGridImageUrl(aerialOverlay || null);
       }
 
@@ -2278,7 +2374,8 @@ export default function GardigApp() {
                 ? showPlantMarkers
                   ? <GridOverlayImage src={renderUrl} plants={plants} label="After" showGrid={false}
                       perspectiveData={fingerprint?.horizonLinePercent != null ? { horizonLinePercent: fingerprint.horizonLinePercent, vanishingPointXPercent: fingerprint.vanishingPointXPercent, cameraElevationAngle: fingerprint.cameraElevationAngle, scaleCalibrationHeightMetres: fingerprint.scaleCalibrationHeightMetres, scaleCalibrationPixelHeightPercent: fingerprint.scaleCalibrationPixelHeightPercent, foregroundYPercent: fingerprint.foregroundToBackgroundRatio != null ? 55 + (fingerprint.foregroundToBackgroundRatio * 35) : 85, foregroundBoundaryYPercent: fingerprint.foregroundBoundaryYPercent } : null}
-                      boundaryPolygon={fingerprint?.boundaryPolygon?.length >= 3 ? fingerprint.boundaryPolygon : null} />
+                      boundaryPolygon={fingerprint?.boundaryPolygon?.length >= 3 ? fingerprint.boundaryPolygon : null}
+                      g2Grid={g2Grid} />
                   : <img src={renderUrl} alt="Proposed Vision" style={{ width: "100%", borderRadius: C.rLg, maxHeight: 480, objectFit: "cover", border: `1px solid ${C.rule}` }} />
                 : <div style={{ background: C.surface, borderRadius: C.rLg, height: 260, display: "flex", alignItems: "center", justifyContent: "center", color: C.inkLight, fontSize: px(BASE), border: `1px solid ${C.rule}` }}>Render not available</div>
             }
@@ -2307,7 +2404,8 @@ export default function GardigApp() {
                 <div style={{ fontSize: px(12), color: C.inkLight, marginBottom: 7, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>Before — Annotated</div>
                 <GridOverlayImage src={imageDataUrl} plants={plants} label="Before" showMarkers={false} showGrid={false}
                   perspectiveData={fingerprint?.horizonLinePercent != null ? { horizonLinePercent: fingerprint.horizonLinePercent, vanishingPointXPercent: fingerprint.vanishingPointXPercent, cameraElevationAngle: fingerprint.cameraElevationAngle, scaleCalibrationHeightMetres: fingerprint.scaleCalibrationHeightMetres, scaleCalibrationPixelHeightPercent: fingerprint.scaleCalibrationPixelHeightPercent, foregroundYPercent: fingerprint.foregroundToBackgroundRatio != null ? 55 + (fingerprint.foregroundToBackgroundRatio * 35) : 85, foregroundBoundaryYPercent: fingerprint.foregroundBoundaryYPercent } : null}
-                  boundaryPolygon={fingerprint?.boundaryPolygon?.length >= 3 ? fingerprint.boundaryPolygon : null} />
+                  boundaryPolygon={fingerprint?.boundaryPolygon?.length >= 3 ? fingerprint.boundaryPolygon : null}
+                  g2Grid={g2Grid} />
               </div>
             )}
             {renderUrl && (
@@ -2316,7 +2414,8 @@ export default function GardigApp() {
                 <GridOverlayImage src={renderUrl} plants={plants} label="After" showGrid={false}
                   showPerspectiveGrid={showPerspGrid}
                   perspectiveData={fingerprint?.horizonLinePercent != null ? { horizonLinePercent: fingerprint.horizonLinePercent, vanishingPointXPercent: fingerprint.vanishingPointXPercent, cameraElevationAngle: fingerprint.cameraElevationAngle, scaleCalibrationHeightMetres: fingerprint.scaleCalibrationHeightMetres, scaleCalibrationPixelHeightPercent: fingerprint.scaleCalibrationPixelHeightPercent, foregroundYPercent: fingerprint.foregroundToBackgroundRatio != null ? 55 + (fingerprint.foregroundToBackgroundRatio * 35) : 85, foregroundBoundaryYPercent: fingerprint.foregroundBoundaryYPercent } : null}
-                  boundaryPolygon={fingerprint?.boundaryPolygon?.length >= 3 ? fingerprint.boundaryPolygon : null} />
+                  boundaryPolygon={fingerprint?.boundaryPolygon?.length >= 3 ? fingerprint.boundaryPolygon : null}
+                  g2Grid={g2Grid} />
                 <button
                   onClick={() => setShowPerspGrid(v => !v)}
                   style={{
@@ -2334,12 +2433,28 @@ export default function GardigApp() {
             )}
           </div>
 
-          {perspectiveGridUrl && (
+          {g2Grid?.intersections?.length > 0 && imageDataUrl && (
             <div style={{ marginTop: 16 }}>
               <div style={{ fontSize: px(12), color: C.inkLight, marginBottom: 7, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                 Perspective Ground Grid — Spatial Reference
               </div>
-              <img src={perspectiveGridUrl} style={{ width: '100%', borderRadius: C.r, border: `1px solid ${C.rule}` }} />
+              <GridOverlayImage
+                src={imageDataUrl}
+                plants={[]}
+                label="Grid"
+                showMarkers={false}
+                showGrid={false}
+                showPerspectiveGrid={true}
+                perspectiveData={fingerprint?.horizonLinePercent != null ? {
+                  horizonLinePercent: fingerprint.horizonLinePercent,
+                  vanishingPointXPercent: fingerprint.vanishingPointXPercent,
+                  foregroundBoundaryYPercent: fingerprint.foregroundBoundaryYPercent,
+                  scaleCalibrationHeightMetres: fingerprint.scaleCalibrationHeightMetres,
+                  scaleCalibrationPixelHeightPercent: fingerprint.scaleCalibrationPixelHeightPercent,
+                } : null}
+                boundaryPolygon={fingerprint?.boundaryPolygon?.length >= 3 ? fingerprint.boundaryPolygon : null}
+                g2Grid={g2Grid}
+              />
             </div>
           )}
 
@@ -2361,7 +2476,8 @@ export default function GardigApp() {
             <>
               <GridOverlayImage src={aerialImageUrl || aerialGridImageUrl!} plants={plants} label="Layout Plan"
                 isAerial={true} fingerprint={fingerprint} orientation={gardenOrientation || 'N'}
-                perspectiveData={null} boundaryPolygon={null} />
+                perspectiveData={null} boundaryPolygon={null}
+                g2Grid={g2Grid} />
 
               {plants.length > 0 && (
                 <div style={{ marginTop: 22 }}>
