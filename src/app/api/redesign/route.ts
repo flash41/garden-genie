@@ -493,11 +493,30 @@ Be as precise as possible — these coordinates will be used to mathematically d
       config: { responseMimeType: 'application/json', temperature: 0.1 },
     });
 
-    const text = response.candidates?.[0]?.content?.parts?.find((p: any) => p.text)?.text || '{}';
-    const clean = text.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
+    const rawText = response.candidates?.[0]?.content?.parts?.find((p: any) => p.text)?.text || '';
+    console.log('[Step2b_G1Data] Raw response length:', rawText.length);
+    console.log('[Step2b_G1Data] Raw response preview:', rawText.slice(0, 200));
+
+    if (!rawText || rawText.trim().length === 0) {
+      console.warn('[Step2b_G1Data] Empty response from Gemini, using fingerprint fallback');
+      return {};
+    }
+
+    const clean = rawText
+      .replace(/^```json\s*/i, '')
+      .replace(/^```\s*/i, '')
+      .replace(/```\s*$/i, '')
+      .trim();
+
+    if (!clean || clean.length === 0) {
+      console.warn('[Step2b_G1Data] Empty after cleaning, using fingerprint fallback');
+      return {};
+    }
+
     const g1Data = JSON.parse(clean);
     console.log('[Step2b_G1Data] Extracted intersections:', g1Data.gridIntersections?.length ?? 0);
     return g1Data;
+
   } catch (err) {
     console.error('[Step2b_G1Data] Extraction failed:', err);
     return {};
