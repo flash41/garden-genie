@@ -441,40 +441,35 @@ Return the original photo with the perspective grid overlaid on it.`;
   }
 }
 
-async function step2b_extractG1Data(
+async function step2b_extractControlPoints(
   perspectiveGridBase64: string,
   fingerprint: Record<string, any>,
 ): Promise<Record<string, any>> {
-  const prompt = `You are given an image of a garden with a 1m x 1m perspective grid overlaid on it.
+  const prompt = `You are given an image of a garden with a 1m x 1m perspective grid overlaid on it as white lines.
 
-Study the grid carefully and extract the following geometric data. Return ONLY valid JSON with no markdown.
+Identify the four corner points of the grid — the four outermost intersection points where the boundary lines of the grid meet. These are:
+- Front-left: where the left boundary grid line meets the foreground transversal line
+- Front-right: where the right boundary grid line meets the foreground transversal line
+- Rear-left: where the left boundary grid line meets the rear transversal line
+- Rear-right: where the right boundary grid line meets the rear transversal line
 
+For each corner, provide the pixel coordinates as normalised values where 0.0 is the left or top edge and 1.0 is the right or bottom edge of the image.
+
+Return ONLY this exact JSON with no markdown, no explanation:
 {
-  "vanishingPointXNorm": (number 0.0-1.0 — horizontal position of the vanishing point as fraction of image width from left),
-  "vanishingPointYNorm": (number 0.0-1.0 — vertical position of the vanishing point as fraction of image height from top),
-  "horizonYNorm": (number 0.0-1.0 — vertical position of the horizon line as fraction of image height from top),
-  "foregroundYNorm": (number 0.0-1.0 — vertical position of the foreground transversal line as fraction of image height from top),
-  "leftBoundaryXAtForeground": (number 0.0-1.0 — horizontal position of the left boundary at the foreground row),
-  "rightBoundaryXAtForeground": (number 0.0-1.0 — horizontal position of the right boundary at the foreground row),
-  "leftBoundaryXAtRear": (number 0.0-1.0 — horizontal position of the left boundary at the rear row),
-  "rightBoundaryXAtRear": (number 0.0-1.0 — horizontal position of the right boundary at the rear row),
-  "gridColumnsCount": (integer — number of 1m columns visible across the plot),
-  "gridRowsCount": (integer — number of 1m rows visible from foreground to rear),
-  "plotWidthMetres": (number — estimated real-world width of the garden in metres),
-  "plotDepthMetres": (number — estimated real-world depth of the garden in metres),
-  "gridIntersections": [
-    {
-      "col": (integer, 0-based column index from left),
-      "row": (integer, 0-based row index from rear=0 to foreground=max),
-      "xNorm": (number 0.0-1.0 — horizontal position of this intersection in the image),
-      "yNorm": (number 0.0-1.0 — vertical position of this intersection in the image)
-    }
-  ]
+  "frontLeft":  { "xNorm": 0.0, "yNorm": 0.0 },
+  "frontRight": { "xNorm": 0.0, "yNorm": 0.0 },
+  "rearLeft":   { "xNorm": 0.0, "yNorm": 0.0 },
+  "rearRight":  { "xNorm": 0.0, "yNorm": 0.0 },
+  "gridColumnsCount": 6,
+  "gridRowsCount": 6,
+  "plotWidthMetres": 6.0,
+  "plotDepthMetres": 8.0
 }
 
-For gridIntersections, return every visible intersection point where a vertical grid line crosses a horizontal transversal line. Include all corner points of the grid. Order them row by row from rear to foreground, left to right within each row.
-
-Be as precise as possible — these coordinates will be used to mathematically derive the orthogonal base plan.`;
+Replace the 0.0 values with the actual normalised coordinates you identify in the image.
+gridColumnsCount and gridRowsCount are the number of 1m grid squares visible across and deep.
+plotWidthMetres and plotDepthMetres are the estimated real-world dimensions.`;
 
   try {
     const gridData = perspectiveGridBase64.includes(',')
@@ -493,13 +488,13 @@ Be as precise as possible — these coordinates will be used to mathematically d
       config: { responseMimeType: 'application/json', temperature: 0.1 },
     });
 
-    const rawText = response.candidates?.[0]?.content?.parts?.find((p: any) => p.text)?.text || '';
-    console.log('[Step2b_G1Data] Raw response length:', rawText.length);
-    console.log('[Step2b_G1Data] Raw response preview:', rawText.slice(0, 200));
+    const rawText = response.candidates?.[0]?.content?.parts
+      ?.find((p: any) => p.text)?.text || '';
+    console.log('[Step2b] Raw response:', rawText.slice(0, 300));
 
-    if (!rawText || rawText.trim().length === 0) {
-      console.warn('[Step2b_G1Data] Empty response from Gemini, using fingerprint fallback');
-      return {};
+    if (!rawText.trim()) {
+      console.warn('[Step2b] Empty response, using fingerprint fallback');
+      return buildFallbackControlPoints(fingerprint);
     }
 
     const clean = rawText
@@ -508,36 +503,131 @@ Be as precise as possible — these coordinates will be used to mathematically d
       .replace(/```\s*$/i, '')
       .trim();
 
-    if (!clean || clean.length === 0) {
-      console.warn('[Step2b_G1Data] Empty after cleaning, using fingerprint fallback');
-      return {};
-    }
-
-    const g1Data = JSON.parse(clean);
-    console.log('[Step2b_G1Data] Extracted intersections:', g1Data.gridIntersections?.length ?? 0);
-    return g1Data;
+    const data = JSON.parse(clean);
+    console.log('[Step2b] Control points extracted:', JSON.stringify(data));
+    return data;
 
   } catch (err) {
-    console.error('[Step2b_G1Data] Extraction failed:', err);
-    return {};
+    console.error('[Step2b] Control point extraction failed:', err);
+    return buildFallbackControlPoints(fingerprint);
   }
 }
 
-function deriveG2Grid(g1Data: Record<string, any>): Record<string, any> {
-  const cols = g1Data.gridColumnsCount ?? 6;
-  const rows = g1Data.gridRowsCount ?? 6;
-  const plotW = g1Data.plotWidthMetres ?? 6;
-  const plotD = g1Data.plotDepthMetres ?? 8;
-  const intersections = g1Data.gridIntersections ?? [];
+function buildFallbackControlPoints(fingerprint: Record<string, any>): Record<string, any> {
+  const horizonY = (fingerprint.horizonLinePercent ?? 35) / 100;
+  const foregroundY = (fingerprint.foregroundBoundaryYPercent ?? 85) / 100;
+  const vpX = (fingerprint.vanishingPointXPercent ?? 50) / 100;
+  const spread = 0.35;
+  return {
+    frontLeft:  { xNorm: Math.max(0.01, vpX - spread), yNorm: foregroundY },
+    frontRight: { xNorm: Math.min(0.99, vpX + spread), yNorm: foregroundY },
+    rearLeft:   { xNorm: Math.max(0.01, vpX - 0.08),   yNorm: horizonY + 0.02 },
+    rearRight:  { xNorm: Math.min(0.99, vpX + 0.08),   yNorm: horizonY + 0.02 },
+    gridColumnsCount: fingerprint.perspectiveGridColumns ?? 6,
+    gridRowsCount:    fingerprint.perspectiveGridRows    ?? 6,
+    plotWidthMetres:  fingerprint.plotWidthMetres  ?? 6,
+    plotDepthMetres:  fingerprint.plotDepthMetres  ?? 8,
+  };
+}
 
-  const g2Intersections = intersections.map((pt: any) => ({
-    col: pt.col,
-    row: pt.row,
-    g2XNorm: (pt.col) / Math.max(cols - 1, 1),
-    g2YNorm: (pt.row) / Math.max(rows - 1, 1),
-    g1XNorm: pt.xNorm,
-    g1YNorm: pt.yNorm,
-  }));
+function computeHomography(
+  src: Array<[number, number]>,
+  dst: Array<[number, number]>,
+): number[] {
+  const A: number[][] = [];
+  for (let i = 0; i < 4; i++) {
+    const [sx, sy] = src[i];
+    const [dx, dy] = dst[i];
+    A.push([-sx, -sy, -1,  0,   0,   0, sx*dx, sy*dx, dx]);
+    A.push([ 0,   0,   0, -sx, -sy, -1, sx*dy, sy*dy, dy]);
+  }
+  const n = 8;
+  const b: number[] = A.map(row => -row[8]);
+  const M: number[][] = A.map(row => row.slice(0, 8));
+  for (let col = 0; col < n; col++) {
+    let maxRow = col;
+    for (let row = col + 1; row < n; row++) {
+      if (Math.abs(M[row][col]) > Math.abs(M[maxRow][col])) maxRow = row;
+    }
+    [M[col], M[maxRow]] = [M[maxRow], M[col]];
+    [b[col], b[maxRow]] = [b[maxRow], b[col]];
+    for (let row = col + 1; row < n; row++) {
+      const factor = M[row][col] / M[col][col];
+      for (let j = col; j < n; j++) M[row][j] -= factor * M[col][j];
+      b[row] -= factor * b[col];
+    }
+  }
+  const h: number[] = new Array(n).fill(0);
+  for (let i = n - 1; i >= 0; i--) {
+    h[i] = b[i];
+    for (let j = i + 1; j < n; j++) h[i] -= M[i][j] * h[j];
+    h[i] /= M[i][i];
+  }
+  return [...h, 1];
+}
+
+function applyHomography(
+  h: number[],
+  x: number,
+  y: number,
+): [number, number] {
+  const w = h[6]*x + h[7]*y + h[8];
+  return [
+    (h[0]*x + h[1]*y + h[2]) / w,
+    (h[3]*x + h[4]*y + h[5]) / w,
+  ];
+}
+
+function deriveG2Grid(controlPoints: Record<string, any>): Record<string, any> {
+  const cols = controlPoints.gridColumnsCount ?? 6;
+  const rows = controlPoints.gridRowsCount ?? 6;
+  const plotW = controlPoints.plotWidthMetres ?? 6;
+  const plotD = controlPoints.plotDepthMetres ?? 8;
+
+  const { frontLeft: fl, frontRight: fr, rearLeft: rl, rearRight: rr } = controlPoints;
+
+  if (!fl || !fr || !rl || !rr) {
+    console.warn('[G2] Missing control points, returning empty grid');
+    return { columnsCount: cols, rowsCount: rows, plotWidthMetres: plotW, plotDepthMetres: plotD, intersections: [] };
+  }
+
+  const srcPoints: Array<[number, number]> = [
+    [fl.xNorm, fl.yNorm],
+    [fr.xNorm, fr.yNorm],
+    [rr.xNorm, rr.yNorm],
+    [rl.xNorm, rl.yNorm],
+  ];
+
+  const dstPoints: Array<[number, number]> = [
+    [0, 1],
+    [1, 1],
+    [1, 0],
+    [0, 0],
+  ];
+
+  const H_fwd = computeHomography(srcPoints, dstPoints);
+  const H_inv = computeHomography(dstPoints, srcPoints);
+
+  const intersections: Array<{
+    col: number; row: number;
+    g2XNorm: number; g2YNorm: number;
+    g1XNorm: number; g1YNorm: number;
+  }> = [];
+
+  for (let row = 0; row <= rows; row++) {
+    for (let col = 0; col <= cols; col++) {
+      const g2X = col / cols;
+      const g2Y = row / rows;
+      const [g1X, g1Y] = applyHomography(H_inv, g2X, g2Y);
+      intersections.push({
+        col, row,
+        g2XNorm: g2X,
+        g2YNorm: g2Y,
+        g1XNorm: Math.max(0, Math.min(1, g1X)),
+        g1YNorm: Math.max(0, Math.min(1, g1Y)),
+      });
+    }
+  }
 
   return {
     columnsCount: cols,
@@ -546,15 +636,10 @@ function deriveG2Grid(g1Data: Record<string, any>): Record<string, any> {
     plotDepthMetres: plotD,
     cellWidthMetres: plotW / cols,
     cellDepthMetres: plotD / rows,
-    intersections: g2Intersections,
-    vanishingPointXNorm: g1Data.vanishingPointXNorm ?? 0.5,
-    vanishingPointYNorm: g1Data.vanishingPointYNorm ?? 0.35,
-    horizonYNorm: g1Data.horizonYNorm ?? 0.35,
-    foregroundYNorm: g1Data.foregroundYNorm ?? 0.85,
-    leftBoundaryXAtForeground: g1Data.leftBoundaryXAtForeground ?? 0.0,
-    rightBoundaryXAtForeground: g1Data.rightBoundaryXAtForeground ?? 1.0,
-    leftBoundaryXAtRear: g1Data.leftBoundaryXAtRear ?? 0.2,
-    rightBoundaryXAtRear: g1Data.rightBoundaryXAtRear ?? 0.8,
+    intersections,
+    H_forward: H_fwd,
+    H_inverse: H_inv,
+    controlPoints,
   };
 }
 
@@ -1220,7 +1305,7 @@ export async function POST(request: Request) {
     // ── Stage G1 — Perspective Grid Generation ──────────────────────────────────
     console.log('[Pipeline] G1: Generating perspective grid...');
     let perspectiveGridBase64: string | null = null;
-    let g1Data: Record<string, any> = {};
+    let controlPoints: Record<string, any> = {};
     let g2Grid: Record<string, any> = {};
 
     try {
@@ -1230,13 +1315,13 @@ export async function POST(request: Request) {
       console.log('[Pipeline] G1 complete, size:', perspectiveGridBase64?.length ?? 0);
 
       if (perspectiveGridBase64) {
-        console.log('[Pipeline] G1b: Extracting grid intersection data...');
-        g1Data = await step2b_extractG1Data(perspectiveGridBase64, fingerprint);
-        console.log('[Pipeline] G1b complete, intersections:', g1Data.gridIntersections?.length ?? 0);
+        console.log('[Pipeline] G1b: Extracting control points...');
+        controlPoints = await step2b_extractControlPoints(perspectiveGridBase64, fingerprint);
+        console.log('[Pipeline] G1b complete:', JSON.stringify(controlPoints));
 
-        console.log('[Pipeline] G2: Deriving orthogonal grid...');
-        g2Grid = deriveG2Grid(g1Data);
-        console.log('[Pipeline] G2 complete, cols:', g2Grid.columnsCount, 'rows:', g2Grid.rowsCount);
+        console.log('[Pipeline] G2: Computing homography and deriving grid...');
+        g2Grid = deriveG2Grid(controlPoints);
+        console.log('[Pipeline] G2 complete, intersections:', g2Grid.intersections?.length ?? 0);
       }
     } catch (err) {
       console.error('[Pipeline] G1/G2 failed, continuing without grid data:', err);
@@ -1343,7 +1428,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ imageError: true });
     }
 
-    return NextResponse.json({ designJSON, imageBase64, aerialImageBase64, validationResult, retried, fingerprint, perspectiveGridBase64, g1Data, g2Grid });
+    return NextResponse.json({ designJSON, imageBase64, aerialImageBase64, validationResult, retried, fingerprint, perspectiveGridBase64, controlPoints, g2Grid });
 
   } catch (error: unknown) {
     console.error('[Pipeline] Unhandled error:', error);

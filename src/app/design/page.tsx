@@ -1201,7 +1201,7 @@ export default function GardigApp() {
   const [hardinessZone, setHardinessZone]     = useState('');
   const [fingerprint, setFingerprint]         = useState<any>(null);
   const [perspectiveGridUrl, setPerspectiveGridUrl] = useState<string | null>(null);
-  const [g1Data, setG1Data]                   = useState<Record<string, any>>({});
+  const [controlPoints, setControlPoints]     = useState<Record<string, any>>({});
   const [g2Grid, setG2Grid]                   = useState<Record<string, any>>({});
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -1282,7 +1282,7 @@ export default function GardigApp() {
       retried: data.retried || false,
       fingerprint: data.fingerprint || null,
       perspectiveGridBase64: data.perspectiveGridBase64 || null,
-      g1Data: data.g1Data || {},
+      controlPoints: data.controlPoints || {},
       g2Grid: data.g2Grid || {},
     };
   };
@@ -1299,7 +1299,7 @@ export default function GardigApp() {
     setValidationResult(null);
     setFingerprint(null);
     setPerspectiveGridUrl(null);
-    setG1Data({});
+    setControlPoints({});
     setG2Grid({});
     setStep("loading");
     try {
@@ -1318,7 +1318,7 @@ export default function GardigApp() {
       setAerialImageUrl(result.aerialImageBase64);
       setFingerprint(result.fingerprint);
       setPerspectiveGridUrl(result.perspectiveGridBase64 || null);
-      setG1Data(result.g1Data || {});
+      setControlPoints(result.controlPoints || {});
       setG2Grid(result.g2Grid || {});
       if (result.validationResult !== undefined) {
         setValidationResult({ result: result.validationResult, retried: result.retried });
