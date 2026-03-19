@@ -325,13 +325,12 @@ function drawGridOverlay(
     let leftFrontX: number;
     let rightFrontX: number;
     if (boundaryPolygon && boundaryPolygon.length >= 3) {
-      const maxY = Math.max(...boundaryPolygon.map(p => p.y));
+      const maxY = Math.max(...boundaryPolygon.map(p => p.y * H));
       frontY = maxY;
-      // Find polygon points near the foreground edge (within 5% of image height)
       const threshold = H * 0.05;
-      const frontPoints = boundaryPolygon.filter(p => p.y >= maxY - threshold);
-      leftFrontX  = Math.min(...frontPoints.map(p => p.x));
-      rightFrontX = Math.max(...frontPoints.map(p => p.x));
+      const frontPoints = boundaryPolygon.filter(p => (p.y * H) >= maxY - threshold);
+      leftFrontX  = Math.min(...frontPoints.map(p => p.x * W));
+      rightFrontX = Math.max(...frontPoints.map(p => p.x * W));
     } else {
       frontY      = H * (foregroundYPercent / 100);
       leftFrontX  = 0;
@@ -463,7 +462,6 @@ function drawGridOverlay(
       const ri = Math.max(0, Math.min(5, parseInt(match[2]) - 1));
 
       if (perspectiveData) {
-        // Perspective photo: transform grid coords to pixel coords (with height offset for gridZ)
         const pt = applyPerspectiveTransform(
           ci, ri, W, H,
           perspectiveData.horizonLinePercent,
@@ -471,7 +469,7 @@ function drawGridOverlay(
           plant.gridZ || 0,
           perspectiveData.scaleCalibrationHeightMetres || 1.8,
           perspectiveData.scaleCalibrationPixelHeightPercent || 20,
-          perspectiveData.foregroundYPercent || 85,
+          perspectiveData.foregroundBoundaryYPercent,
         );
         x = pt.x;
         y = pt.y;
