@@ -531,12 +531,189 @@ function drawGridOverlay(
   ctx.textAlign = 'left';
 }
 
-function GridOverlayImage({ src, plants, label, showMarkers = true, perspectiveData, boundaryPolygon, showGrid = true, showPerspectiveGrid = false }: {
+function drawAerialGridOverlay(
+  canvas: HTMLCanvasElement,
+  plants: any[],
+  boundaryPolygon?: BoundaryPolygon | null,
+  orientation: string = 'N',
+) {
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+  const W = canvas.width;
+  const H = canvas.height;
+  const COLS = 6, ROWS = 6;
+  const LABELS = ['A','B','C','D','E','F'];
+
+  // Garden occupies central 84% — 8% clean margin each side
+  const marginX = W * 0.08;
+  const marginY = H * 0.08;
+  const gL = marginX;
+  const gR = W - marginX;
+  const gT = marginY;
+  const gB = H - marginY;
+  const gW = gR - gL;
+  const gH = gB - gT;
+  const colW = gW / COLS;
+  const rowH = gH / ROWS;
+
+  ctx.save();
+
+  // ── Grid lines ─────────────────────────────────────────────────────────
+  ctx.strokeStyle = 'rgba(184,150,46,0.35)';
+  ctx.lineWidth = Math.max(0.4, W / 2000);
+  ctx.strokeRect(gL, gT, gW, gH);
+  for (let i = 1; i < COLS; i++) {
+    const x = gL + i * colW;
+    ctx.beginPath(); ctx.moveTo(x, gT); ctx.lineTo(x, gB); ctx.stroke();
+  }
+  for (let i = 1; i < ROWS; i++) {
+    const y = gT + i * rowH;
+    ctx.beginPath(); ctx.moveTo(gL, y); ctx.lineTo(gR, y); ctx.stroke();
+  }
+
+  // ── Column labels A–F ──────────────────────────────────────────────────
+  const labelSize = Math.max(11, W / 55);
+  ctx.font = `bold ${labelSize}px Arial, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'bottom';
+  for (let i = 0; i < COLS; i++) {
+    const x = gL + (i + 0.5) * colW;
+    const y = gT - 8;
+    const label = LABELS[i];
+    const tw = ctx.measureText(label).width + 8;
+    const ph = labelSize + 4;
+    ctx.fillStyle = 'rgba(184,150,46,0.12)';
+    ctx.fillRect(x - tw / 2, y - ph, tw, ph);
+    ctx.fillStyle = 'rgba(184,150,46,0.9)';
+    ctx.fillText(label, x, y);
+  }
+
+  // ── Row labels 1–6 ─────────────────────────────────────────────────────
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'middle';
+  for (let i = 0; i < ROWS; i++) {
+    const x = gL - 8;
+    const y = gT + (i + 0.5) * rowH;
+    const label = String(i + 1);
+    const tw = ctx.measureText(label).width + 8;
+    const ph = labelSize + 4;
+    ctx.fillStyle = 'rgba(184,150,46,0.12)';
+    ctx.fillRect(x - tw, y - ph / 2, tw, ph);
+    ctx.fillStyle = 'rgba(184,150,46,0.9)';
+    ctx.fillText(label, x, y);
+  }
+
+  ctx.restore();
+
+  // ── Plant markers ──────────────────────────────────────────────────────
+  const pixelPoly: BoundaryPolygon | null = (boundaryPolygon && boundaryPolygon.length >= 3)
+    ? boundaryPolygon.map(p => ({ x: p.x * W, y: p.y * H }))
+    : null;
+  const BASE_MARKER_R = Math.max(12, W / 45);
+  const placed: Array<{ x: number; y: number; r: number }> = [];
+
+  plants.forEach((plant, index) => {
+    const loc = (plant.gridLocation || '').trim().toUpperCase();
+    const match = loc.match(/^([A-F])(\d)/);
+    let x: number, y: number;
+    if (match) {
+      const ci = Math.max(0, Math.min(5, match[1].charCodeAt(0) - 65));
+      const ri = Math.max(0, Math.min(5, parseInt(match[2]) - 1));
+      x = gL + (ci + 0.5) * colW;
+      y = gT + (ri + 0.5) * rowH;
+    } else {
+      const cols = 4;
+      x = ((index % cols) + 1) * (W / (cols + 1));
+      y = (Math.floor(index / cols) + 2) * (H / 5);
+    }
+
+    if (pixelPoly) {
+      const clamped = clampToBoundary(x, y, pixelPoly);
+      x = clamped.x; y = clamped.y;
+    }
+    x = Math.max(BASE_MARKER_R + 4, Math.min(W - BASE_MARKER_R - 4, x));
+    y = Math.max(BASE_MARKER_R + 4, Math.min(H - BASE_MARKER_R - 4, y));
+
+    let attempts = 0;
+    while (attempts < 10) {
+      const clash = placed.find(p => Math.hypot(p.x - x, p.y - y) < (p.r + BASE_MARKER_R) * 1.2);
+      if (!clash) break;
+      x += BASE_MARKER_R * 2.0;
+      if (x > W - BASE_MARKER_R - 4) { x = BASE_MARKER_R + 10; y += BASE_MARKER_R * 2.0; }
+      x = Math.max(BASE_MARKER_R + 4, Math.min(W - BASE_MARKER_R - 4, x));
+      y = Math.max(BASE_MARKER_R + 4, Math.min(H - BASE_MARKER_R - 4, y));
+      attempts++;
+    }
+    placed.push({ x, y, r: BASE_MARKER_R });
+
+    ctx.beginPath(); ctx.arc(x, y, BASE_MARKER_R, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(10,61,43,0.92)'; ctx.fill();
+    ctx.strokeStyle = '#b8962e'; ctx.lineWidth = Math.max(1.5, W / 360); ctx.stroke();
+    ctx.fillStyle = '#ffffff';
+    ctx.font = `bold ${Math.max(9, BASE_MARKER_R * 0.85)}px Arial, sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(String(index + 1), x, y);
+  });
+
+  // ── Compass rose ───────────────────────────────────────────────────────
+  // Placed in the bottom-right margin area
+  const compassR = Math.min(W, H) * 0.025;
+  const lR = compassR + 12;
+  const ccx = Math.min(W - lR - 4, gR + (W - gR) / 2);
+  const ccy = Math.min(H - lR - 4, gB + (H - gB) / 2);
+
+  // Rotation: northAngle is the angle of the N arrow from "straight up"
+  // orientation='N'→0, 'E'→-PI/2, 'S'→PI, 'W'→PI/2
+  const orientChar = (orientation || 'N').toUpperCase()[0];
+  const rotMap: Record<string, number> = { N: 0, E: -Math.PI / 2, S: Math.PI, W: Math.PI / 2 };
+  const northAngle = rotMap[orientChar] ?? 0;
+
+  // North direction vector (screen coords, Y-down)
+  const nDirX = Math.sin(northAngle);
+  const nDirY = -Math.cos(northAngle);
+  // East direction: 90° clockwise from N in screen coords = (-nDirY, nDirX)
+  const eDirX = -nDirY;
+  const eDirY = nDirX;
+
+  ctx.save();
+  // North filled arrowhead
+  ctx.beginPath();
+  ctx.moveTo(ccx + nDirX * compassR, ccy + nDirY * compassR);
+  ctx.lineTo(ccx + eDirX * compassR * 0.3, ccy + eDirY * compassR * 0.3);
+  ctx.lineTo(ccx - eDirX * compassR * 0.3, ccy - eDirY * compassR * 0.3);
+  ctx.closePath();
+  ctx.fillStyle = '#0a3d2b';
+  ctx.fill();
+  // South arrow (outline only)
+  ctx.beginPath();
+  ctx.moveTo(ccx - nDirX * compassR, ccy - nDirY * compassR);
+  ctx.lineTo(ccx + eDirX * compassR * 0.3, ccy + eDirY * compassR * 0.3);
+  ctx.lineTo(ccx - eDirX * compassR * 0.3, ccy - eDirY * compassR * 0.3);
+  ctx.closePath();
+  ctx.strokeStyle = '#0a3d2b';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  // Cardinal labels
+  ctx.font = 'bold 10px Arial, sans-serif';
+  ctx.fillStyle = '#0a3d2b';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('N', ccx + nDirX * lR, ccy + nDirY * lR);
+  ctx.fillText('S', ccx - nDirX * lR, ccy - nDirY * lR);
+  ctx.fillText('E', ccx + eDirX * lR, ccy + eDirY * lR);
+  ctx.fillText('W', ccx - eDirX * lR, ccy - eDirY * lR);
+  ctx.restore();
+}
+
+function GridOverlayImage({ src, plants, label, showMarkers = true, perspectiveData, boundaryPolygon, showGrid = true, showPerspectiveGrid = false, isAerial = false, fingerprint, orientation }: {
   src: string; plants: any[]; label: string; showMarkers?: boolean;
   perspectiveData?: PerspectiveData | null;
   boundaryPolygon?: BoundaryPolygon | null;
   showGrid?: boolean;
   showPerspectiveGrid?: boolean;
+  isAerial?: boolean;
+  fingerprint?: any;
+  orientation?: string;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -550,7 +727,12 @@ function GridOverlayImage({ src, plants, label, showMarkers = true, perspectiveD
       canvas.height = img.height;
       const ctx = canvas.getContext('2d')!;
       ctx.drawImage(img, 0, 0);
-      drawGridOverlay(canvas, plants, showMarkers, perspectiveData, boundaryPolygon, showGrid, showPerspectiveGrid);
+      if (isAerial) {
+        const bPoly = fingerprint?.boundaryPolygon?.length >= 3 ? fingerprint.boundaryPolygon : null;
+        drawAerialGridOverlay(canvas, plants, bPoly, orientation || 'N');
+      } else {
+        drawGridOverlay(canvas, plants, showMarkers, perspectiveData, boundaryPolygon, showGrid, showPerspectiveGrid);
+      }
     };
     img.onerror = () => {
       canvas.width = 600; canvas.height = 400;
@@ -560,7 +742,7 @@ function GridOverlayImage({ src, plants, label, showMarkers = true, perspectiveD
       ctx.textAlign = 'center'; ctx.fillText('Image unavailable', 300, 200);
     };
     img.src = src;
-  }, [src, plants, showMarkers, perspectiveData, boundaryPolygon, showGrid, showPerspectiveGrid]);
+  }, [src, plants, showMarkers, perspectiveData, boundaryPolygon, showGrid, showPerspectiveGrid, isAerial, fingerprint, orientation]);
 
   return (
     <div style={{ position: 'relative' }}>
@@ -955,6 +1137,9 @@ function generateGridOverlay(
   perspectiveData?: PerspectiveData | null,
   boundaryPolygon?: BoundaryPolygon | null,
   showGrid = true,
+  isAerial = false,
+  fingerprint?: any,
+  orientation = 'N',
 ): Promise<string> {
   return new Promise((resolve) => {
     const canvas = document.createElement('canvas');
@@ -965,7 +1150,12 @@ function generateGridOverlay(
       canvas.height = img.height;
       const ctx = canvas.getContext('2d')!;
       ctx.drawImage(img, 0, 0);
-      drawGridOverlay(canvas, plants, showMarkers, perspectiveData, boundaryPolygon, showGrid);
+      if (isAerial) {
+        const bPoly = fingerprint?.boundaryPolygon?.length >= 3 ? fingerprint.boundaryPolygon : boundaryPolygon || null;
+        drawAerialGridOverlay(canvas, plants, bPoly, orientation);
+      } else {
+        drawGridOverlay(canvas, plants, showMarkers, perspectiveData, boundaryPolygon, showGrid);
+      }
       resolve(canvas.toDataURL('image/png'));
     };
     img.onerror = () => resolve('');
@@ -1151,9 +1341,9 @@ export default function GardigApp() {
         setGridImageUrl(overlay || null);
       }
       if (result.aerialImageBase64 && plants.length > 0) {
-        // Aerial sketch: flat grid, no perspective transform, no boundary polygon
+        // Aerial sketch: programmatic grid overlay via drawAerialGridOverlay
         console.log('[Aerial overlay] plants gridLocations:', plants.map((p: any) => `${p.commonName}: ${p.gridLocation}`));
-        const aerialOverlay = await generateGridOverlay(result.aerialImageBase64, plants, true, null, null);
+        const aerialOverlay = await generateGridOverlay(result.aerialImageBase64, plants, true, null, bPoly, true, true, fp, gardenOrientation || 'N');
         setAerialGridImageUrl(aerialOverlay || null);
       }
 
@@ -2148,7 +2338,8 @@ export default function GardigApp() {
 
           {(aerialImageUrl || aerialGridImageUrl) ? (
             <>
-              <GridOverlayImage src={aerialGridImageUrl || aerialImageUrl!} plants={plants} label="Layout Plan"
+              <GridOverlayImage src={aerialImageUrl || aerialGridImageUrl!} plants={plants} label="Layout Plan"
+                isAerial={true} fingerprint={fingerprint} orientation={gardenOrientation || 'N'}
                 perspectiveData={null} boundaryPolygon={null} />
 
               {plants.length > 0 && (

@@ -396,84 +396,39 @@ function projectAllElements(
 // it must not invent anything that is not declared in the design synthesis.
 
 async function step3_conceptBasePlan(
-  fingerprint: Record<string, any>,
+  _fingerprint: Record<string, any>,
   designJSON: Record<string, any>,
-  orientation: string,
+  _orientation: string,
   imageBase64: string,
   imageMimeType: string,
 ): Promise<string | null> {
-  const structuresList = (fingerprint.immovableStructures || []).map((s: string) => `- ${s}`).join('\n') || '- None identified';
-  const vegetationList = (fingerprint.existingVegetation || []).map((v: string) => `- ${v}`).join('\n') || '- None identified';
-
   const layoutElements = (designJSON.layoutDescription?.elements || [])
     .map((el: any) => `- [${el.gridLocation || '?'}] ${el.label} (${el.type}): ${el.description}${el.material ? ' — ' + el.material : ''}`)
     .join('\n') || '- No layout elements specified';
   const layoutNarrative = designJSON.layoutDescription?.layoutNarrative || '';
 
-  const prompt = `YOU MUST LABEL THE COLUMNS EXACTLY AS A B C D E F FROM LEFT TO RIGHT. YOU MUST LABEL THE ROWS EXACTLY AS 1 2 3 4 5 6 FROM TOP TO BOTTOM. DO NOT USE ANY OTHER LETTERS OR NUMBERS FOR THE GRID. THE GRID HAS EXACTLY 6 COLUMNS AND 6 ROWS. NO MORE. NO LESS.
+  const prompt = `You are given the original garden photograph and the spatial fingerprint below. Draw a precise top-down orthogonal sketch of THIS SPECIFIC GARDEN. Study the photo carefully — your drawing must match the actual boundaries, shape, and permanent structures visible in this photo.
 
-You are given the original garden photograph. This is the exact garden you must draw a top-down plan of. Study the photo carefully. The fingerprint below was extracted from this photo. Your plan must match the actual shape, boundaries, and permanent structures visible in this photo. Do not invent a generic garden — draw THIS garden.
-
-Generate a precise architectural garden base plan — a hand-drawn top-down 2D sketch.
-
-SPATIAL FINGERPRINT (use these exact dimensions and positions):
-- Garden shape: ${fingerprint.gardenShape || 'rectangular plot'}
-- Aspect ratio: ${fingerprint.aspectRatio || '1:1'}
-- Left boundary: ${fingerprint.leftBoundary || 'as in photo'}
-- Right boundary: ${fingerprint.rightBoundary || 'as in photo'}
-- Rear boundary: ${fingerprint.rearBoundary || 'as in photo'}
-- Front boundary: ${fingerprint.frontBoundary || 'open entrance'}
-- Fixed structures:
-${structuresList}
-- Existing vegetation:
-${vegetationList}
-- Ground surface: ${fingerprint.groundSurface || 'mixed'}
-
-DESIGN LAYOUT — draw exactly these elements and nothing else:
+Draw ONLY the following design elements at their stated positions. Do not invent anything not listed here:
 ${layoutNarrative}
 
-ELEMENTS TO DRAW (each positioned on the A–F × 1–6 grid at the stated location):
 ${layoutElements}
 
-CRITICAL DRAWING RULE: Every element listed above must appear on the plan at its stated grid position. Do not draw any zone, path, surface, structure, or feature that is not listed above. The plan is a faithful drawing of the design synthesis output — it must not invent anything independently.
+STYLE: Clean black ink outlines on cream/off-white paper background. Light watercolour fills: lawn = soft green, paving = warm sand/grey, planting beds = terracotta blush. Hand-drawn sketch quality.
 
-VIEWPOINT: Directly vertical, 90° straight down. Pure 2D orthographic top-down. No perspective. No 3D. Completely flat.
+CRITICAL — DO NOT DRAW ANY OF THE FOLLOWING:
+- No grid lines of any kind
+- No column letters (A, B, C, D, E, F)
+- No row numbers (1, 2, 3, 4, 5, 6)
+- No numbered circles or plant markers
+- No compass rose
+- No scale bar
+- No text labels of any kind except zone names if they help clarify the layout
+- No annotations
 
-ORIENTATION: Garden faces ${orientation || 'N'}
-- Top of plan = rear boundary (furthest from camera, row 1)
-- Bottom of plan = front boundary (closest to camera, row 6)
+The sketch must have clean empty margins on all four sides — at least 8% of the image width on each side — so that grid labels can be added programmatically after generation.
 
-GRID — this is mandatory and non-negotiable:
-Draw a precise reference grid covering the entire garden boundary with exactly these labels:
-COLUMNS — exactly 6 columns. Label them from left to right as: A, B, C, D, E, F. No other letters. No numbers as column labels.
-ROWS — exactly 6 rows. Label them from top to bottom as: 1, 2, 3, 4, 5, 6. No other numbers. No letters as row labels.
-Column letter positions in the image (as percentage of plan width from left):
-A = 8%, B = 25%, C = 42%, D = 58%, E = 75%, F = 92%
-Row number positions in the image (as percentage of plan height from top):
-1 = 8%, 2 = 25%, 3 = 42%, 4 = 58%, 5 = 75%, 6 = 92%
-Grid lines: light grey, 0.5px weight, drawn at these exact percentage positions.
-Column letters A–F: place each letter at its percentage position along the top edge.
-Row numbers 1–6: place each number at its percentage position along the left edge.
-The garden boundary is a bold black outline. The grid is inside the boundary only.
-
-COMPASS: Draw a simple compass rose in the bottom-right corner of the plan, outside the garden boundary. Show N pointing toward the top of the plan if the garden faces ${orientation}, otherwise orient N correctly relative to the garden entrance direction. Keep it small and simple — just the four cardinal points N, S, E, W with a simple arrow for north.
-
-GARDEN BOUNDARY: Bold black outline (3px) matching the exact shape from the fingerprint.
-
-STYLE:
-- Clean black ink outlines
-- Light watercolour fills: lawn = soft green, paving = warm sand/grey, beds = terracotta blush
-- Cream/off-white paper background
-- Hand-drawn sketch quality — precise but with slight hand-drawn character
-
-DO NOT add any plant markers, numbered circles, or plant labels.
-DO NOT add zone text labels.
-DO NOT add a compass rose or scale bar.
-DO NOT draw any element not listed in the ELEMENTS TO DRAW section above.
-The grid letters and numbers are the ONLY text on the image.
-Geometric accuracy of the boundary and garden shape is the top priority.
-
-FINAL CHECK BEFORE GENERATING — verify that your column labels are exactly A B C D E F and your row labels are exactly 1 2 3 4 5 6. If you have used any other characters, correct them before generating the image.`;
+Geometric accuracy of the garden boundary shape is the top priority. The boundary outline must match the actual garden shape from the photo.`;
 
   const response = await ai.models.generateContent({
     model: 'gemini-2.5-flash-image',
