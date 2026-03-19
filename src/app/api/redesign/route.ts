@@ -61,7 +61,7 @@ const DESIGN_SCHEMA = `{
         "id": "P1",
         "botanicalName": "Genus species",
         "commonName": "common name",
-        "cultivar": "cultivar or null",
+        "cultivar": "cultivar name as a string, or omit this field entirely if no cultivar — never use the word null",
         "type": "Tree|Shrub|Perennial|Annual|Grass|Groundcover|Climber|Fern|Bamboo|Bulb",
         "quantity": 1,
         "matureSize": "e.g. 3-4m H x 2m W",
@@ -443,12 +443,20 @@ ORIENTATION: Garden faces ${orientation || 'N'}
 - Top of plan = rear boundary (furthest from camera, row 1)
 - Bottom of plan = front boundary (closest to camera, row 6)
 
-GRID — draw a faint reference grid over the whole plan:
-- 6 columns labelled A–F left to right
-- 6 rows labelled 1–6 top to bottom (1 = rear, 6 = front)
-- Grid lines: light grey, thin (0.5px), inside the garden boundary only
-- Column letters A–F: small grey text at top
-- Row numbers 1–6: small grey text at left
+GRID — this is mandatory and non-negotiable:
+Draw a precise reference grid covering the entire garden boundary with exactly these labels:
+COLUMNS — exactly 6 columns. Label them from left to right as: A, B, C, D, E, F. No other letters. No numbers as column labels.
+ROWS — exactly 6 rows. Label them from top to bottom as: 1, 2, 3, 4, 5, 6. No other numbers. No letters as row labels.
+Column letter positions in the image (as percentage of plan width from left):
+A = 8%, B = 25%, C = 42%, D = 58%, E = 75%, F = 92%
+Row number positions in the image (as percentage of plan height from top):
+1 = 8%, 2 = 25%, 3 = 42%, 4 = 58%, 5 = 75%, 6 = 92%
+Grid lines: light grey, 0.5px weight, drawn at these exact percentage positions.
+Column letters A–F: place each letter at its percentage position along the top edge.
+Row numbers 1–6: place each number at its percentage position along the left edge.
+The garden boundary is a bold black outline. The grid is inside the boundary only.
+
+COMPASS: Draw a simple compass rose in the bottom-right corner of the plan, outside the garden boundary. Show N pointing toward the top of the plan if the garden faces ${orientation}, otherwise orient N correctly relative to the garden entrance direction. Keep it small and simple — just the four cardinal points N, S, E, W with a simple arrow for north.
 
 GARDEN BOUNDARY: Bold black outline (3px) matching the exact shape from the fingerprint.
 
@@ -715,6 +723,9 @@ function clampGridLocations(design: Record<string, any>): void {
       plant.gridLocation = allCells[fallbackIdx % allCells.length] ?? 'A1';
       used.push(plant.gridLocation);
       fallbackIdx++;
+    }
+    if (plant.cultivar === 'null' || plant.cultivar === null) {
+      plant.cultivar = '';
     }
     // Default gridZ to 0.0 for ground-level elements if not set
     if (plant.gridZ == null || typeof plant.gridZ !== 'number') {
