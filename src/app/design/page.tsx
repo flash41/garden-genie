@@ -293,6 +293,7 @@ interface PerspectiveData {
   scaleCalibrationHeightMetres?: number;
   scaleCalibrationPixelHeightPercent?: number;
   foregroundYPercent?: number;
+  foregroundBoundaryYPercent?: number;
 }
 type BoundaryPolygon = Array<{ x: number; y: number }>;
 
@@ -469,7 +470,7 @@ function drawGridOverlay(
           plant.gridZ || 0,
           perspectiveData.scaleCalibrationHeightMetres || 1.8,
           perspectiveData.scaleCalibrationPixelHeightPercent || 20,
-          perspectiveData.foregroundBoundaryYPercent,
+          perspectiveData.foregroundBoundaryYPercent ?? perspectiveData.foregroundYPercent ?? 85,
         );
         x = pt.x;
         y = pt.y;
@@ -1133,6 +1134,7 @@ export default function GardigApp() {
             foregroundYPercent: fp.foregroundToBackgroundRatio != null
               ? 55 + (fp.foregroundToBackgroundRatio * 35)
               : 85,
+            foregroundBoundaryYPercent: fp.foregroundBoundaryYPercent,
           }
         : null;
       const bPoly: BoundaryPolygon | null = (fp?.boundaryPolygon?.length >= 3) ? fp.boundaryPolygon : null;
@@ -2073,7 +2075,7 @@ export default function GardigApp() {
               : renderUrl
                 ? showPlantMarkers
                   ? <GridOverlayImage src={renderUrl} plants={plants} label="After" showGrid={false}
-                      perspectiveData={fingerprint?.horizonLinePercent != null ? { horizonLinePercent: fingerprint.horizonLinePercent, vanishingPointXPercent: fingerprint.vanishingPointXPercent, cameraElevationAngle: fingerprint.cameraElevationAngle, scaleCalibrationHeightMetres: fingerprint.scaleCalibrationHeightMetres, scaleCalibrationPixelHeightPercent: fingerprint.scaleCalibrationPixelHeightPercent, foregroundYPercent: fingerprint.foregroundToBackgroundRatio != null ? 55 + (fingerprint.foregroundToBackgroundRatio * 35) : 85 } : null}
+                      perspectiveData={fingerprint?.horizonLinePercent != null ? { horizonLinePercent: fingerprint.horizonLinePercent, vanishingPointXPercent: fingerprint.vanishingPointXPercent, cameraElevationAngle: fingerprint.cameraElevationAngle, scaleCalibrationHeightMetres: fingerprint.scaleCalibrationHeightMetres, scaleCalibrationPixelHeightPercent: fingerprint.scaleCalibrationPixelHeightPercent, foregroundYPercent: fingerprint.foregroundToBackgroundRatio != null ? 55 + (fingerprint.foregroundToBackgroundRatio * 35) : 85, foregroundBoundaryYPercent: fingerprint.foregroundBoundaryYPercent } : null}
                       boundaryPolygon={fingerprint?.boundaryPolygon?.length >= 3 ? fingerprint.boundaryPolygon : null} />
                   : <img src={renderUrl} alt="Proposed Vision" style={{ width: "100%", borderRadius: C.rLg, maxHeight: 480, objectFit: "cover", border: `1px solid ${C.rule}` }} />
                 : <div style={{ background: C.surface, borderRadius: C.rLg, height: 260, display: "flex", alignItems: "center", justifyContent: "center", color: C.inkLight, fontSize: px(BASE), border: `1px solid ${C.rule}` }}>Render not available</div>
@@ -2102,7 +2104,7 @@ export default function GardigApp() {
               <div>
                 <div style={{ fontSize: px(12), color: C.inkLight, marginBottom: 7, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>Before — Annotated</div>
                 <GridOverlayImage src={imageDataUrl} plants={plants} label="Before" showMarkers={false} showGrid={false}
-                  perspectiveData={fingerprint?.horizonLinePercent != null ? { horizonLinePercent: fingerprint.horizonLinePercent, vanishingPointXPercent: fingerprint.vanishingPointXPercent, cameraElevationAngle: fingerprint.cameraElevationAngle, scaleCalibrationHeightMetres: fingerprint.scaleCalibrationHeightMetres, scaleCalibrationPixelHeightPercent: fingerprint.scaleCalibrationPixelHeightPercent, foregroundYPercent: fingerprint.foregroundToBackgroundRatio != null ? 55 + (fingerprint.foregroundToBackgroundRatio * 35) : 85 } : null}
+                  perspectiveData={fingerprint?.horizonLinePercent != null ? { horizonLinePercent: fingerprint.horizonLinePercent, vanishingPointXPercent: fingerprint.vanishingPointXPercent, cameraElevationAngle: fingerprint.cameraElevationAngle, scaleCalibrationHeightMetres: fingerprint.scaleCalibrationHeightMetres, scaleCalibrationPixelHeightPercent: fingerprint.scaleCalibrationPixelHeightPercent, foregroundYPercent: fingerprint.foregroundToBackgroundRatio != null ? 55 + (fingerprint.foregroundToBackgroundRatio * 35) : 85, foregroundBoundaryYPercent: fingerprint.foregroundBoundaryYPercent } : null}
                   boundaryPolygon={fingerprint?.boundaryPolygon?.length >= 3 ? fingerprint.boundaryPolygon : null} />
               </div>
             )}
@@ -2111,7 +2113,7 @@ export default function GardigApp() {
                 <div style={{ fontSize: px(12), color: C.inkLight, marginBottom: 7, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>After — Annotated</div>
                 <GridOverlayImage src={renderUrl} plants={plants} label="After" showGrid={false}
                   showPerspectiveGrid={showPerspGrid}
-                  perspectiveData={fingerprint?.horizonLinePercent != null ? { horizonLinePercent: fingerprint.horizonLinePercent, vanishingPointXPercent: fingerprint.vanishingPointXPercent, cameraElevationAngle: fingerprint.cameraElevationAngle, scaleCalibrationHeightMetres: fingerprint.scaleCalibrationHeightMetres, scaleCalibrationPixelHeightPercent: fingerprint.scaleCalibrationPixelHeightPercent, foregroundYPercent: fingerprint.foregroundToBackgroundRatio != null ? 55 + (fingerprint.foregroundToBackgroundRatio * 35) : 85 } : null}
+                  perspectiveData={fingerprint?.horizonLinePercent != null ? { horizonLinePercent: fingerprint.horizonLinePercent, vanishingPointXPercent: fingerprint.vanishingPointXPercent, cameraElevationAngle: fingerprint.cameraElevationAngle, scaleCalibrationHeightMetres: fingerprint.scaleCalibrationHeightMetres, scaleCalibrationPixelHeightPercent: fingerprint.scaleCalibrationPixelHeightPercent, foregroundYPercent: fingerprint.foregroundToBackgroundRatio != null ? 55 + (fingerprint.foregroundToBackgroundRatio * 35) : 85, foregroundBoundaryYPercent: fingerprint.foregroundBoundaryYPercent } : null}
                   boundaryPolygon={fingerprint?.boundaryPolygon?.length >= 3 ? fingerprint.boundaryPolygon : null} />
                 <button
                   onClick={() => setShowPerspGrid(v => !v)}
