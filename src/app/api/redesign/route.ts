@@ -398,29 +398,66 @@ async function step2_generatePerspectiveGrid(
 ): Promise<string | null> {
   const prompt = `Act as a site surveyor and architectural visualizer. I am providing an image of a garden.
 
-1. Identify Ground Plane: Analyze the perspective and depth of the ground plane. The ground plane is the actual garden surface only — not the sky, not walls above ground level, not areas outside the full garden boundary.
+CRITICAL INSTRUCTION: The grid you draw must be anchored to these four specific boundary points. Do not draw the grid anywhere else. Do not centre the grid in the image. The grid must follow the actual garden boundaries visible in the photo.
 
-2. Superimpose Grid: Draw a precise 1m x 1m grid on the ground plane only. The grid lines MUST follow the image's linear perspective, receding toward the vanishing point so they look flat on the ground. The grid must cover the entire visible garden ground surface from the near foreground edge to the rear boundary wall, and from the left boundary to the right boundary.
+STEP 1 — LOCATE THE FOUR ANCHOR POINTS:
+Before drawing a single line, find these four exact points in the image:
 
-3. Vanishing Point: The grid lines must converge correctly at the actual vanishing point for this image. Identify the vanishing point from the perspective geometry of the garden boundaries. Do not assume it is centred — it may be left or right of centre depending on the camera angle.
+ANCHOR POINT 1 — FOREGROUND LEFT:
+The exact point where the left boundary wall or fence meets the foreground edge of the garden ground plane — the bottom-left corner of the garden area as seen from the camera. This is where your bottom-left grid corner must be placed.
 
-4. Boundaries: The grid must stop exactly at the garden boundaries. Left vertical grid lines must align with the left boundary. Right vertical grid lines must align with the right boundary. The rear transversal must sit at the base of the rear boundary wall or fence. The foreground transversal must sit at the foreground edge of the garden ground plane.
+ANCHOR POINT 2 — FOREGROUND RIGHT:
+The exact point where the right boundary wall or fence meets the foreground edge of the garden ground plane — the bottom-right corner of the garden area as seen from the camera. This is where your bottom-right grid corner must be placed.
 
-5. Scale Bar: Include a clear metric scale bar at the bottom right showing 0m, 1m, 2m.
+ANCHOR POINT 3 — REAR LEFT:
+The exact point where the left boundary wall or fence meets the base of the far boundary wall — the top-left corner of the garden ground plane as seen from the camera. This is where your top-left grid corner must be placed.
 
-6. Style: High-contrast white grid lines, 2px weight, on the original photo. Label the image '1m x 1m Ground Grid Overlay' at the top left in small white text on a dark background. Label 'SURVEY AND SPACE ANALYSIS OVERLAY' at the bottom centre in small white text.
+ANCHOR POINT 4 — REAR RIGHT:
+The exact point where the right boundary wall or fence meets the base of the far boundary wall — the top-right corner of the garden ground plane as seen from the camera. This is where your top-right grid corner must be placed.
 
-Reference data from spatial analysis:
-- Approximate horizon line: ${fingerprint.horizonLinePercent ?? 35}% from top of image
-- Approximate vanishing point: ${fingerprint.vanishingPointXPercent ?? 50}% across image width
-- Approximate foreground boundary: ${fingerprint.foregroundBoundaryYPercent ?? 85}% from top
-- Estimated plot width: ${fingerprint.plotWidthMetres ?? 6}m
-- Estimated plot depth: ${fingerprint.plotDepthMetres ?? 8}m
-- Left boundary: ${fingerprint.leftBoundary || 'as visible in photo'}
-- Right boundary: ${fingerprint.rightBoundary || 'as visible in photo'}
-- Rear boundary: ${fingerprint.rearBoundary || 'as visible in photo'}
+These four anchor points define the exact quadrilateral shape of the garden ground plane as seen in perspective. Your entire grid must fit precisely inside this quadrilateral. The grid must not extend outside it. The grid must not be smaller than it. The grid corners must sit exactly on these four anchor points.
 
-Return the original photo with the perspective grid overlaid on it.`;
+STEP 2 — FIND THE VANISHING POINT:
+Draw imaginary lines from ANCHOR POINT 1 to ANCHOR POINT 3 (left boundary line) and from ANCHOR POINT 2 to ANCHOR POINT 4 (right boundary line). Extend both lines until they meet. That meeting point is the vanishing point. All front-to-back grid lines must converge toward this exact vanishing point. It may be above the far wall, at the horizon, or outside the image frame entirely.
+
+STEP 3 — DRAW THE VERTICAL GRID LINES (running front to back):
+- Draw one line from ANCHOR POINT 1 to ANCHOR POINT 3 along the left boundary
+- Draw one line from ANCHOR POINT 2 to ANCHOR POINT 4 along the right boundary
+- Divide the foreground edge (ANCHOR POINT 1 to ANCHOR POINT 2) into equal 1m intervals
+- From each division point on the foreground edge, draw a line converging toward the vanishing point, ending at the rear boundary line
+- These lines represent each 1m column of the grid
+
+STEP 4 — DRAW THE HORIZONTAL TRANSVERSAL LINES (running left to right):
+- Draw one line connecting ANCHOR POINT 1 to ANCHOR POINT 2 along the foreground boundary
+- Draw one line connecting ANCHOR POINT 3 to ANCHOR POINT 4 along the rear boundary base
+- Between these two lines, draw equally spaced transversal lines representing each 1m row
+- Each transversal line must run from the left boundary line to the right boundary line at that depth
+- The lines must get progressively closer together toward the rear boundary due to perspective compression
+
+STEP 5 — STYLE AND LABELS:
+- Grid lines: white, 2px weight
+- The grid covers ONLY the garden ground surface between the four anchor points
+- Nothing outside the four anchor points gets a grid line
+- Label '1m x 1m Ground Grid Overlay' at top left in white text on a dark semi-transparent background pill
+- Label 'SURVEY AND SPACE ANALYSIS OVERLAY' at bottom centre in small white text
+- Add a metric scale bar at bottom right: 0m, 1m, 2m
+- Place leader lines and small text labels at each of the four anchor points: 'Left Boundary', 'Right Boundary', 'Far Boundary', 'Foreground'
+
+FINAL CHECK BEFORE OUTPUTTING:
+- Does the bottom-left corner of the grid sit exactly on ANCHOR POINT 1? It must.
+- Does the bottom-right corner of the grid sit exactly on ANCHOR POINT 2? It must.
+- Does the top-left corner of the grid sit exactly on ANCHOR POINT 3? It must.
+- Does the top-right corner of the grid sit exactly on ANCHOR POINT 4? It must.
+- Do all front-to-back lines converge at the same vanishing point? They must.
+- Is the grid completely flat on the ground plane? It must look as if a physical grid of 1m x 1m squares has been laid flat on the garden ground and photographed from this exact camera position.
+
+Additional reference data from spatial analysis of this image:
+- Approximate horizon line position: ${fingerprint.horizonLinePercent ?? 35}% from top of image
+- Approximate vanishing point horizontal position: ${fingerprint.vanishingPointXPercent ?? 50}% across image width
+- Approximate foreground boundary position: ${fingerprint.foregroundBoundaryYPercent ?? 85}% from top of image
+- Left boundary: ${fingerprint.leftBoundary || 'wall or fence on left side'}
+- Right boundary: ${fingerprint.rightBoundary || 'wall or fence on right side'}
+- Rear boundary: ${fingerprint.rearBoundary || 'wall or fence at rear'}`;
 
   try {
     const response = await ai.models.generateContent({
