@@ -439,7 +439,7 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
                 </View>
                 {plants.map((p: any, i: number) => (
                   <View key={i} wrap={false} style={i % 2 === 0 ? S.tableRow : S.tableRowAlt}>
-                    <Text style={[S.tableCellB, { flex: 3 }]}>{safe(p.botanicalName)}{p.cultivar ? ` '${p.cultivar}'` : ''}</Text>
+                    <Text style={[S.tableCellB, { flex: 3 }]}>{safe(p.botanicalName)}{p.cultivar && p.cultivar !== 'null' && p.cultivar !== '' ? ` '${p.cultivar}'` : ''}</Text>
                     <Text style={[S.tableCell, { flex: 2 }]}>{safe(p.commonName)}</Text>
                     <Text style={[S.tableCell, { flex: 1 }]}>{safe(p.quantity)}</Text>
                     <Text style={[S.tableCell, { flex: 2 }]}>{safe(p.matureSize)}</Text>
