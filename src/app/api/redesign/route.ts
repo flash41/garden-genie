@@ -390,6 +390,155 @@ function projectAllElements(
     };
   });
 }
+// ─── STAGE G1 — Perspective Grid Generation ────────────────────────────────────
+async function step2_generatePerspectiveGrid(
+  imageBase64: string,
+  mimeType: string,
+  fingerprint: Record<string, any>,
+): Promise<string | null> {
+  const prompt = `Act as a site surveyor and architectural visualizer. I am providing an image of a garden.
+
+1. Identify Ground Plane: Analyze the perspective and depth of the ground plane. The ground plane is the actual garden surface only — not the sky, not walls above ground level, not areas outside the full garden boundary.
+
+2. Superimpose Grid: Draw a precise 1m x 1m grid on the ground plane only. The grid lines MUST follow the image's linear perspective, receding toward the vanishing point so they look flat on the ground. The grid must cover the entire visible garden ground surface from the near foreground edge to the rear boundary wall, and from the left boundary to the right boundary.
+
+3. Vanishing Point: The grid lines must converge correctly at the actual vanishing point for this image. Identify the vanishing point from the perspective geometry of the garden boundaries. Do not assume it is centred — it may be left or right of centre depending on the camera angle.
+
+4. Boundaries: The grid must stop exactly at the garden boundaries. Left vertical grid lines must align with the left boundary. Right vertical grid lines must align with the right boundary. The rear transversal must sit at the base of the rear boundary wall or fence. The foreground transversal must sit at the foreground edge of the garden ground plane.
+
+5. Scale Bar: Include a clear metric scale bar at the bottom right showing 0m, 1m, 2m.
+
+6. Style: High-contrast white grid lines, 2px weight, on the original photo. Label the image '1m x 1m Ground Grid Overlay' at the top left in small white text on a dark background. Label 'SURVEY AND SPACE ANALYSIS OVERLAY' at the bottom centre in small white text.
+
+Reference data from spatial analysis:
+- Approximate horizon line: ${fingerprint.horizonLinePercent ?? 35}% from top of image
+- Approximate vanishing point: ${fingerprint.vanishingPointXPercent ?? 50}% across image width
+- Approximate foreground boundary: ${fingerprint.foregroundBoundaryYPercent ?? 85}% from top
+- Estimated plot width: ${fingerprint.plotWidthMetres ?? 6}m
+- Estimated plot depth: ${fingerprint.plotDepthMetres ?? 8}m
+- Left boundary: ${fingerprint.leftBoundary || 'as visible in photo'}
+- Right boundary: ${fingerprint.rightBoundary || 'as visible in photo'}
+- Rear boundary: ${fingerprint.rearBoundary || 'as visible in photo'}
+
+Return the original photo with the perspective grid overlaid on it.`;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash-image',
+      contents: [{ role: 'user', parts: [
+        { inlineData: { mimeType, data: imageBase64 } },
+        { text: prompt },
+      ]}],
+      config: { responseModalities: ['Text', 'Image'] },
+    });
+    const imagePart = response.candidates?.[0]?.content?.parts?.find((p: any) => p.inlineData);
+    if (!imagePart?.inlineData?.data) return null;
+    const mime = imagePart.inlineData.mimeType || 'image/png';
+    return `data:${mime};base64,${imagePart.inlineData.data}`;
+  } catch (err) {
+    console.error('[Step2_G1] Perspective grid generation failed:', err);
+    return null;
+  }
+}
+
+async function step2b_extractG1Data(
+  perspectiveGridBase64: string,
+  fingerprint: Record<string, any>,
+): Promise<Record<string, any>> {
+  const prompt = `You are given an image of a garden with a 1m x 1m perspective grid overlaid on it.
+
+Study the grid carefully and extract the following geometric data. Return ONLY valid JSON with no markdown.
+
+{
+  "vanishingPointXNorm": (number 0.0-1.0 — horizontal position of the vanishing point as fraction of image width from left),
+  "vanishingPointYNorm": (number 0.0-1.0 — vertical position of the vanishing point as fraction of image height from top),
+  "horizonYNorm": (number 0.0-1.0 — vertical position of the horizon line as fraction of image height from top),
+  "foregroundYNorm": (number 0.0-1.0 — vertical position of the foreground transversal line as fraction of image height from top),
+  "leftBoundaryXAtForeground": (number 0.0-1.0 — horizontal position of the left boundary at the foreground row),
+  "rightBoundaryXAtForeground": (number 0.0-1.0 — horizontal position of the right boundary at the foreground row),
+  "leftBoundaryXAtRear": (number 0.0-1.0 — horizontal position of the left boundary at the rear row),
+  "rightBoundaryXAtRear": (number 0.0-1.0 — horizontal position of the right boundary at the rear row),
+  "gridColumnsCount": (integer — number of 1m columns visible across the plot),
+  "gridRowsCount": (integer — number of 1m rows visible from foreground to rear),
+  "plotWidthMetres": (number — estimated real-world width of the garden in metres),
+  "plotDepthMetres": (number — estimated real-world depth of the garden in metres),
+  "gridIntersections": [
+    {
+      "col": (integer, 0-based column index from left),
+      "row": (integer, 0-based row index from rear=0 to foreground=max),
+      "xNorm": (number 0.0-1.0 — horizontal position of this intersection in the image),
+      "yNorm": (number 0.0-1.0 — vertical position of this intersection in the image)
+    }
+  ]
+}
+
+For gridIntersections, return every visible intersection point where a vertical grid line crosses a horizontal transversal line. Include all corner points of the grid. Order them row by row from rear to foreground, left to right within each row.
+
+Be as precise as possible — these coordinates will be used to mathematically derive the orthogonal base plan.`;
+
+  try {
+    const gridData = perspectiveGridBase64.includes(',')
+      ? perspectiveGridBase64.split(',')[1]
+      : perspectiveGridBase64;
+    const gridMime = perspectiveGridBase64.includes(';')
+      ? perspectiveGridBase64.split(';')[0].split(':')[1]
+      : 'image/png';
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: [{ role: 'user', parts: [
+        { inlineData: { mimeType: gridMime, data: gridData } },
+        { text: prompt },
+      ]}],
+      config: { responseMimeType: 'application/json', temperature: 0.1 },
+    });
+
+    const text = response.candidates?.[0]?.content?.parts?.find((p: any) => p.text)?.text || '{}';
+    const clean = text.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
+    const g1Data = JSON.parse(clean);
+    console.log('[Step2b_G1Data] Extracted intersections:', g1Data.gridIntersections?.length ?? 0);
+    return g1Data;
+  } catch (err) {
+    console.error('[Step2b_G1Data] Extraction failed:', err);
+    return {};
+  }
+}
+
+function deriveG2Grid(g1Data: Record<string, any>): Record<string, any> {
+  const cols = g1Data.gridColumnsCount ?? 6;
+  const rows = g1Data.gridRowsCount ?? 6;
+  const plotW = g1Data.plotWidthMetres ?? 6;
+  const plotD = g1Data.plotDepthMetres ?? 8;
+  const intersections = g1Data.gridIntersections ?? [];
+
+  const g2Intersections = intersections.map((pt: any) => ({
+    col: pt.col,
+    row: pt.row,
+    g2XNorm: (pt.col) / Math.max(cols - 1, 1),
+    g2YNorm: (pt.row) / Math.max(rows - 1, 1),
+    g1XNorm: pt.xNorm,
+    g1YNorm: pt.yNorm,
+  }));
+
+  return {
+    columnsCount: cols,
+    rowsCount: rows,
+    plotWidthMetres: plotW,
+    plotDepthMetres: plotD,
+    cellWidthMetres: plotW / cols,
+    cellDepthMetres: plotD / rows,
+    intersections: g2Intersections,
+    vanishingPointXNorm: g1Data.vanishingPointXNorm ?? 0.5,
+    vanishingPointYNorm: g1Data.vanishingPointYNorm ?? 0.35,
+    horizonYNorm: g1Data.horizonYNorm ?? 0.35,
+    foregroundYNorm: g1Data.foregroundYNorm ?? 0.85,
+    leftBoundaryXAtForeground: g1Data.leftBoundaryXAtForeground ?? 0.0,
+    rightBoundaryXAtForeground: g1Data.rightBoundaryXAtForeground ?? 1.0,
+    leftBoundaryXAtRear: g1Data.leftBoundaryXAtRear ?? 0.2,
+    rightBoundaryXAtRear: g1Data.rightBoundaryXAtRear ?? 0.8,
+  };
+}
+
 // ─── STEP 3 — Concept Base Plan ────────────────────────────────────────────────
 // Generates a hand-drawn top-down architectural sketch with a labelled A–F × 1–6 grid.
 // Receives the full design JSON from Step 2 and draws its layoutDescription exactly —
@@ -1049,6 +1198,31 @@ export async function POST(request: Request) {
       console.error('[Pipeline] Step 1 failed, continuing with empty fingerprint:', err);
     }
 
+    // ── Stage G1 — Perspective Grid Generation ──────────────────────────────────
+    console.log('[Pipeline] G1: Generating perspective grid...');
+    let perspectiveGridBase64: string | null = null;
+    let g1Data: Record<string, any> = {};
+    let g2Grid: Record<string, any> = {};
+
+    try {
+      perspectiveGridBase64 = await step2_generatePerspectiveGrid(
+        originalImageBase64, effectiveMimeType, fingerprint
+      );
+      console.log('[Pipeline] G1 complete, size:', perspectiveGridBase64?.length ?? 0);
+
+      if (perspectiveGridBase64) {
+        console.log('[Pipeline] G1b: Extracting grid intersection data...');
+        g1Data = await step2b_extractG1Data(perspectiveGridBase64, fingerprint);
+        console.log('[Pipeline] G1b complete, intersections:', g1Data.gridIntersections?.length ?? 0);
+
+        console.log('[Pipeline] G2: Deriving orthogonal grid...');
+        g2Grid = deriveG2Grid(g1Data);
+        console.log('[Pipeline] G2 complete, cols:', g2Grid.columnsCount, 'rows:', g2Grid.rowsCount);
+      }
+    } catch (err) {
+      console.error('[Pipeline] G1/G2 failed, continuing without grid data:', err);
+    }
+
     // ── Step 2 — Garden Design JSON (master source of truth) ───────────────────
     // Runs before the Concept Base Plan so layoutDescription drives both visual outputs.
     console.log('[Pipeline] Step 2: Garden design...');
@@ -1150,7 +1324,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ imageError: true });
     }
 
-    return NextResponse.json({ designJSON, imageBase64, aerialImageBase64, validationResult, retried, fingerprint });
+    return NextResponse.json({ designJSON, imageBase64, aerialImageBase64, validationResult, retried, fingerprint, perspectiveGridBase64, g1Data, g2Grid });
 
   } catch (error: unknown) {
     console.error('[Pipeline] Unhandled error:', error);

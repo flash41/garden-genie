@@ -1200,6 +1200,9 @@ export default function GardigApp() {
   const [transformationLevel, setTransformationLevel] = useState(3);
   const [hardinessZone, setHardinessZone]     = useState('');
   const [fingerprint, setFingerprint]         = useState<any>(null);
+  const [perspectiveGridUrl, setPerspectiveGridUrl] = useState<string | null>(null);
+  const [g1Data, setG1Data]                   = useState<Record<string, any>>({});
+  const [g2Grid, setG2Grid]                   = useState<Record<string, any>>({});
   const fileRef = useRef<HTMLInputElement>(null);
 
   // Register Turnstile success callback on window
@@ -1278,6 +1281,9 @@ export default function GardigApp() {
       validationResult: data.validationResult || null,
       retried: data.retried || false,
       fingerprint: data.fingerprint || null,
+      perspectiveGridBase64: data.perspectiveGridBase64 || null,
+      g1Data: data.g1Data || {},
+      g2Grid: data.g2Grid || {},
     };
   };
 
@@ -1292,6 +1298,9 @@ export default function GardigApp() {
     setAerialGridImageUrl(null);
     setValidationResult(null);
     setFingerprint(null);
+    setPerspectiveGridUrl(null);
+    setG1Data({});
+    setG2Grid({});
     setStep("loading");
     try {
       if (!imageDataUrl) {
@@ -1308,6 +1317,9 @@ export default function GardigApp() {
       setRenderUrl(result.imageBase64);
       setAerialImageUrl(result.aerialImageBase64);
       setFingerprint(result.fingerprint);
+      setPerspectiveGridUrl(result.perspectiveGridBase64 || null);
+      setG1Data(result.g1Data || {});
+      setG2Grid(result.g2Grid || {});
       if (result.validationResult !== undefined) {
         setValidationResult({ result: result.validationResult, retried: result.retried });
       }
@@ -2321,6 +2333,15 @@ export default function GardigApp() {
               </div>
             )}
           </div>
+
+          {perspectiveGridUrl && (
+            <div style={{ marginTop: 16 }}>
+              <div style={{ fontSize: px(12), color: C.inkLight, marginBottom: 7, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                Perspective Ground Grid — Spatial Reference
+              </div>
+              <img src={perspectiveGridUrl} style={{ width: '100%', borderRadius: C.r, border: `1px solid ${C.rule}` }} />
+            </div>
+          )}
 
           {/* Plant reference */}
           {plants.length > 0 && (
