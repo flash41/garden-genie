@@ -474,6 +474,9 @@ Be as precise as possible. These coordinates will be used for geometric calculat
       .trim();
 
     const data = JSON.parse(clean);
+    // Clamp foreground yNorm so the grid never anchors to the very bottom of the image
+    if (data.frontLeft?.yNorm  != null) data.frontLeft.yNorm  = Math.min(data.frontLeft.yNorm,  0.90);
+    if (data.frontRight?.yNorm != null) data.frontRight.yNorm = Math.min(data.frontRight.yNorm, 0.90);
     console.log('[Step2b] Control points extracted:', JSON.stringify(data));
     return data;
 
@@ -485,7 +488,7 @@ Be as precise as possible. These coordinates will be used for geometric calculat
 
 function buildFallbackControlPoints(fingerprint: Record<string, any>): Record<string, any> {
   const horizonY = (fingerprint.horizonLinePercent ?? 35) / 100;
-  const foregroundY = (fingerprint.foregroundBoundaryYPercent ?? 85) / 100;
+  const foregroundY = Math.min((fingerprint.foregroundBoundaryYPercent ?? 85) / 100, 0.90);
   const vpX = (fingerprint.vanishingPointXPercent ?? 50) / 100;
   const spread = 0.35;
   return {
@@ -1075,7 +1078,7 @@ async function step5_generateRender(
       inlineData: { mimeType: originalMimeType || 'image/jpeg', data: originalBase64 },
     },
     {
-      text: `This is the BEFORE photo of the garden. Generate an AFTER version of THIS EXACT SAME GARDEN with the following design applied. The garden must be immediately recognisable as the same space.\n\n${visualPrompt}\n\nCRITICAL CONSTRAINTS: Do not add any buildings, structures, extensions, conservatories, or architectural elements that are not visible in the original photograph. Do not add neighbouring houses, rooflines, or walls that were not present in the original. The garden boundaries shown in the original photo must be respected exactly — do not extend the garden beyond its visible edges. Only redesign the planting, surface materials, and garden features within the existing visible boundary. The sky, surrounding buildings, and boundary walls must remain consistent with the original photograph.`,
+      text: `This is the BEFORE photo of the garden. Generate an AFTER version of THIS EXACT SAME GARDEN with the following design applied. The garden must be immediately recognisable as the same space.\n\n${visualPrompt}\n\nCRITICAL CONSTRAINTS — YOU MUST NOT VIOLATE THESE:\n1. DO NOT add any buildings, house extensions, conservatories, outbuildings, sheds, garages, or any structure that does not exist in the original photo.\n2. DO NOT add or alter any neighbouring houses, rooflines, chimneys, walls, or structures visible beyond the garden boundary.\n3. The sky must match the original photograph exactly — same sky, same clouds, same colour, same horizon. Do not alter anything above the garden boundary.\n4. Everything beyond the garden boundary (neighbouring properties, sky, trees outside the boundary, roads) must be pixel-for-pixel identical to the original photo. Do not touch it.\n5. Only modify what is strictly inside the garden boundary: planting, lawn, paving, paths, garden structures (pergolas, raised beds, water features) that were already present or are explicitly requested.\n6. The garden boundary walls, fences, and edges must remain in exactly the same position as in the original photo. Do not extend, shrink, or reshape the garden footprint.\n7. If in any doubt whether something is inside or outside the garden boundary, leave it unchanged.`,
     },
   ];
 
@@ -1371,10 +1374,14 @@ export async function POST(request: Request) {
         validationResult = await validateRender(originalImageBase64, effectiveMimeType, generatedRaw);
         console.log('[Pipeline] Validation result:', JSON.stringify(validationResult));
 
-        if (!validationResult?.overallPass) {
+        const hallucinatedStructures: string[] = validationResult?.hallucinatedStructures || [];
+        if (!validationResult?.overallPass || hallucinatedStructures.length > 0) {
           retried = true;
           const failReasons = (validationResult?.failReasons || []).join('; ');
-          const retryPrompt = `${visualPrompt}\n\nPREVIOUS ATTEMPT FAILED — THESE SPECIFIC ISSUES MUST BE CORRECTED:\n${failReasons}\nFix all of these in this new attempt. The result must pass all checks.`;
+          const hallucinationWarning = hallucinatedStructures.length > 0
+            ? `\nHALLUCINATED STRUCTURES DETECTED — REMOVE THESE COMPLETELY: ${hallucinatedStructures.join(', ')}. These do not exist in the original garden photo and must not appear in the generated image.`
+            : '';
+          const retryPrompt = `${visualPrompt}\n\nPREVIOUS ATTEMPT FAILED — THESE SPECIFIC ISSUES MUST BE CORRECTED:\n${failReasons}${hallucinationWarning}\nFix all of these in this new attempt. The result must pass all checks.`;
 
           console.log('[Pipeline] Retrying render after validation failure...');
           try {
