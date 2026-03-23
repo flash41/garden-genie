@@ -15,6 +15,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
   }
 
+  const payloadSize = pdfBase64 ? Buffer.byteLength(pdfBase64, 'utf8') : 0;
+  console.log('[send-plan] PDF payload size (bytes):', payloadSize);
+
+  if (payloadSize > 3 * 1024 * 1024) {
+    return NextResponse.json(
+      { error: 'PDF is too large to send by email. Please download it directly instead.' },
+      { status: 413 }
+    );
+  }
+
   const subject = `Your Dedrab Garden Vision — ${planTitle || 'Garden Design Plan'}`;
 
   const html = `

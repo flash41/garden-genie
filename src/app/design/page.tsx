@@ -1364,6 +1364,33 @@ export default function GardigApp() {
   const [g2Grid, setG2Grid]                   = useState<Record<string, any>>({});
   const fileRef = useRef<HTMLInputElement>(null);
 
+  const loadingMessages = [
+    "Go put the kettle on — this could take a few minutes ☕",
+    "Analysing your garden boundaries and light conditions...",
+    "Selecting plants suited to your climate and orientation...",
+    "Designing your layout — good things take time 🌿",
+    "Generating your photorealistic render...",
+    "Building your full proposal document...",
+    "Almost there — finalising your planting scheme...",
+    "This can take up to 4 minutes depending on system demand — worth the wait!",
+  ];
+  const [rotatingMsgIdx, setRotatingMsgIdx] = useState(0);
+  const [rotatingMsgVisible, setRotatingMsgVisible] = useState(true);
+  useEffect(() => {
+    if (step !== "loading") return;
+    setRotatingMsgIdx(0);
+    setRotatingMsgVisible(true);
+    const interval = setInterval(() => {
+      setRotatingMsgVisible(false);
+      setTimeout(() => {
+        setRotatingMsgIdx(i => (i + 1) % loadingMessages.length);
+        setRotatingMsgVisible(true);
+      }, 400);
+    }, 8000);
+    return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step]);
+
   // Register Turnstile success callback on window
   useEffect(() => {
     (window as any).onTurnstileSuccess = (token: string) => setTurnstileToken(token);
@@ -1767,20 +1794,22 @@ export default function GardigApp() {
   // ── LOADING SCREEN ─────────────────────────────────────────────────────────
   if (step === "loading") return (
     <div style={{ minHeight: "100vh", background: C.surface, fontFamily: C.font, display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');@keyframes spin{to{transform:rotate(360deg)}}@keyframes ellipsis{0%,20%{content:'.'}40%,60%{content:'..'}80%,100%{content:'...'}} .ellipsis::after{content:'...';display:inline-block;animation:ellipsis 1.5s steps(3,end) infinite}`}</style>
-      <div style={{ textAlign: "center", maxWidth: 400, padding: "0 24px" }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');@keyframes spin{to{transform:rotate(360deg)}}@keyframes ellipsis{0%,20%{content:'.'}40%,60%{content:'..'}80%,100%{content:'...'}} .ellipsis::after{content:'...';display:inline-block;animation:ellipsis 1.5s steps(3,end) infinite} .rotating-msg{transition:opacity 0.4s ease}`}</style>
+      <div style={{ textAlign: "center", maxWidth: 440, padding: "0 24px" }}>
         <div style={{ width: 44, height: 44, borderRadius: "50%", border: `3px solid ${C.rule}`, borderTopColor: C.accent, margin: "0 auto 24px", animation: "spin 0.75s linear infinite" }} />
-        <div style={{ fontFamily: C.fontSerif, fontSize: px(22), fontWeight: 600, color: C.ink, marginBottom: 10 }}>Designing Your Garden</div>
-        <div style={{ fontSize: px(14), color: C.inkLight, marginBottom: 20 }}>{loadingMsg}</div>
+        <div style={{ fontFamily: C.fontSerif, fontSize: px(22), fontWeight: 600, color: C.ink, marginBottom: 16 }}>Designing Your Garden</div>
+        <div className="rotating-msg" style={{ fontSize: px(14), color: C.inkMid, marginBottom: 8, minHeight: 44, opacity: rotatingMsgVisible ? 1 : 0 }}>
+          {loadingMessages[rotatingMsgIdx]}
+        </div>
+        <div style={{ fontSize: px(12), color: C.inkLight, marginBottom: 24, fontStyle: "italic" }}>
+          Hang tight — up to 4 minutes depending on system demand
+        </div>
         <div style={{
           background: C.surface, border: `1px solid ${C.rule}`, borderLeft: `3px solid ${C.accent}`,
           borderRadius: C.r, padding: "14px 18px",
         }}>
           <div style={{ fontSize: px(BASE - 1), color: C.brand, fontWeight: 500, lineHeight: 1.6 }}>
             Please wait a moment while we build your plan<span className="ellipsis" />
-          </div>
-          <div style={{ fontSize: px(13), color: C.inkLight, marginTop: 4 }}>
-            This might take a minute or two.
           </div>
         </div>
       </div>
@@ -1818,6 +1847,9 @@ export default function GardigApp() {
     setEmailStatus("sending");
     setEmailError(null);
     try {
+      if (pdfBase64 && pdfBase64.length > 3 * 1024 * 1024) {
+        throw new Error('Your PDF is too large to email directly. Please use the Download button instead and share the file manually.');
+      }
       const res = await fetch('/api/send-plan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1848,6 +1880,9 @@ export default function GardigApp() {
     }
     setSelfSendStatus("sending");
     try {
+      if (pdfBase64 && pdfBase64.length > 3 * 1024 * 1024) {
+        throw new Error('Your PDF is too large to email directly. Please use the Download button instead and share the file manually.');
+      }
       const res = await fetch('/api/send-plan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
