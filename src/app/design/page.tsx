@@ -366,12 +366,15 @@ function drawGridOverlay(
   // Perspective grid overlay
   if (showPerspectiveGrid && g2Grid?.intersections?.length && g2Grid.controlPoints) {
     const cp = g2Grid.controlPoints;
+    // Clamp foreground yNorm so the grid never anchors to the very bottom of the image
+    const flYNorm = Math.min(cp.frontLeft.yNorm, 0.92);
+    const frYNorm = Math.min(cp.frontRight.yNorm, 0.92);
     ctx.save();
 
     // Clip all grid drawing to the trapezoidal garden boundary
     ctx.beginPath();
-    ctx.moveTo(cp.frontLeft.xNorm * W,  cp.frontLeft.yNorm  * H);
-    ctx.lineTo(cp.frontRight.xNorm * W, cp.frontRight.yNorm * H);
+    ctx.moveTo(cp.frontLeft.xNorm * W,  flYNorm             * H);
+    ctx.lineTo(cp.frontRight.xNorm * W, frYNorm             * H);
     ctx.lineTo(cp.rearRight.xNorm * W,  cp.rearRight.yNorm  * H);
     ctx.lineTo(cp.rearLeft.xNorm * W,   cp.rearLeft.yNorm   * H);
     ctx.closePath();
@@ -389,7 +392,7 @@ function drawGridOverlay(
     for (let ci = 0; ci <= cols; ci++) {
       const t = ci / cols;
       const foreX = (cp.frontLeft.xNorm + t * (cp.frontRight.xNorm - cp.frontLeft.xNorm)) * W;
-      const foreY = (cp.frontLeft.yNorm + t * (cp.frontRight.yNorm - cp.frontLeft.yNorm)) * H;
+      const foreY = (flYNorm + t * (frYNorm - flYNorm)) * H;
       const rearX = (cp.rearLeft.xNorm + t * (cp.rearRight.xNorm - cp.rearLeft.xNorm)) * W;
       const rearY = (cp.rearLeft.yNorm + t * (cp.rearRight.yNorm - cp.rearLeft.yNorm)) * H;
       ctx.beginPath();
@@ -402,9 +405,9 @@ function drawGridOverlay(
     for (let ri = 0; ri <= rows; ri++) {
       const t = ri / rows;
       const leftX = (cp.frontLeft.xNorm + t * (cp.rearLeft.xNorm - cp.frontLeft.xNorm)) * W;
-      const leftY = (cp.frontLeft.yNorm + t * (cp.rearLeft.yNorm - cp.frontLeft.yNorm)) * H;
+      const leftY = (flYNorm + t * (cp.rearLeft.yNorm - flYNorm)) * H;
       const rightX = (cp.frontRight.xNorm + t * (cp.rearRight.xNorm - cp.frontRight.xNorm)) * W;
-      const rightY = (cp.frontRight.yNorm + t * (cp.rearRight.yNorm - cp.frontRight.yNorm)) * H;
+      const rightY = (frYNorm + t * (cp.rearRight.yNorm - frYNorm)) * H;
       ctx.beginPath();
       ctx.moveTo(leftX, leftY);
       ctx.lineTo(rightX, rightY);
@@ -427,7 +430,7 @@ function drawGridOverlay(
     for (let ri = 0; ri < rows; ri++) {
       const t = (ri + 0.5) / rows;
       const x = (cp.frontLeft.xNorm + t * (cp.rearLeft.xNorm - cp.frontLeft.xNorm)) * W - 4;
-      const y = (cp.frontLeft.yNorm + t * (cp.rearLeft.yNorm - cp.frontLeft.yNorm)) * H;
+      const y = (flYNorm + t * (cp.rearLeft.yNorm - flYNorm)) * H;
       ctx.fillText(String(ri + 1), x, y);
     }
 
@@ -1014,7 +1017,11 @@ function detectCurrency(): string {
 
 function cleanPlantName(name: string): string {
   if (!name) return name;
-  return name.replace(/('([^']+)')\s+\1/g, '$1').trim();
+  // Remove exact duplicate quoted segments e.g. 'Rufa' 'Rufa' → 'Rufa'
+  let cleaned = name.replace(/('([^']+)')\s+\1/g, '$1').trim();
+  // Remove duplicate unquoted trailing words e.g. "Purple Purple" → "Purple"
+  cleaned = cleaned.replace(/\b(\w+)\s+\1\b/g, '$1').trim();
+  return cleaned;
 }
 
 function ReferenceTable({ plants }: { plants: any[] }) {
@@ -1051,164 +1058,91 @@ function ReferenceTable({ plants }: { plants: any[] }) {
 }
 
 function AfterPlantTable({ plants }: { plants: any[] }) {
-  const [hovered, setHovered] = useState<number | null>(null);
+  const [imgErrors, setImgErrors] = useState<Record<number, boolean>>({});
   if (!plants?.length) return null;
 
-  const LAYER_COLORS: Record<string, { bg: string; color: string }> = {
-    Canopy:      { bg: "#dcfce7", color: "#14532d" },
-    Understorey: { bg: "#d1fae5", color: "#065f46" },
-    Shrub:       { bg: "#e0f2fe", color: "#0c4a6e" },
-    Ground:      { bg: "#fef9c3", color: "#713f12" },
-    Climber:     { bg: "#fce7f3", color: "#831843" },
-  };
-
   return (
-    <div>
-      {/* ── Plant Cards (Option B) ─────────────────────────────── */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 12, marginBottom: 24 }}>
-        {plants.map((p: any, i: number) => {
-          const layerStyle = LAYER_COLORS[p.layer] || { bg: C.brandLight, color: C.brand };
-          const cultivarClean = (p.cultivar && p.cultivar !== 'null' && p.cultivar !== '') ? ` '${p.cultivar}'` : '';
-          return (
-            <div
-              key={p.id || i}
-              onMouseEnter={() => setHovered(i)}
-              onMouseLeave={() => setHovered(null)}
-              style={{
-                background: hovered === i ? C.brandLight : C.card,
-                border: `1px solid ${hovered === i ? C.accent : C.rule}`,
-                borderRadius: C.rLg,
-                padding: "14px 16px",
-                transition: "all 0.15s",
-                boxShadow: hovered === i ? C.shadowMd : C.shadow,
-              }}
-            >
-              {/* Card header — number + grid ref */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-                <div style={{
-                  width: 32, height: 32, borderRadius: "50%",
-                  background: C.brand, color: C.accent,
-                  fontSize: px(14), fontWeight: 700,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  flexShrink: 0,
-                }}>
+    <div style={{ overflowX: "auto", borderRadius: C.rLg, border: `1px solid ${C.rule}` }}>
+      <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: C.font, fontSize: px(BASE - 1) }}>
+        <thead>
+          <tr style={{ background: C.brand }}>
+            <th style={{ padding: "9px 12px", color: "#fff", fontSize: px(12), fontWeight: 600, width: 36, textAlign: "center" }}>#</th>
+            <th style={{ padding: "9px 12px", color: "#fff", fontSize: px(12), fontWeight: 600, width: 60, textAlign: "center" }}>Photo</th>
+            <th style={{ padding: "9px 12px", color: "#fff", textAlign: "left", fontSize: px(12), fontWeight: 600 }}>Plant</th>
+            <th style={{ padding: "9px 12px", color: "#fff", textAlign: "left", fontSize: px(12), fontWeight: 600, width: 54 }}>Grid</th>
+            <th style={{ padding: "9px 12px", color: "#fff", textAlign: "left", fontSize: px(12), fontWeight: 600, width: 44 }}>Qty</th>
+            <th style={{ padding: "9px 12px", color: "#fff", textAlign: "left", fontSize: px(12), fontWeight: 600 }}>Size</th>
+            <th style={{ padding: "9px 12px", color: "#fff", textAlign: "left", fontSize: px(12), fontWeight: 600 }}>Sun</th>
+            <th style={{ padding: "9px 12px", color: "#fff", textAlign: "left", fontSize: px(12), fontWeight: 600 }}>Water</th>
+          </tr>
+        </thead>
+        <tbody>
+          {plants.map((p: any, i: number) => {
+            const cultivarClean = (p.cultivar && p.cultivar !== 'null' && p.cultivar !== '') ? ` '${p.cultivar}'` : '';
+            const wikiName = (p.botanicalName || '').split(' ').slice(0, 2).join('_').replace(/'/g, '');
+            return (
+              <tr key={p.id || i} style={{
+                background: i % 2 === 0 ? C.surface : C.card,
+                borderBottom: `1px solid ${C.rule}`,
+              }}>
+                <td style={{ padding: "8px 12px", color: C.accent, fontWeight: 700, fontSize: px(13), textAlign: "center" }}>
                   {i + 1}
-                </div>
-                <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                  {/* Grid ref badge (Option C) */}
+                </td>
+                <td style={{ padding: "6px 8px", textAlign: "center" }}>
+                  {!imgErrors[i] ? (
+                    <img
+                      src={`https://en.wikipedia.org/w/index.php?action=render&title=Special:Redirect/file/${wikiName}.jpg&width=80`}
+                      alt={p.commonName}
+                      onError={() => setImgErrors(prev => ({ ...prev, [i]: true }))}
+                      style={{
+                        width: 48, height: 48, objectFit: "cover",
+                        borderRadius: C.r, border: `1px solid ${C.rule}`,
+                        display: "block", margin: "0 auto",
+                      }}
+                    />
+                  ) : (
+                    <div style={{
+                      width: 48, height: 48, borderRadius: C.r,
+                      background: C.brandLight, border: `1px solid ${C.rule}`,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontSize: 18, margin: "0 auto",
+                    }}>🌿</div>
+                  )}
+                </td>
+                <td style={{ padding: "8px 12px" }}>
+                  <div style={{ fontStyle: "italic", color: C.brand, fontWeight: 600, fontSize: px(13) }}>
+                    {cleanPlantName(p.botanicalName)}{cultivarClean}
+                  </div>
+                  <div style={{ color: C.inkLight, fontSize: px(12), marginTop: 1 }}>
+                    {cleanPlantName(p.commonName)}
+                  </div>
+                </td>
+                <td style={{ padding: "8px 12px" }}>
                   <span style={{
                     background: C.brand, color: C.accent,
-                    borderRadius: C.r, padding: "2px 8px",
-                    fontSize: px(11), fontWeight: 700, letterSpacing: "0.06em",
+                    borderRadius: C.r, padding: "2px 7px",
+                    fontSize: px(11), fontWeight: 700,
                   }}>
                     {p.gridLocation || "—"}
                   </span>
-                  {/* Layer badge */}
-                  <span style={{
-                    background: layerStyle.bg, color: layerStyle.color,
-                    borderRadius: C.r, padding: "2px 8px",
-                    fontSize: px(10), fontWeight: 600, letterSpacing: "0.04em",
-                  }}>
-                    {p.layer}
-                  </span>
-                </div>
-              </div>
-
-              {/* Plant name */}
-              <div style={{ marginBottom: 6 }}>
-                <div style={{ fontStyle: "italic", color: C.brand, fontWeight: 700, fontSize: px(14), lineHeight: 1.3 }}>
-                  {cleanPlantName(p.botanicalName)}{cultivarClean}
-                </div>
-                <div style={{ color: C.inkMid, fontSize: px(13), marginTop: 2 }}>
-                  {cleanPlantName(p.commonName)}
-                </div>
-              </div>
-
-              {/* Placement description */}
-              {p.designRationale && (
-                <div style={{
-                  fontSize: px(12), color: C.inkMid, lineHeight: 1.5,
-                  borderTop: `1px solid ${C.rule}`, paddingTop: 8, marginTop: 8,
-                }}>
-                  {p.designRationale}
-                </div>
-              )}
-
-              {/* Key facts row */}
-              <div style={{
-                display: "flex", flexWrap: "wrap", gap: 10,
-                marginTop: 10, paddingTop: 8, borderTop: `1px solid ${C.rule}`,
-                fontSize: px(11), color: C.inkLight,
-              }}>
-                {p.quantity > 1 && (
-                  <span><strong style={{ color: C.ink }}>×{p.quantity}</strong> plants</span>
-                )}
-                {p.matureSize && (
-                  <span>↕ {p.matureSize}</span>
-                )}
-                {p.sunRequirement && (
-                  <span>☀ {p.sunRequirement}</span>
-                )}
-                {p.waterRequirement && (
-                  <span>💧 {p.waterRequirement}</span>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* ── Reference Table (Option C) ────────────────────────── */}
-      <div style={{ fontSize: px(12), color: C.inkMid, marginBottom: 8, fontStyle: "italic" }}>
-        Quick reference — grid locations match the annotated images above
-      </div>
-      <div style={{ overflowX: "auto", borderRadius: C.rLg, border: `1px solid ${C.rule}` }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: C.font, fontSize: px(BASE - 1) }}>
-          <thead>
-            <tr style={{ background: C.brand }}>
-              <th style={{ padding: "9px 12px", color: "#fff", textAlign: "left", fontSize: px(12), fontWeight: 600, width: 36 }}>#</th>
-              <th style={{ padding: "9px 12px", color: "#fff", textAlign: "left", fontSize: px(12), fontWeight: 600 }}>Plant Name</th>
-              <th style={{ padding: "9px 12px", color: "#fff", textAlign: "left", fontSize: px(12), fontWeight: 600, width: 60 }}>Grid</th>
-              <th style={{ padding: "9px 12px", color: "#fff", textAlign: "left", fontSize: px(12), fontWeight: 600 }}>Where to plant</th>
-              <th style={{ padding: "9px 12px", color: "#fff", textAlign: "left", fontSize: px(12), fontWeight: 600, width: 50 }}>Qty</th>
-            </tr>
-          </thead>
-          <tbody>
-            {plants.map((p: any, i: number) => {
-              const cultivarClean = (p.cultivar && p.cultivar !== 'null' && p.cultivar !== '') ? ` '${p.cultivar}'` : '';
-              return (
-                <tr key={p.id || i}
-                  onMouseEnter={() => setHovered(i)}
-                  onMouseLeave={() => setHovered(null)}
-                  style={{
-                    background: hovered === i ? C.brandLight : i % 2 === 0 ? C.surface : C.card,
-                    borderBottom: `1px solid ${C.rule}`, cursor: "default", transition: "background 0.1s",
-                  }}>
-                  <td style={{ padding: "9px 12px", color: C.accent, fontWeight: 700, fontSize: px(13) }}>{i + 1}</td>
-                  <td style={{ padding: "9px 12px" }}>
-                    <div style={{ fontStyle: "italic", color: C.brand, fontWeight: 600, fontSize: px(13) }}>
-                      {cleanPlantName(p.botanicalName)}{cultivarClean}
-                    </div>
-                    <div style={{ color: C.inkLight, fontSize: px(12) }}>{cleanPlantName(p.commonName)}</div>
-                  </td>
-                  <td style={{ padding: "9px 12px" }}>
-                    <span style={{ background: C.brand, color: C.accent, borderRadius: C.r, padding: "2px 7px", fontSize: px(11), fontWeight: 700 }}>
-                      {p.gridLocation || "—"}
-                    </span>
-                  </td>
-                  <td style={{ padding: "9px 12px", color: C.inkMid, fontSize: px(12), lineHeight: 1.4 }}>
-                    {p.zoneIds?.length ? `Zone ${p.zoneIds.join(", ")} · ` : ""}
-                    {p.layer} · {p.sunRequirement}
-                  </td>
-                  <td style={{ padding: "9px 12px", fontWeight: 700, color: C.ink, textAlign: "center" }}>
-                    {p.quantity}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+                </td>
+                <td style={{ padding: "8px 12px", fontWeight: 700, color: C.ink, textAlign: "center" }}>
+                  {p.quantity}
+                </td>
+                <td style={{ padding: "8px 12px", color: C.inkMid, fontSize: px(12), whiteSpace: "nowrap" }}>
+                  {p.matureSize || "—"}
+                </td>
+                <td style={{ padding: "8px 12px", color: C.inkMid, fontSize: px(12), whiteSpace: "nowrap" }}>
+                  {p.sunRequirement || "—"}
+                </td>
+                <td style={{ padding: "8px 12px", color: C.inkMid, fontSize: px(12), whiteSpace: "nowrap" }}>
+                  {p.waterRequirement || "—"}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
     </div>
   );
 }
@@ -2548,31 +2482,6 @@ export default function GardigApp() {
               </button>
             )}
           </div>
-
-          {g2Grid?.intersections?.length > 0 && imageDataUrl && (
-            <div style={{ marginTop: 16 }}>
-              <div style={{ fontSize: px(12), color: C.inkLight, marginBottom: 7, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                Perspective Ground Grid — Spatial Reference
-              </div>
-              <GridOverlayImage
-                src={imageDataUrl}
-                plants={[]}
-                label="Grid"
-                showMarkers={false}
-                showGrid={false}
-                showPerspectiveGrid={true}
-                perspectiveData={fingerprint?.horizonLinePercent != null ? {
-                  horizonLinePercent: fingerprint.horizonLinePercent,
-                  vanishingPointXPercent: fingerprint.vanishingPointXPercent,
-                  foregroundBoundaryYPercent: fingerprint.foregroundBoundaryYPercent,
-                  scaleCalibrationHeightMetres: fingerprint.scaleCalibrationHeightMetres,
-                  scaleCalibrationPixelHeightPercent: fingerprint.scaleCalibrationPixelHeightPercent,
-                } : null}
-                boundaryPolygon={fingerprint?.boundaryPolygon?.length >= 3 ? fingerprint.boundaryPolygon : null}
-                g2Grid={g2Grid}
-              />
-            </div>
-          )}
 
           {/* Plant reference */}
           {plants.length > 0 && (

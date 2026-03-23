@@ -1075,7 +1075,7 @@ async function step5_generateRender(
       inlineData: { mimeType: originalMimeType || 'image/jpeg', data: originalBase64 },
     },
     {
-      text: `This is the BEFORE photo of the garden. Generate an AFTER version of THIS EXACT SAME GARDEN with the following design applied. The garden must be immediately recognisable as the same space.\n\n${visualPrompt}`,
+      text: `This is the BEFORE photo of the garden. Generate an AFTER version of THIS EXACT SAME GARDEN with the following design applied. The garden must be immediately recognisable as the same space.\n\n${visualPrompt}\n\nCRITICAL CONSTRAINTS: Do not add any buildings, structures, extensions, conservatories, or architectural elements that are not visible in the original photograph. Do not add neighbouring houses, rooflines, or walls that were not present in the original. The garden boundaries shown in the original photo must be respected exactly — do not extend the garden beyond its visible edges. Only redesign the planting, surface materials, and garden features within the existing visible boundary. The sky, surrounding buildings, and boundary walls must remain consistent with the original photograph.`,
     },
   ];
 
