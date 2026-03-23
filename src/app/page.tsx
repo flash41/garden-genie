@@ -462,6 +462,31 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* EXAMPLE REPORT */}
+      <section style={{ background: 'var(--linen)', padding: '80px 60px', textAlign: 'center', borderTop: '1px solid var(--cream-dark)' }}>
+        <div style={{ maxWidth: 640, margin: '0 auto' }}>
+          <div style={{ fontSize: 10, letterSpacing: 3, textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 16, fontFamily: "'DM Sans', sans-serif" }}>Example Output</div>
+          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 34, fontWeight: 400, color: 'var(--forest)', marginBottom: 16, lineHeight: 1.25 }}>See a full example report</h2>
+          <p style={{ fontSize: 16, color: 'var(--warm-grey)', lineHeight: 1.75, marginBottom: 36, fontFamily: "'DM Sans', sans-serif" }}>
+            This is the kind of detailed proposal Dedrab generates for your garden — plant list, layout plan, cost estimate, and more.
+          </p>
+          <a href="/example-report-zen-Proposal.pdf" target="_blank" rel="noopener noreferrer" style={{
+            display: 'inline-block',
+            background: 'var(--gold)',
+            color: 'var(--forest)',
+            fontFamily: "'DM Sans', sans-serif",
+            fontSize: 11,
+            fontWeight: 600,
+            letterSpacing: 2.5,
+            textTransform: 'uppercase',
+            padding: '14px 36px',
+            textDecoration: 'none',
+          }}>
+            View Example Report →
+          </a>
+        </div>
+      </section>
+
       {/* STATS STRIP */}
       <div style={{ background: 'var(--linen)', borderTop: '1px solid var(--cream-dark)', borderBottom: '1px solid var(--cream-dark)', padding: '50px 60px' }}>
         <div className="stats-grid" style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 40 }}>

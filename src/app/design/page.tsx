@@ -1827,7 +1827,7 @@ export default function GardigApp() {
   const TABS = [
     { id: "overview",        label: "Overview" },
     { id: "visuals",         label: "Visuals" },
-    { id: "layout-plan",     label: "Layout Plan" },
+    { id: "layout-plan",     label: "Layout Sketch" },
     { id: "site",            label: "Your Site" },
     { id: "concept",         label: "The Design" },
     { id: "spatial",         label: "Garden Zones" },
@@ -2540,7 +2540,7 @@ export default function GardigApp() {
 
         {/* ── LAYOUT PLAN ── */}
         {activeTab === "layout-plan" && <>
-          <SectionTitle n="11b" title="Garden Layout Plan" />
+          <SectionTitle n="11b" title="Layout Plan Sketch" />
           <div style={{ marginBottom: 14, fontSize: px(BASE - 1), color: C.inkMid }}>
             Your planting guide — print this and take it outside. Numbers correspond to the plant list below.
           </div>
