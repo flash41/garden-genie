@@ -1529,7 +1529,7 @@ export default function GardigApp() {
         setError("No image selected. Please upload a photo first.");
         return;
       }
-      setLoadingMsg("Designing your garden...");
+      setLoadingMsg("Step 1 of 2 — Analysing your site...");
       const base64 = imageDataUrl.split(",")[1];
       const mimeType = imageDataUrl.split(";")[0].split(":")[1];
 
@@ -1541,6 +1541,7 @@ export default function GardigApp() {
       setFingerprint(result.fingerprint);
       setControlPoints(result.controlPoints || {});
       setG2Grid(result.g2Grid || {});
+      setLoadingMsg("Step 2 of 2 — Building your proposal...");
       const freshG2Grid = result.g2Grid || {};
       if (result.validationResult !== undefined) {
         setValidationResult({ result: result.validationResult, retried: result.retried });
