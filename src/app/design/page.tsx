@@ -1053,10 +1053,114 @@ function ReferenceTable({ plants }: { plants: any[] }) {
 function AfterPlantTable({ plants }: { plants: any[] }) {
   const [hovered, setHovered] = useState<number | null>(null);
   if (!plants?.length) return null;
+
+  const LAYER_COLORS: Record<string, { bg: string; color: string }> = {
+    Canopy:      { bg: "#dcfce7", color: "#14532d" },
+    Understorey: { bg: "#d1fae5", color: "#065f46" },
+    Shrub:       { bg: "#e0f2fe", color: "#0c4a6e" },
+    Ground:      { bg: "#fef9c3", color: "#713f12" },
+    Climber:     { bg: "#fce7f3", color: "#831843" },
+  };
+
   return (
     <div>
-      <div style={{ fontSize: px(12), color: C.inkMid, marginBottom: 8, fontStyle: 'italic' }}>
-        Plant Reference — hover a row to highlight its position
+      {/* ── Plant Cards (Option B) ─────────────────────────────── */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 12, marginBottom: 24 }}>
+        {plants.map((p: any, i: number) => {
+          const layerStyle = LAYER_COLORS[p.layer] || { bg: C.brandLight, color: C.brand };
+          const cultivarClean = (p.cultivar && p.cultivar !== 'null' && p.cultivar !== '') ? ` '${p.cultivar}'` : '';
+          return (
+            <div
+              key={p.id || i}
+              onMouseEnter={() => setHovered(i)}
+              onMouseLeave={() => setHovered(null)}
+              style={{
+                background: hovered === i ? C.brandLight : C.card,
+                border: `1px solid ${hovered === i ? C.accent : C.rule}`,
+                borderRadius: C.rLg,
+                padding: "14px 16px",
+                transition: "all 0.15s",
+                boxShadow: hovered === i ? C.shadowMd : C.shadow,
+              }}
+            >
+              {/* Card header — number + grid ref */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                <div style={{
+                  width: 32, height: 32, borderRadius: "50%",
+                  background: C.brand, color: C.accent,
+                  fontSize: px(14), fontWeight: 700,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  flexShrink: 0,
+                }}>
+                  {i + 1}
+                </div>
+                <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                  {/* Grid ref badge (Option C) */}
+                  <span style={{
+                    background: C.brand, color: C.accent,
+                    borderRadius: C.r, padding: "2px 8px",
+                    fontSize: px(11), fontWeight: 700, letterSpacing: "0.06em",
+                  }}>
+                    {p.gridLocation || "—"}
+                  </span>
+                  {/* Layer badge */}
+                  <span style={{
+                    background: layerStyle.bg, color: layerStyle.color,
+                    borderRadius: C.r, padding: "2px 8px",
+                    fontSize: px(10), fontWeight: 600, letterSpacing: "0.04em",
+                  }}>
+                    {p.layer}
+                  </span>
+                </div>
+              </div>
+
+              {/* Plant name */}
+              <div style={{ marginBottom: 6 }}>
+                <div style={{ fontStyle: "italic", color: C.brand, fontWeight: 700, fontSize: px(14), lineHeight: 1.3 }}>
+                  {cleanPlantName(p.botanicalName)}{cultivarClean}
+                </div>
+                <div style={{ color: C.inkMid, fontSize: px(13), marginTop: 2 }}>
+                  {cleanPlantName(p.commonName)}
+                </div>
+              </div>
+
+              {/* Placement description */}
+              {p.designRationale && (
+                <div style={{
+                  fontSize: px(12), color: C.inkMid, lineHeight: 1.5,
+                  borderTop: `1px solid ${C.rule}`, paddingTop: 8, marginTop: 8,
+                }}>
+                  {p.designRationale}
+                </div>
+              )}
+
+              {/* Key facts row */}
+              <div style={{
+                display: "flex", flexWrap: "wrap", gap: 10,
+                marginTop: 10, paddingTop: 8, borderTop: `1px solid ${C.rule}`,
+                fontSize: px(11), color: C.inkLight,
+              }}>
+                {p.quantity > 1 && (
+                  <span><strong style={{ color: C.ink }}>×{p.quantity}</strong> plants</span>
+                )}
+                {p.matureSize && (
+                  <span>↕ {p.matureSize}</span>
+                )}
+                {p.sunRequirement && (
+                  <span>☀ {p.sunRequirement}</span>
+                )}
+                {p.waterRequirement && (
+                  <span>💧 {p.waterRequirement}</span>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ── Reference Table (Option C) ────────────────────────── */}
+      <div style={{ fontSize: px(12), color: C.inkMid, marginBottom: 8, fontStyle: "italic" }}>
+        Quick reference — grid locations match the annotated images above
       </div>
       <div style={{ overflowX: "auto", borderRadius: C.rLg, border: `1px solid ${C.rule}` }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: C.font, fontSize: px(BASE - 1) }}>
@@ -1065,31 +1169,43 @@ function AfterPlantTable({ plants }: { plants: any[] }) {
               <th style={{ padding: "9px 12px", color: "#fff", textAlign: "left", fontSize: px(12), fontWeight: 600, width: 36 }}>#</th>
               <th style={{ padding: "9px 12px", color: "#fff", textAlign: "left", fontSize: px(12), fontWeight: 600 }}>Plant Name</th>
               <th style={{ padding: "9px 12px", color: "#fff", textAlign: "left", fontSize: px(12), fontWeight: 600, width: 60 }}>Grid</th>
-              <th style={{ padding: "9px 12px", color: "#fff", textAlign: "left", fontSize: px(12), fontWeight: 600 }}>Notes</th>
+              <th style={{ padding: "9px 12px", color: "#fff", textAlign: "left", fontSize: px(12), fontWeight: 600 }}>Where to plant</th>
+              <th style={{ padding: "9px 12px", color: "#fff", textAlign: "left", fontSize: px(12), fontWeight: 600, width: 50 }}>Qty</th>
             </tr>
           </thead>
           <tbody>
-            {plants.map((p: any, i: number) => (
-              <tr key={p.id || i}
-                onMouseEnter={() => setHovered(i)}
-                onMouseLeave={() => setHovered(null)}
-                style={{
-                  background: hovered === i ? C.brandLight : i % 2 === 0 ? C.surface : C.card,
-                  borderBottom: `1px solid ${C.rule}`, cursor: 'default', transition: 'background 0.1s',
-                }}>
-                <td style={{ padding: "9px 12px", color: C.accent, fontWeight: 700, fontSize: px(13) }}>{i + 1}</td>
-                <td style={{ padding: "9px 12px" }}>
-                  <div style={{ fontStyle: "italic", color: C.brand, fontWeight: 600, fontSize: px(13) }}>{cleanPlantName(p.botanicalName)}</div>
-                  <div style={{ color: C.inkLight, fontSize: px(12) }}>{cleanPlantName(p.commonName)}{(p.cultivar && p.cultivar !== 'null' && p.cultivar !== '') ? ` '${p.cultivar}'` : ""}</div>
-                </td>
-                <td style={{ padding: "9px 12px" }}>
-                  <span style={{ background: C.brand, color: C.accent, borderRadius: C.r, padding: "2px 7px", fontSize: px(11), fontWeight: 700 }}>{p.gridLocation || "—"}</span>
-                </td>
-                <td style={{ padding: "9px 12px", color: C.inkMid, fontSize: px(12) }}>
-                  {p.type}{p.layer ? ` · ${p.layer}` : ''}{p.quantity > 1 ? ` · ×${p.quantity}` : ''}
-                </td>
-              </tr>
-            ))}
+            {plants.map((p: any, i: number) => {
+              const cultivarClean = (p.cultivar && p.cultivar !== 'null' && p.cultivar !== '') ? ` '${p.cultivar}'` : '';
+              return (
+                <tr key={p.id || i}
+                  onMouseEnter={() => setHovered(i)}
+                  onMouseLeave={() => setHovered(null)}
+                  style={{
+                    background: hovered === i ? C.brandLight : i % 2 === 0 ? C.surface : C.card,
+                    borderBottom: `1px solid ${C.rule}`, cursor: "default", transition: "background 0.1s",
+                  }}>
+                  <td style={{ padding: "9px 12px", color: C.accent, fontWeight: 700, fontSize: px(13) }}>{i + 1}</td>
+                  <td style={{ padding: "9px 12px" }}>
+                    <div style={{ fontStyle: "italic", color: C.brand, fontWeight: 600, fontSize: px(13) }}>
+                      {cleanPlantName(p.botanicalName)}{cultivarClean}
+                    </div>
+                    <div style={{ color: C.inkLight, fontSize: px(12) }}>{cleanPlantName(p.commonName)}</div>
+                  </td>
+                  <td style={{ padding: "9px 12px" }}>
+                    <span style={{ background: C.brand, color: C.accent, borderRadius: C.r, padding: "2px 7px", fontSize: px(11), fontWeight: 700 }}>
+                      {p.gridLocation || "—"}
+                    </span>
+                  </td>
+                  <td style={{ padding: "9px 12px", color: C.inkMid, fontSize: px(12), lineHeight: 1.4 }}>
+                    {p.zoneIds?.length ? `Zone ${p.zoneIds.join(", ")} · ` : ""}
+                    {p.layer} · {p.sunRequirement}
+                  </td>
+                  <td style={{ padding: "9px 12px", fontWeight: 700, color: C.ink, textAlign: "center" }}>
+                    {p.quantity}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
