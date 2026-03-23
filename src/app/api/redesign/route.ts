@@ -1075,13 +1075,23 @@ async function step5_generateRender(
   visualPrompt: string,
   originalBase64: string,
   originalMimeType: string,
+  sketchBase64?: string | null,
 ): Promise<string | null> {
+  const sketchData = sketchBase64
+    ? (sketchBase64.includes(',') ? sketchBase64.split(',')[1] : sketchBase64)
+    : null;
+
+  const spatialInstruction = sketchData
+    ? `Image 1 is the BEFORE photo. Image 2 is the top-down layout sketch showing exactly where each zone, path, and planting area should appear. Use Image 2 as the spatial layout guide — the perspective render must reflect this layout.\n\n`
+    : '';
+
   const parts: any[] = [
     {
       inlineData: { mimeType: originalMimeType || 'image/jpeg', data: originalBase64 },
     },
+    ...(sketchData ? [{ inlineData: { mimeType: 'image/png', data: sketchData } }] : []),
     {
-      text: `This is the BEFORE photo of the garden. Generate an AFTER version of THIS EXACT SAME GARDEN with the following design applied. The garden must be immediately recognisable as the same space.\n\n${visualPrompt}\n\nCRITICAL CONSTRAINTS — YOU MUST NOT VIOLATE THESE:\n1. DO NOT add any buildings, house extensions, conservatories, outbuildings, sheds, garages, or any structure that does not exist in the original photo.\n2. DO NOT add or alter any neighbouring houses, rooflines, chimneys, walls, or structures visible beyond the garden boundary.\n3. The sky must match the original photograph exactly — same sky, same clouds, same colour, same horizon. Do not alter anything above the garden boundary.\n4. Everything beyond the garden boundary (neighbouring properties, sky, trees outside the boundary, roads) must be pixel-for-pixel identical to the original photo. Do not touch it.\n5. Only modify what is strictly inside the garden boundary: planting, lawn, paving, paths, garden structures (pergolas, raised beds, water features) that were already present or are explicitly requested.\n6. The garden boundary walls, fences, and edges must remain in exactly the same position as in the original photo. Do not extend, shrink, or reshape the garden footprint.\n7. If in any doubt whether something is inside or outside the garden boundary, leave it unchanged.`,
+      text: `${spatialInstruction}This is the BEFORE photo of the garden. Generate an AFTER version of THIS EXACT SAME GARDEN with the following design applied. The garden must be immediately recognisable as the same space.\n\n${visualPrompt}\n\nCRITICAL CONSTRAINTS — YOU MUST NOT VIOLATE THESE:\n1. DO NOT add any buildings, house extensions, conservatories, outbuildings, sheds, garages, or any structure that does not exist in the original photo.\n2. DO NOT add or alter any neighbouring houses, rooflines, chimneys, walls, or structures visible beyond the garden boundary.\n3. The sky must match the original photograph exactly — same sky, same clouds, same colour, same horizon. Do not alter anything above the garden boundary.\n4. Everything beyond the garden boundary (neighbouring properties, sky, trees outside the boundary, roads) must be pixel-for-pixel identical to the original photo. Do not touch it.\n5. Only modify what is strictly inside the garden boundary: planting, lawn, paving, paths, garden structures (pergolas, raised beds, water features) that were already present or are explicitly requested.\n6. The garden boundary walls, fences, and edges must remain in exactly the same position as in the original photo. Do not extend, shrink, or reshape the garden footprint.\n7. If in any doubt whether something is inside or outside the garden boundary, leave it unchanged.`,
     },
   ];
 
@@ -1361,7 +1371,7 @@ export async function POST(request: Request) {
     console.log('[Pipeline] Step 5: Generating render...');
     let imageBase64: string | null = null;
     try {
-      imageBase64 = await step5_generateRender(visualPrompt, originalImageBase64, effectiveMimeType);
+      imageBase64 = await step5_generateRender(visualPrompt, originalImageBase64, effectiveMimeType, aerialImageBase64);
       console.log('[Pipeline] Step 5 complete, size:', imageBase64?.length ?? 0);
     } catch (err) {
       console.error('[Pipeline] Step 5 failed:', err);
