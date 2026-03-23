@@ -1017,9 +1017,12 @@ function detectCurrency(): string {
 
 function cleanPlantName(name: string): string {
   if (!name) return name;
+  // Remove literal schema instruction text that Gemini sometimes outputs verbatim
+  let cleaned = name.replace(/['']omit this field entirely if no cultivar['']?/gi, '').trim();
+  cleaned = cleaned.replace(/['']omit this field['']?/gi, '').trim();
   // Remove exact duplicate quoted segments e.g. 'Rufa' 'Rufa' → 'Rufa'
-  let cleaned = name.replace(/('([^']+)')\s+\1/g, '$1').trim();
-  // Remove duplicate unquoted trailing words e.g. "Purple Purple" → "Purple"
+  cleaned = cleaned.replace(/('([^']+)')\s+\1/g, '$1').trim();
+  // Remove duplicate unquoted trailing words e.g. Purple Purple → Purple
   cleaned = cleaned.replace(/\b(\w+)\s+\1\b/g, '$1').trim();
   return cleaned;
 }
@@ -1512,7 +1515,7 @@ export default function GardigApp() {
       if (result.aerialImageBase64 && plants.length > 0) {
         // Aerial sketch: programmatic grid overlay via drawAerialGridOverlay
         console.log('[Aerial overlay] plants gridLocations:', plants.map((p: any) => `${p.commonName}: ${p.gridLocation}`));
-        const aerialOverlay = await generateGridOverlay(result.aerialImageBase64, plants, true, null, bPoly, true, true, fp, gardenOrientation || 'N', g2Grid);
+        const aerialOverlay = await generateGridOverlay(result.aerialImageBase64, [], true, null, bPoly, true, true, fp, gardenOrientation || 'N', g2Grid);
         setAerialGridImageUrl(aerialOverlay || null);
       }
 
@@ -2499,7 +2502,7 @@ export default function GardigApp() {
 
           {(aerialImageUrl || aerialGridImageUrl) ? (
             <>
-              <GridOverlayImage src={aerialImageUrl || aerialGridImageUrl!} plants={plants} label="Layout Plan"
+              <GridOverlayImage src={aerialImageUrl || aerialGridImageUrl!} plants={[]} label="Layout Plan"
                 isAerial={true} fingerprint={fingerprint} orientation={gardenOrientation || 'N'}
                 perspectiveData={null} boundaryPolygon={null}
                 g2Grid={g2Grid} />

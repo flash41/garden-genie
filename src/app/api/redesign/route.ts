@@ -908,6 +908,9 @@ function clampGridLocations(design: Record<string, any>): void {
     if (plant.cultivar === 'null' || plant.cultivar === null) {
       plant.cultivar = '';
     }
+    if (typeof plant.cultivar === 'string' && plant.cultivar.toLowerCase().includes('omit this field')) {
+      plant.cultivar = '';
+    }
     // Default gridZ to 0.0 for ground-level elements if not set
     if (plant.gridZ == null || typeof plant.gridZ !== 'number') {
       plant.gridZ = 0.0;
