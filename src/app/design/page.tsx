@@ -367,6 +367,16 @@ function drawGridOverlay(
   if (showPerspectiveGrid && g2Grid?.intersections?.length && g2Grid.controlPoints) {
     const cp = g2Grid.controlPoints;
     ctx.save();
+
+    // Clip all grid drawing to the trapezoidal garden boundary
+    ctx.beginPath();
+    ctx.moveTo(cp.frontLeft.xNorm * W,  cp.frontLeft.yNorm  * H);
+    ctx.lineTo(cp.frontRight.xNorm * W, cp.frontRight.yNorm * H);
+    ctx.lineTo(cp.rearRight.xNorm * W,  cp.rearRight.yNorm  * H);
+    ctx.lineTo(cp.rearLeft.xNorm * W,   cp.rearLeft.yNorm   * H);
+    ctx.closePath();
+    ctx.clip();
+
     ctx.strokeStyle = 'rgba(255,255,255,0.85)';
     ctx.lineWidth = 2;
     ctx.fillStyle = 'rgba(255,255,255,0.95)';
