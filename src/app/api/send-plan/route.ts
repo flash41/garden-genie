@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
   }
 
-  const subject = `Your Dedrabed Garden Vision — ${planTitle || 'Garden Design Plan'}`;
+  const subject = `Your Dedrab Garden Vision — ${planTitle || 'Garden Design Plan'}`;
 
   const html = `
 <!DOCTYPE html>
@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const { data, error } = await resend.emails.send({
-      from: 'Dedrab <hello@dedrab.com>',
+      from: 'Dedrab <noreply@dedrab.com>',
       to: [recipientEmail],
       subject,
       html,
