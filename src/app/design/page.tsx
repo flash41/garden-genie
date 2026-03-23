@@ -1367,12 +1367,16 @@ export default function GardigApp() {
   const loadingMessages = [
     "Go put the kettle on — this could take a few minutes ☕",
     "Analysing your garden boundaries and light conditions...",
-    "Selecting plants suited to your climate and orientation...",
-    "Designing your layout — good things take time 🌿",
-    "Generating your photorealistic render...",
-    "Building your full proposal document...",
-    "Almost there — finalising your planting scheme...",
-    "This can take up to 4 minutes depending on system demand — worth the wait!",
+    "Calculating sun exposure and orientation for your plot...",
+    "Selecting plants that will actually thrive in your climate 🌱",
+    "Designing your spatial layout from front to back...",
+    "Generating your photorealistic garden render...",
+    "This can take up to 4 minutes — good designs aren't rushed 🌿",
+    "Building your full planting specification and cost estimate...",
+    "Cross-checking plant choices against your hardiness zone...",
+    "Finalising your layout plan and seasonal interest matrix...",
+    "Almost there — putting the finishing touches on your proposal...",
+    "Worth the wait — your full garden design proposal is nearly ready ✨",
   ];
   const [rotatingMsgIdx, setRotatingMsgIdx] = useState(0);
   const [rotatingMsgVisible, setRotatingMsgVisible] = useState(true);
@@ -1386,7 +1390,7 @@ export default function GardigApp() {
         setRotatingMsgIdx(i => (i + 1) % loadingMessages.length);
         setRotatingMsgVisible(true);
       }, 400);
-    }, 8000);
+    }, 14000);
     return () => clearInterval(interval);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step]);

@@ -438,11 +438,11 @@ export default function LandingPage() {
 
           <div className="examples-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
             {[
-              { badge: 'Japanese Zen', title: 'The Tranquil Courtyard', styleLabel: 'Zen Garden', plants: '14 Suggested', area: '85m²', bg: 'linear-gradient(160deg,#1a4a2e 0%,#0d2e1a 40%,#2d5016 100%)', delay: '' },
-              { badge: 'English Cottage', title: 'The Heritage Walled Garden', styleLabel: 'Cottage', plants: '22 Suggested', area: '140m²', bg: 'linear-gradient(160deg,#2d3a1a 0%,#1a2d0d 40%,#3d4a20 100%)', delay: ' delay-1' },
+              { badge: 'Japanese Zen', title: 'The Tranquil Courtyard', styleLabel: 'Zen Garden', plants: '14 Suggested', area: '85m²', img: '/examples/zen-after.jpg', delay: '' },
+              { badge: 'English Cottage', title: 'The Heritage Walled Garden', styleLabel: 'Cottage', plants: '22 Suggested', area: '140m²', img: '/examples/cottage-after.jpg', delay: ' delay-1' },
             ].map((ex) => (
               <div key={ex.title} className={`example-card anim-fade${ex.delay}`} style={{ position: 'relative', overflow: 'hidden', cursor: 'pointer' }}>
-                <div className="example-img" style={{ width: '100%', height: 420, background: ex.bg, position: 'relative', overflow: 'hidden' }}>
+                <div className="example-img" style={{ width: '100%', height: 420, backgroundImage: `url('${ex.img}')`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative', overflow: 'hidden' }}>
                   <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 50%)', padding: 32, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
                     <div style={{ position: 'absolute', top: 24, left: 24, background: 'rgba(184,150,46,0.9)', color: 'var(--forest)', fontSize: 9, letterSpacing: 2.5, textTransform: 'uppercase', padding: '6px 14px', fontFamily: "'DM Sans', sans-serif", fontWeight: 500 }}>{ex.badge}</div>
                     <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 26, fontWeight: 400, color: 'white', marginBottom: 8 }}>{ex.title}</h3>
