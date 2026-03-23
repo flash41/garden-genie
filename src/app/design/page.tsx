@@ -1967,6 +1967,7 @@ export default function GardigApp() {
             aerialImageUrl={aerialGridImageUrl || aerialImageUrl || undefined}
             style={designLang}
             clientName={clientName || undefined}
+            gardenOrientation={gardenOrientation || undefined}
           />
           <PDFButton
             doc={docData}
@@ -1976,6 +1977,7 @@ export default function GardigApp() {
             aerialImageUrl={aerialGridImageUrl || aerialImageUrl || undefined}
             style={designLang}
             clientName={clientName || undefined}
+            gardenOrientation={gardenOrientation || undefined}
             sendMode
             onPdfReady={sendToSelf}
             sendDisabled={selfSendStatus === 'sending'}
@@ -2061,6 +2063,7 @@ export default function GardigApp() {
                       aerialImageUrl={aerialGridImageUrl || aerialImageUrl || undefined}
                       style={designLang}
                       clientName={clientName || undefined}
+                      gardenOrientation={gardenOrientation || undefined}
                       onPdfReady={sendPlan}
                       sendMode
                       sendDisabled={!emailAddr || emailStatus === 'sending'}

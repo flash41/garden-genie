@@ -184,9 +184,10 @@ interface Props {
   style: string;
   clientName?: string;
   siteAddress?: string;
+  gardenOrientation?: string;
 }
 
-export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageUrl, aerialImageUrl, style, clientName, siteAddress }: Props) => {
+export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageUrl, aerialImageUrl, style, clientName, siteAddress, gardenOrientation }: Props) => {
   const d = doc || {};
   const hasBefore = !!imageDataUrl;
   const hasAfter  = !!imageBase64;
@@ -194,6 +195,17 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
   const coverImg = imageBase64 || imageDataUrl || null;
 
   const dateStr = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  // Build cover title: "[Client] — [Orientation]-Facing Garden — [Style]"
+  const orientationDoc = gardenOrientation || d.siteAnalysis?.sunProfile?.primaryOrientation || '';
+  const formattedOrientation = orientationDoc
+    ? orientationDoc.split('-').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join('-') + '-Facing'
+    : '';
+  const coverTitle = [
+    clientName || null,
+    formattedOrientation ? `${formattedOrientation} Garden` : null,
+    style || null,
+  ].filter(Boolean).join(' — ');
 
   // ── Plants table columns (abbreviated for space)
   const plants = safeArr(d.plantingSpecification?.plants);
@@ -223,8 +235,8 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
           </View>
           <View style={S.coverMid}>
             <Text style={S.coverStyleTag}>{style}</Text>
-            <Text style={S.coverTitle}>Garden Design{'\n'}Proposal</Text>
-            <Text style={S.coverSubtitle}>Landscape Architectural Specification</Text>
+            <Text style={S.coverTitle}>{coverTitle || 'Garden Design\nProposal'}</Text>
+            <Text style={S.coverSubtitle}>Garden Design Proposal</Text>
             <View style={S.coverRule} />
             <View style={S.coverMetaRow}>
               {clientName ? (
@@ -769,34 +781,11 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
             </>
           ) : null}
 
-          {/* C: Grid Reference Overlay */}
-          {gridImageUrl ? (
+          {/* C: Garden Render */}
+          {imageBase64 ? (
             <>
-              <SubHead text="C — Grid Reference Overlay: Plant Location Key" />
-              <Text style={[S.small, { marginBottom: 6 }]}>
-                Numbers on the render correspond to the plant schedule in Section 05. Grid columns A–F (left to right), rows 1–6 (top to bottom).
-              </Text>
-              <Image src={gridImageUrl} style={[S.imgSingle, { height: 220 }]} />
-              {plants.length > 0 ? (
-                <View style={[S.table, { marginTop: 8 }]}>
-                  <View style={S.tableHdr}>
-                    <Text style={[S.tableHdrT, { flex: 0.4 }]}>#</Text>
-                    <Text style={[S.tableHdrT, { flex: 1 }]}>Grid</Text>
-                    <Text style={[S.tableHdrT, { flex: 2.5 }]}>Botanical Name</Text>
-                    <Text style={[S.tableHdrT, { flex: 2 }]}>Common Name</Text>
-                    <Text style={[S.tableHdrT, { flex: 1 }]}>Layer</Text>
-                  </View>
-                  {plants.map((p: any, i: number) => (
-                    <View key={i} wrap={false} style={i % 2 === 0 ? S.tableRow : S.tableRowAlt}>
-                      <Text style={[S.tableCellB, { flex: 0.4, color: T.accent }]}>{i + 1}</Text>
-                      <Text style={[S.tableCellB, { flex: 1 }]}>{safe(p.gridLocation)}</Text>
-                      <Text style={[S.tableCellB, { flex: 2.5, fontSize: 7.5 }]}>{safe(p.botanicalName)}</Text>
-                      <Text style={[S.tableCell, { flex: 2, fontSize: 7.5 }]}>{safe(p.commonName)}</Text>
-                      <Text style={[S.tableCell, { flex: 1, fontSize: 7.5 }]}>{safe(p.layer)}</Text>
-                    </View>
-                  ))}
-                </View>
-              ) : null}
+              <SubHead text="C — Garden Render" />
+              <Image src={imageBase64} style={[S.imgSingle, { height: 220 }]} />
             </>
           ) : null}
 

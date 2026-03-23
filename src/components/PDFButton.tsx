@@ -15,6 +15,7 @@ interface Props {
   style: string;
   clientName?: string;
   siteAddress?: string;
+  gardenOrientation?: string;
   // Send-mode props (used inside the email modal)
   sendMode?: boolean;
   onPdfReady?: (pdfBase64: string) => void;
@@ -32,6 +33,7 @@ export default function PDFButton({
   style,
   clientName,
   siteAddress,
+  gardenOrientation,
   sendMode,
   onPdfReady,
   sendDisabled,
@@ -59,6 +61,7 @@ export default function PDFButton({
         style={style}
         clientName={clientName}
         siteAddress={siteAddress}
+        gardenOrientation={gardenOrientation}
       />
     );
     try {
