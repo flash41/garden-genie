@@ -1299,7 +1299,6 @@ export default function GardigApp() {
   const [emailStatus, setEmailStatus] = useState<"idle"|"sending"|"sent"|"error">("idle");
   const [emailError, setEmailError]   = useState<string | null>(null);
   const [showBefore, setShowBefore]   = useState(false);
-  const [showPerspGrid, setShowPerspGrid] = useState(false);
   const [showPlantMarkers, setShowPlantMarkers] = useState(false);
   const [fileSizeError, setFileSizeError] = useState(false);
   const [selfSendToast, setSelfSendToast] = useState<string | null>(null);
@@ -1426,6 +1425,7 @@ export default function GardigApp() {
       setFingerprint(result.fingerprint);
       setControlPoints(result.controlPoints || {});
       setG2Grid(result.g2Grid || {});
+      const freshG2Grid = result.g2Grid || {};
       if (result.validationResult !== undefined) {
         setValidationResult({ result: result.validationResult, retried: result.retried });
       }
@@ -1452,10 +1452,10 @@ export default function GardigApp() {
       const plants = result.designJSON?.plantingSpecification?.plants || [];
       if (result.imageBase64 && plants.length > 0) {
         // Perspective render: markers only, no grid lines
-        const overlay = await generateGridOverlay(result.imageBase64, plants, true, perspData, bPoly, false, false, undefined, 'N', g2Grid);
+        const overlay = await generateGridOverlay(result.imageBase64, plants, true, perspData, bPoly, false, false, undefined, 'N', freshG2Grid);
         setGridImageUrl(overlay || null);
       } else if (imageDataUrl && plants.length > 0) {
-        const overlay = await generateGridOverlay(imageDataUrl, plants, true, perspData, bPoly, false, false, undefined, 'N', g2Grid);
+        const overlay = await generateGridOverlay(imageDataUrl, plants, true, perspData, bPoly, false, false, undefined, 'N', freshG2Grid);
         setGridImageUrl(overlay || null);
       }
       if (result.aerialImageBase64 && plants.length > 0) {
@@ -2422,23 +2422,9 @@ export default function GardigApp() {
               <div>
                 <div style={{ fontSize: px(12), color: C.inkLight, marginBottom: 7, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>After — Annotated</div>
                 <GridOverlayImage src={renderUrl} plants={plants} label="After" showGrid={false}
-                  showPerspectiveGrid={showPerspGrid}
                   perspectiveData={fingerprint?.horizonLinePercent != null ? { horizonLinePercent: fingerprint.horizonLinePercent, vanishingPointXPercent: fingerprint.vanishingPointXPercent, cameraElevationAngle: fingerprint.cameraElevationAngle, scaleCalibrationHeightMetres: fingerprint.scaleCalibrationHeightMetres, scaleCalibrationPixelHeightPercent: fingerprint.scaleCalibrationPixelHeightPercent, foregroundYPercent: fingerprint.foregroundToBackgroundRatio != null ? 55 + (fingerprint.foregroundToBackgroundRatio * 35) : 85, foregroundBoundaryYPercent: fingerprint.foregroundBoundaryYPercent } : null}
                   boundaryPolygon={fingerprint?.boundaryPolygon?.length >= 3 ? fingerprint.boundaryPolygon : null}
                   g2Grid={g2Grid} />
-                <button
-                  onClick={() => setShowPerspGrid(v => !v)}
-                  style={{
-                    marginTop: 6, fontSize: px(11), fontFamily: C.font, fontWeight: 600,
-                    color: showPerspGrid ? C.accent : C.inkLight,
-                    background: showPerspGrid ? C.brand : 'transparent',
-                    border: `1px solid ${showPerspGrid ? C.accent : C.rule}`,
-                    borderRadius: C.r, padding: '4px 10px', cursor: 'pointer',
-                    letterSpacing: '0.04em', transition: 'all 0.15s',
-                  }}
-                >
-                  {showPerspGrid ? '✓ Hide perspective grid' : 'Show perspective grid'}
-                </button>
               </div>
             )}
           </div>
