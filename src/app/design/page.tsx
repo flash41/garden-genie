@@ -2437,7 +2437,11 @@ export default function GardigApp() {
           {/* Main image */}
           <div style={{ marginBottom: 24 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-              <Label>{showBefore ? "Original Site Photo" : "Proposed Vision for Your Dedrabed Garden"}</Label>
+              <Label>
+                {showBefore
+                  ? "Original Site Photo"
+                  : `Proposed Vision for Your ${gardenOrientation ? gardenOrientation + '-Facing' : ''} Garden — ${designLang} Design`}
+              </Label>
               {!showBefore && renderUrl && validationResult && (() => {
                 const vr = validationResult.result;
                 const retried = validationResult.retried;
@@ -2498,7 +2502,21 @@ export default function GardigApp() {
         {/* ── LAYOUT PLAN ── */}
         {activeTab === "layout-plan" && <>
           <SectionTitle n="11b" title="Garden Layout Plan" />
-          <div style={{ marginBottom: 14, fontSize: px(BASE - 1), color: C.inkMid }}>Your planting guide — print this and take it outside. Numbers correspond to the plant list below.</div>
+          <div style={{ marginBottom: 14, fontSize: px(BASE - 1), color: C.inkMid }}>
+            Your planting guide — print this and take it outside. Numbers correspond to the plant list below.
+          </div>
+          {gardenOrientation && (
+            <div style={{
+              marginBottom: 14,
+              fontSize: px(BASE - 1),
+              color: C.inkLight,
+              fontStyle: 'italic',
+              borderLeft: `2px solid ${C.accent}`,
+              paddingLeft: 10,
+            }}>
+              {gardenOrientation}-facing garden — planting selected to suit this orientation and light conditions.
+            </div>
+          )}
 
           {(aerialImageUrl || aerialGridImageUrl) ? (
             <>
