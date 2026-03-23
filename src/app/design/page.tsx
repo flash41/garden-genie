@@ -1543,7 +1543,34 @@ export default function GardigApp() {
               </div>
             )}
             <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])} />
-          </Card>
+
+{/* Upload guidelines */}
+<div style={{
+  marginTop: 14,
+  borderLeft: `2px solid rgba(184,150,46,0.4)`,
+  paddingLeft: 12,
+}}>
+  <div style={{ fontSize: px(10), letterSpacing: "0.12em", color: C.accent, textTransform: "uppercase", fontWeight: 700, marginBottom: 8, fontFamily: C.font }}>
+    For the best result
+  </div>
+  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+    {[
+      "Photograph from the edge of the space you want redesigned, looking inward across the full site.",
+      "Ensure the garden boundaries — a fence, wall, hedge, or kerb — are clearly visible in the frame.",
+      "We'll generate a redesign for everything visible within those boundaries.",
+    ].map((tip, i) => (
+      <div key={i} style={{ display: "flex", gap: 8, fontSize: px(12), color: C.inkMid, lineHeight: 1.5 }}>
+        <span style={{ color: C.accent, flexShrink: 0, marginTop: 1 }}>·</span>
+        <span>{tip}</span>
+      </div>
+    ))}
+  </div>
+  <div style={{ marginTop: 8, fontSize: px(11), color: C.inkLight, fontFamily: C.font }}>
+    The clearer your boundaries, the more precise your design proposal.
+  </div>
+</div>
+
+</Card>
 
           {/* Project details */}
           <Card>
