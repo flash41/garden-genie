@@ -1857,14 +1857,14 @@ export default function GardigApp() {
     { id: "overview",        label: "Overview" },
     { id: "visuals",         label: "Visuals" },
     { id: "layout-plan",     label: "Layout Plan" },
-    { id: "site",            label: "Site Analysis" },
-    { id: "concept",         label: "Design Concept" },
-    { id: "spatial",         label: "Spatial Layout" },
-    { id: "planting",        label: "Planting" },
-    { id: "hardscape",       label: "Hardscape" },
+    { id: "site",            label: "Your Site" },
+    { id: "concept",         label: "The Design" },
+    { id: "spatial",         label: "Garden Zones" },
+    { id: "planting",        label: "Plants" },
+    { id: "hardscape",       label: "Materials" },
     { id: "soil",            label: "Soil & Water" },
-    { id: "implementation",  label: "Phasing" },
-    { id: "maintenance",     label: "Maintenance" },
+    { id: "implementation",  label: "How to Build It" },
+    { id: "maintenance",     label: "Upkeep" },
     { id: "costs",           label: "Cost Estimate" },
   ];
 
@@ -2145,7 +2145,6 @@ export default function GardigApp() {
             { label: "Design Language",   value: designLang },
             { label: "Estimated Area",    value: doc.overview?.estimatedAreaSqm ? `${doc.overview.estimatedAreaSqm} m²` : "—" },
             { label: "Report Date",       value: new Date().toLocaleDateString("en-GB") },
-            { label: "Confidence",         value: doc.confidence ? `${Math.round(doc.confidence * 100)}%` : "—" },
           ]} />
           {doc.overview?.objectives?.length > 0 && (
             <Card>
@@ -2546,29 +2545,6 @@ export default function GardigApp() {
               >
                 {showPlantMarkers ? '✓ Hide plant markers' : 'Show plant markers'}
               </button>
-            )}
-          </div>
-
-          {/* Grid overlays */}
-          <div style={{ marginBottom: 10 }}><Label>Grid Reference Overlays — A–F (columns) × 1–6 (rows)</Label></div>
-          <div className="grid-2col" style={{ marginBottom: 24 }}>
-            {imageDataUrl && (
-              <div>
-                <div style={{ fontSize: px(12), color: C.inkLight, marginBottom: 7, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>Before — Annotated</div>
-                <GridOverlayImage src={imageDataUrl} plants={plants} label="Before" showMarkers={false} showGrid={false}
-                  perspectiveData={fingerprint?.horizonLinePercent != null ? { horizonLinePercent: fingerprint.horizonLinePercent, vanishingPointXPercent: fingerprint.vanishingPointXPercent, cameraElevationAngle: fingerprint.cameraElevationAngle, scaleCalibrationHeightMetres: fingerprint.scaleCalibrationHeightMetres, scaleCalibrationPixelHeightPercent: fingerprint.scaleCalibrationPixelHeightPercent, foregroundYPercent: fingerprint.foregroundToBackgroundRatio != null ? 55 + (fingerprint.foregroundToBackgroundRatio * 35) : 85, foregroundBoundaryYPercent: fingerprint.foregroundBoundaryYPercent } : null}
-                  boundaryPolygon={fingerprint?.boundaryPolygon?.length >= 3 ? fingerprint.boundaryPolygon : null}
-                  g2Grid={g2Grid} />
-              </div>
-            )}
-            {renderUrl && (
-              <div>
-                <div style={{ fontSize: px(12), color: C.inkLight, marginBottom: 7, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>After — Annotated</div>
-                <GridOverlayImage src={renderUrl} plants={plants} label="After" showGrid={false}
-                  perspectiveData={fingerprint?.horizonLinePercent != null ? { horizonLinePercent: fingerprint.horizonLinePercent, vanishingPointXPercent: fingerprint.vanishingPointXPercent, cameraElevationAngle: fingerprint.cameraElevationAngle, scaleCalibrationHeightMetres: fingerprint.scaleCalibrationHeightMetres, scaleCalibrationPixelHeightPercent: fingerprint.scaleCalibrationPixelHeightPercent, foregroundYPercent: fingerprint.foregroundToBackgroundRatio != null ? 55 + (fingerprint.foregroundToBackgroundRatio * 35) : 85, foregroundBoundaryYPercent: fingerprint.foregroundBoundaryYPercent } : null}
-                  boundaryPolygon={fingerprint?.boundaryPolygon?.length >= 3 ? fingerprint.boundaryPolygon : null}
-                  g2Grid={g2Grid} />
-              </div>
             )}
           </div>
 
