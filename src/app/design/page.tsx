@@ -29,6 +29,17 @@ const DESIGN_LANGUAGES = [
 
 const GEMINI_MODEL = "gemini-2.5-flash";
 
+function getTransformationDisplay(level: number): string {
+  const map: Record<number, string> = {
+    1: '1 — Subtle: Light touch changes that refresh without altering the character',
+    2: '2 — Considered: Builds on what is there with targeted improvements',
+    3: '3 — Balanced: A meaningful redesign while keeping key existing features',
+    4: '4 — Ambitious: A significant transformation with a clear new design direction',
+    5: '5 — Full redesign: Start fresh with a completely new vision for the space',
+  };
+  return map[level] || `Level ${level}`;
+}
+
 // ── SYSTEM PROMPT — plain English, no poetic language ────────────────────────
 const SYSTEM_PROMPT = `You are a a landscape architect and botanist producing professional garden design proposals.
 
@@ -1936,6 +1947,7 @@ export default function GardigApp() {
     setSessionId(newSessionId);
     sessionStorage.setItem('garden_user_email', userEmail);
     sessionStorage.setItem('garden_design_style', designLang);
+    sessionStorage.setItem('garden_render_url', renderUrl || '');
     try {
       const res = await fetch('/api/save-design', {
         method: 'POST',
@@ -2416,14 +2428,17 @@ export default function GardigApp() {
         {/* ── SOIL & IRRIGATION ── */}
         {activeTab === "soil" && <>
           <SectionTitle n="07" title="Soil, Drainage & Irrigation" />
-          <div className="grid-2col" style={{ gap: 14, marginBottom: 14 }}>
+          <div style={{ marginBottom: 18 }}>
             {[
               { label: "Soil Preparation",     val: doc.soilAndIrrigation?.soilPreparationPlan },
               { label: "Drainage Strategy",     val: doc.soilAndIrrigation?.drainageStrategy },
               { label: "Mulching",              val: doc.soilAndIrrigation?.mulchingRecommendation },
               { label: "Rainwater Harvesting",  val: doc.soilAndIrrigation?.rainwaterHarvestingNotes },
-            ].filter(x => x.val).map(({ label, val }) => (
-              <Card key={label}><Label>{label}</Label><Body>{val}</Body></Card>
+            ].filter(x => x.val).map(({ label, val }, i, arr) => (
+              <div key={label} style={{ paddingBottom: 16, marginBottom: i < arr.length - 1 ? 16 : 0, borderBottom: i < arr.length - 1 ? '1px solid ' + C.rule : 'none' }}>
+                <Label>{label}</Label>
+                <Body>{val}</Body>
+              </div>
             ))}
           </div>
           {doc.soilAndIrrigation?.irrigationZones?.length > 0 && (
@@ -2517,11 +2532,18 @@ export default function GardigApp() {
           <p style={{ fontSize: px(BASE - 1), color: C.inkLight, fontStyle: "italic", lineHeight: 1.65, marginBottom: 18, marginTop: 0 }}>
             The following schedule is an indicative estimate based on typical seasonal requirements for the proposed plant palette. Adjust based on your local climate, soil conditions, and plant establishment progress.
           </p>
-          <StatGrid items={[
-            { label: "Deep Maintenance Days/Year",  value: String(doc.maintenanceSchedule?.professionalVisitsPerYear || "—") },
-            { label: "Annual Pruning",             value: doc.maintenanceSchedule?.annualPruningRegime || "—" },
-            { label: "Feeding Schedule",           value: doc.maintenanceSchedule?.feedingSchedule || "—" },
-          ]} />
+          <div style={{ marginBottom: 18 }}>
+            {[
+              { label: "Deep Maintenance Days/Year", val: String(doc.maintenanceSchedule?.professionalVisitsPerYear || "—") },
+              { label: "Annual Pruning",             val: doc.maintenanceSchedule?.annualPruningRegime || "—" },
+              { label: "Feeding Schedule",           val: doc.maintenanceSchedule?.feedingSchedule || "—" },
+            ].map(({ label, val }, i, arr) => (
+              <div key={label} style={{ paddingBottom: 16, marginBottom: i < arr.length - 1 ? 16 : 0, borderBottom: i < arr.length - 1 ? '1px solid ' + C.rule : 'none' }}>
+                <Label>{label}</Label>
+                <Body>{val}</Body>
+              </div>
+            ))}
+          </div>
           {["Spring","Summer","Autumn","Winter"].map(season => {
             const tasks = doc.maintenanceSchedule?.tasks?.filter((t: any) => t.season === season) || [];
             if (!tasks.length) return null;
@@ -2615,12 +2637,12 @@ export default function GardigApp() {
             {!showBefore && (
               <div style={{ background: '#0a3d2b', borderRadius: '0 0 8px 8px', padding: '12px 20px', display: 'flex', flexWrap: 'wrap', gap: 0 }}>
                 {[
-                  { label: 'THEME', value: designLang },
-                  { label: 'TRANSFORMATION', value: TRANSFORMATION_LEVELS[transformationLevel - 1]?.name || `Level ${transformationLevel}` },
-                  { label: 'ORIENTATION', value: gardenOrientation ? `${gardenOrientation}-facing` : '—' },
+                  { label: 'THEME', value: designLang, flex: '1 1 0' },
+                  { label: 'TRANSFORMATION', value: getTransformationDisplay(transformationLevel), flex: '2 1 0' },
+                  { label: 'ORIENTATION', value: gardenOrientation ? `${gardenOrientation}-facing` : '—', flex: '1 1 0' },
                 ].map((item, i, arr) => (
                   <div key={item.label} style={{
-                    flex: '1 1 0', minWidth: 120,
+                    flex: item.flex, minWidth: 120,
                     borderRight: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.15)' : 'none',
                     padding: '0 16px', textAlign: 'center',
                   }}>

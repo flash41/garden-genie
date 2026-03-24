@@ -201,8 +201,17 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
 
   const dateStr = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 
-  const transformationNames: Record<number, string> = { 1: 'Minimal', 2: 'Subtle', 3: 'Considered', 4: 'Ambitious', 5: 'Full transformation' };
-  const transformationLabel = transformationLevel ? (transformationNames[transformationLevel] || `Level ${transformationLevel}`) : '—';
+  function getTransformationDisplay(level: number): string {
+    const map: Record<number, string> = {
+      1: '1 — Subtle: Light touch changes that refresh without altering the character',
+      2: '2 — Considered: Builds on what is there with targeted improvements',
+      3: '3 — Balanced: A meaningful redesign while keeping key existing features',
+      4: '4 — Ambitious: A significant transformation with a clear new design direction',
+      5: '5 — Full redesign: Start fresh with a completely new vision for the space',
+    };
+    return map[level] || `Level ${level}`;
+  }
+  const transformationLabel = transformationLevel ? getTransformationDisplay(transformationLevel) : '—';
 
   // Build cover title: "[Client] — [Orientation]-Facing Garden — [Style]"
   const orientationDoc = gardenOrientation || d.siteAnalysis?.sunProfile?.primaryOrientation || '';
@@ -832,13 +841,13 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
               <Image src={imageBase64} style={[S.imgSingle, { height: 220, marginBottom: 0, borderRadius: 0, borderBottomLeftRadius: 0, borderBottomRightRadius: 0 }]} />
               <View style={{ backgroundColor: '#0a3d2b', flexDirection: 'row', padding: '8pt 16pt', marginBottom: 12 }}>
                 {[
-                  { label: 'THEME', value: style || '—' },
-                  { label: 'TRANSFORMATION', value: transformationLabel },
-                  { label: 'ORIENTATION', value: formattedOrientation ? formattedOrientation.replace('Facing', 'facing') : '—' },
+                  { label: 'THEME', value: style || '—', flex: 1, valueSize: 9 },
+                  { label: 'TRANSFORMATION', value: transformationLabel, flex: 2, valueSize: 8 },
+                  { label: 'ORIENTATION', value: formattedOrientation ? formattedOrientation.replace('Facing', 'facing') : '—', flex: 1, valueSize: 9 },
                 ].map((item) => (
-                  <View key={item.label} style={{ flex: 1 }}>
+                  <View key={item.label} style={{ flex: item.flex }}>
                     <Text style={{ fontSize: 7, color: 'rgba(255,255,255,0.6)', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 2 }}>{item.label}</Text>
-                    <Text style={{ fontSize: 9, color: '#ffffff', fontFamily: 'Helvetica-Bold' }}>{item.value}</Text>
+                    <Text style={{ fontSize: item.valueSize, color: '#ffffff', fontFamily: 'Helvetica-Bold' }}>{item.value}</Text>
                   </View>
                 ))}
               </View>
