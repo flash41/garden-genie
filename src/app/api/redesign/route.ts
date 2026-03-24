@@ -1,5 +1,6 @@
 import { GoogleGenAI } from '@google/genai';
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
+import { supabaseAdmin } from '@/lib/supabase-server';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
@@ -1229,11 +1230,51 @@ Return ONLY valid JSON:
 // unreliable at scale. The credit safety rule above must be preserved in any
 // future architecture.
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   const apiKey = process.env.GOOGLE_API_KEY;
   if (!apiKey) {
     return NextResponse.json({ error: 'GOOGLE_API_KEY is not set' }, { status: 500 });
   }
+
+  // ── Invite code check ────────────────────────────────────────────────────────
+  const inviteCode = request.cookies.get('dedrab_invite')?.value;
+  if (!inviteCode) {
+    return NextResponse.json({ error: 'unauthorised', message: 'No invite code found. Please access the app via your invite link.' }, { status: 401 });
+  }
+
+  // ── Pre-flight: render limit ─────────────────────────────────────────────────
+  const { data: inviteData } = await supabaseAdmin
+    .from('invite_codes')
+    .select('renders_used, max_renders')
+    .eq('code', inviteCode)
+    .maybeSingle();
+
+  if (!inviteData || inviteData.renders_used >= inviteData.max_renders) {
+    return NextResponse.json({ error: 'limit_reached', message: 'You have used all of your available renders.' }, { status: 402 });
+  }
+  const currentRendersUsed: number = inviteData.renders_used;
+
+  // ── Pre-flight: 24-hour rate limit ───────────────────────────────────────────
+  const windowStart = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const { count: recentCount } = await supabaseAdmin
+    .from('pipeline_jobs')
+    .select('id', { count: 'exact', head: true })
+    .eq('invite_code', inviteCode)
+    .gte('created_at', windowStart)
+    .neq('status', 'failed');
+
+  if ((recentCount || 0) >= 4) {
+    return NextResponse.json({ error: 'rate_limited', message: 'You have reached the maximum of 4 renders in 24 hours. Please try again tomorrow.' }, { status: 429 });
+  }
+
+  // ── Log pipeline attempt ─────────────────────────────────────────────────────
+  let jobId: string | null = null;
+  const { data: jobData } = await supabaseAdmin
+    .from('pipeline_jobs')
+    .insert({ invite_code: inviteCode, status: 'running' })
+    .select('id')
+    .single();
+  if (jobData) jobId = jobData.id;
 
   // ── Geographic region detection ──────────────────────────────────────────────
   const forwarded = request.headers.get('x-forwarded-for');
@@ -1432,12 +1473,30 @@ export async function POST(request: Request) {
     }
 
     if (!imageBase64 && !aerialImageBase64 && !Object.keys(designJSON).length) {
+      if (jobId) {
+        await supabaseAdmin.from('pipeline_jobs').update({ status: 'failed' }).eq('id', jobId);
+      }
       return NextResponse.json({ imageError: true });
+    }
+
+    // ── Credit: decrement only on confirmed success ──────────────────────────
+    const isSuccess = !!imageBase64 && Object.keys(designJSON).length > 0;
+    if (jobId) {
+      await supabaseAdmin.from('pipeline_jobs').update({ status: 'complete' }).eq('id', jobId);
+    }
+    if (isSuccess) {
+      await supabaseAdmin
+        .from('invite_codes')
+        .update({ renders_used: currentRendersUsed + 1, used: true, used_at: new Date().toISOString() })
+        .eq('code', inviteCode);
     }
 
     return NextResponse.json({ designJSON, imageBase64, aerialImageBase64, validationResult, retried, fingerprint, perspectiveGridBase64, controlPoints, g2Grid });
 
   } catch (error: unknown) {
+    if (jobId) {
+      await supabaseAdmin.from('pipeline_jobs').update({ status: 'failed' }).eq('id', jobId).then(() => {});
+    }
     console.error('[Pipeline] Unhandled error:', error);
     const message = error instanceof Error ? error.message : 'Unexpected error';
 

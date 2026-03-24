@@ -1396,6 +1396,8 @@ export default function GardigApp() {
   const [inviteCode, setInviteCode]           = useState<string | null>(null);
   const [rendersRemaining, setRendersRemaining] = useState<number | null>(null);
   const [maxRenders, setMaxRenders]           = useState<number | null>(null);
+  const [renderBlocked, setRenderBlocked]     = useState(false);
+  const [inviteRedirectNeeded, setInviteRedirectNeeded] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
@@ -1507,7 +1509,26 @@ export default function GardigApp() {
     });
     if (!response.ok) {
       if (response.status === 504 || response.status === 408) {
-        setError("Your design took longer than expected to generate. No credit has been used. Please try again — this is usually resolved on a second attempt.");
+        setError("Your design took longer than expected. No render credit has been used. Please try again.");
+        setStep("upload");
+        return;
+      }
+      if (response.status === 401) {
+        setError("Please return to the invite page and enter your code.");
+        setInviteRedirectNeeded(true);
+        setRenderBlocked(true);
+        setStep("upload");
+        return;
+      }
+      if (response.status === 402) {
+        setError("You have used all of your available renders. Thank you for testing Dedrab.");
+        setRenderBlocked(true);
+        setStep("upload");
+        return;
+      }
+      if (response.status === 429) {
+        setError("You have reached the maximum of 4 renders in 24 hours. Please try again tomorrow.");
+        setRenderBlocked(true);
         setStep("upload");
         return;
       }
@@ -1810,6 +1831,9 @@ export default function GardigApp() {
         {error && (
           <div style={{ background: "#fef2f2", border: `1px solid #fca5a5`, borderRadius: C.r, padding: "11px 15px", color: C.red, fontSize: px(14), marginTop: 14 }}>
             ⚠ {error}
+            {inviteRedirectNeeded && (
+              <> &nbsp;<a href="/invite" style={{ color: C.red, fontWeight: 700, textDecoration: 'underline' }}>Go to invite page →</a></>
+            )}
           </div>
         )}
 
@@ -1840,20 +1864,22 @@ export default function GardigApp() {
           </label>
         </div>
 
-        <div style={{ textAlign: "center", marginTop: 22 }}>
-          <button onClick={handleAnalyse} className="upload-generate-btn"
-            style={{
-              background: isFormValid() ? C.brand : "#d1d5db",
-              color: isFormValid() ? C.accent : "#9ca3af",
-              border: "none", padding: "14px 48px", borderRadius: C.r,
-              fontSize: px(BASE), fontFamily: C.font, fontWeight: 700,
-              cursor: isFormValid() ? "pointer" : "not-allowed",
-              boxShadow: isFormValid() ? C.shadowMd : "none", letterSpacing: "0.01em",
-              opacity: isFormValid() ? 1 : 0.5, transition: "all 0.15s"
-            }}>
-            Generate Design Proposal →
-          </button>
-        </div>
+        {!renderBlocked && (
+          <div style={{ textAlign: "center", marginTop: 22 }}>
+            <button onClick={handleAnalyse} className="upload-generate-btn"
+              style={{
+                background: isFormValid() ? C.brand : "#d1d5db",
+                color: isFormValid() ? C.accent : "#9ca3af",
+                border: "none", padding: "14px 48px", borderRadius: C.r,
+                fontSize: px(BASE), fontFamily: C.font, fontWeight: 700,
+                cursor: isFormValid() ? "pointer" : "not-allowed",
+                boxShadow: isFormValid() ? C.shadowMd : "none", letterSpacing: "0.01em",
+                opacity: isFormValid() ? 1 : 0.5, transition: "all 0.15s"
+              }}>
+              Generate Design Proposal →
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
