@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback, useEffect } from "react";
+import { useRouter } from 'next/navigation';
 import PDFButton from "@/components/PDFButton";
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
@@ -1375,7 +1376,10 @@ export default function GardigApp() {
   const [fingerprint, setFingerprint]         = useState<any>(null);
   const [controlPoints, setControlPoints]     = useState<Record<string, any>>({});
   const [g2Grid, setG2Grid]                   = useState<Record<string, any>>({});
+  const [sessionId, setSessionId]             = useState<string | null>(null);
+  const [designRecordId, setDesignRecordId]   = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
 
   const loadingMessages = [
     "Go put the kettle on — this could take a few minutes ☕",
@@ -1927,6 +1931,37 @@ export default function GardigApp() {
     }
   }
 
+  async function handleSaveAndProceed() {
+    const newSessionId = crypto.randomUUID();
+    setSessionId(newSessionId);
+    sessionStorage.setItem('garden_user_email', userEmail);
+    sessionStorage.setItem('garden_design_style', designLang);
+    try {
+      const res = await fetch('/api/save-design', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: newSessionId,
+          email: userEmail,
+          designStyle: designLang,
+          hardinessZone: hardinessZone || '',
+          plantList: docData?.plantingSpecification?.plants || [],
+          fullReport: docData || {},
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setDesignRecordId(data.id);
+      } else {
+        console.error('Save design failed:', await res.text());
+      }
+    } catch (err) {
+      console.error('Save design error:', err);
+    }
+    // Always proceed regardless of save success
+    router.push('/next-steps?sessionId=' + newSessionId);
+  }
+
   return (
     <div style={{ minHeight: "100vh", background: C.surface, fontFamily: C.font, color: C.ink, fontSize: px(BASE) }}>
       <style>{`
@@ -1975,41 +2010,18 @@ export default function GardigApp() {
             style={{ background: "rgba(255,255,255,0.08)", border: `1px solid rgba(255,255,255,0.2)`, color: "rgba(255,255,255,0.8)", padding: "7px 15px", borderRadius: C.r, cursor: "pointer", fontFamily: C.font, fontSize: px(13), fontWeight: 600 }}>
             ← New Analysis
           </button>
-          <PDFButton
-            doc={docData}
-            imageBase64={renderUrl || ''}
-            imageDataUrl={imageDataUrl || undefined}
-            gridImageUrl={gridImageUrl || undefined}
-            aerialImageUrl={aerialGridImageUrl || aerialImageUrl || undefined}
-            style={designLang}
-            clientName={clientName || undefined}
-            gardenOrientation={gardenOrientation || undefined}
-          />
-          <PDFButton
-            doc={docData}
-            imageBase64={renderUrl || ''}
-            imageDataUrl={imageDataUrl || undefined}
-            gridImageUrl={gridImageUrl || undefined}
-            aerialImageUrl={aerialGridImageUrl || aerialImageUrl || undefined}
-            style={designLang}
-            clientName={clientName || undefined}
-            gardenOrientation={gardenOrientation || undefined}
-            sendMode
-            onPdfReady={sendToSelf}
-            sendDisabled={selfSendStatus === 'sending'}
-            sendLabel={selfSendStatus === 'sending' ? 'Sending…' : selfSendStatus === 'sent' ? 'Sent ✓' : 'Send to Me'}
-          />
           <button
-            onClick={() => { setEmailModal(true); setEmailStatus("idle"); setEmailAddr(userEmail); setEmailError(null); }}
+            onClick={handleSaveAndProceed}
             style={{
-              display: 'flex', alignItems: 'center', gap: 7,
-              background: "rgba(255,255,255,0.08)", border: `1px solid rgba(255,255,255,0.2)`, color: "rgba(255,255,255,0.8)",
-              padding: '8px 18px', borderRadius: C.r,
-              cursor: 'pointer', fontFamily: C.font, fontSize: px(13), fontWeight: 600,
+              display: 'flex', alignItems: 'center', gap: 8,
+              background: '#b8962e', color: '#fff',
+              border: 'none', borderRadius: C.r,
+              padding: '10px 22px', cursor: 'pointer',
+              fontFamily: C.font, fontSize: px(BASE), fontWeight: 600,
+              letterSpacing: '0.02em',
             }}
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-            Send to Someone Else
+            Save and proceed →
           </button>
         </div>
       </header>
@@ -2080,6 +2092,7 @@ export default function GardigApp() {
                       style={designLang}
                       clientName={clientName || undefined}
                       gardenOrientation={gardenOrientation || undefined}
+                      transformationLevel={transformationLevel}
                       onPdfReady={sendPlan}
                       sendMode
                       sendDisabled={!emailAddr || emailStatus === 'sending'}
@@ -2599,6 +2612,24 @@ export default function GardigApp() {
                     g2Grid={g2Grid} />
                 : <div style={{ background: C.surface, borderRadius: C.rLg, height: 260, display: "flex", alignItems: "center", justifyContent: "center", color: C.inkLight, fontSize: px(BASE), border: `1px solid ${C.rule}` }}>Render not available</div>
             }
+            {!showBefore && (
+              <div style={{ background: '#0a3d2b', borderRadius: '0 0 8px 8px', padding: '12px 20px', display: 'flex', flexWrap: 'wrap', gap: 0 }}>
+                {[
+                  { label: 'THEME', value: designLang },
+                  { label: 'TRANSFORMATION', value: TRANSFORMATION_LEVELS[transformationLevel - 1]?.name || `Level ${transformationLevel}` },
+                  { label: 'ORIENTATION', value: gardenOrientation ? `${gardenOrientation}-facing` : '—' },
+                ].map((item, i, arr) => (
+                  <div key={item.label} style={{
+                    flex: '1 1 0', minWidth: 120,
+                    borderRight: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.15)' : 'none',
+                    padding: '0 16px', textAlign: 'center',
+                  }}>
+                    <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 3 }}>{item.label}</div>
+                    <div style={{ fontSize: 13, color: '#fff', fontWeight: 500 }}>{item.value}</div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Plant reference */}
