@@ -173,9 +173,7 @@ You MUST return ONLY a valid JSON object (no markdown fences, no commentary) mat
   "caveats": ["string array"]
 }
 
-GRID INSTRUCTION: The image has a 6-column x 6-row reference grid (columns A-F, rows 1-6).
-Assign every plant a gridLocation string (e.g. "B3", "C4-D5") based on the visible site layout.
-Each plant must include a `location` field: a 2–5 word plain English description of where that plant is positioned in the garden (e.g. 'Rear left border', 'Central focal point', 'Along back wall'). Do not use grid codes.
+Each plant must include a 'location' field: a 2–5 word plain English description of where that plant is positioned in the garden (e.g. 'Rear left border', 'Central focal point', 'Along back wall'). Do not use grid codes.
 Design language: DESIGN_LANGUAGE_PLACEHOLDER
 All plants must suit the observed hardiness zone and site conditions.
 recommendations: 2–4 optional enhancements that would benefit this specific garden — drip irrigation, smart lighting, edging systems, composting, water harvesting etc. Each must include a genuine justification tied to this garden's specific conditions. Do not include anything already specified in the main design.`;
@@ -1519,6 +1517,7 @@ export default function GardigApp() {
       const mimeType = imageDataUrl.split(";")[0].split(":")[1];
 
       const result = await callUnifiedPipeline(base64, mimeType);
+      if (!result) return;
 
       setDocData(result.designJSON);
       setRenderUrl(result.imageBase64);

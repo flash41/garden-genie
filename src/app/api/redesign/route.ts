@@ -782,7 +782,7 @@ HARD CONSTRAINT — GRID BOUNDS (absolutely non-negotiable):
 - Any gridLocation outside A–F × 1–6 is INVALID and must not appear in your output.
 - If more than 12 plants are included, multiple plants MUST share grid squares or be grouped — do NOT invent out-of-range coordinates to fit them.
 
-Each plant must include a `location` field: a 2–5 word plain English description of where that plant is positioned in the garden (e.g. 'Rear left border', 'Central focal point', 'Along back wall'). Do not use grid codes.
+Each plant must include a 'location' field: a 2–5 word plain English description of where that plant is positioned in the garden (e.g. 'Rear left border', 'Central focal point', 'Along back wall'). Do not use grid codes.
 
 ═══════════════════════════════════════════════════════════════
 CRITICAL RULE 8 — LAYOUT DESCRIPTION (master spatial record)
