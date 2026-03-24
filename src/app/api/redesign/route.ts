@@ -80,6 +80,7 @@ const DESIGN_SCHEMA = `{
         "existingElement": "what currently exists at this grid location in the before photo",
         "layer": "Canopy|Understorey|Shrub|Ground|Climber",
         "gridLocation": "B3",
+        "location": "string — 2-5 word plain English position e.g. 'Rear left border', 'Central focal point', 'Front right edge'",
         "gridZ": 0.0,
         "zoneIds": ["Z1"]
       }
@@ -781,6 +782,8 @@ HARD CONSTRAINT — GRID BOUNDS (absolutely non-negotiable):
 - Any gridLocation outside A–F × 1–6 is INVALID and must not appear in your output.
 - If more than 12 plants are included, multiple plants MUST share grid squares or be grouped — do NOT invent out-of-range coordinates to fit them.
 
+Each plant must include a `location` field: a 2–5 word plain English description of where that plant is positioned in the garden (e.g. 'Rear left border', 'Central focal point', 'Along back wall'). Do not use grid codes.
+
 ═══════════════════════════════════════════════════════════════
 CRITICAL RULE 8 — LAYOUT DESCRIPTION (master spatial record)
 ═══════════════════════════════════════════════════════════════
@@ -1214,6 +1217,17 @@ Return ONLY valid JSON:
 }
 
 // ─── POST HANDLER ──────────────────────────────────────────────────────────────
+
+// CREDIT SAFETY RULE: credits are deducted only after a fully validated
+// successful result. Any error, timeout, or partial result must return
+// without touching user credits. Do not move the credit deduction step
+// above the result validation checks.
+//
+// TODO: When the user base grows beyond early access, migrate this route to an
+// async job pattern with Supabase status polling to fully eliminate timeout
+// risk. The current synchronous approach works for low traffic but will become
+// unreliable at scale. The credit safety rule above must be preserved in any
+// future architecture.
 
 export async function POST(request: Request) {
   const apiKey = process.env.GOOGLE_API_KEY;

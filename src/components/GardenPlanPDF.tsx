@@ -758,7 +758,7 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
 
           <Section num="App A" title="Garden Layout Plan">
             <Text style={[S.small, { marginBottom: 8 }]}>
-              Top-down layout sketch with plant position markers. Numbers correspond to the plant schedule in Section 05. Print this and take it outside.
+              Top-down layout sketch showing proposed planting areas. Print this and take it outside.
             </Text>
             <Image src={aerialImageUrl} style={[S.imgSingle, { height: 360, objectFit: 'contain' }]} />
             {plants.length > 0 ? (
@@ -767,14 +767,14 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
                 <View style={S.table}>
                   <View style={S.tableHdr}>
                     <Text style={[S.tableHdrT, { flex: 0.4 }]}>#</Text>
-                    <Text style={[S.tableHdrT, { flex: 0.8 }]}>Grid</Text>
+                    <Text style={[S.tableHdrT, { flex: 1.8 }]}>Location</Text>
                     <Text style={[S.tableHdrT, { flex: 3.2 }]}>Plant</Text>
                     <Text style={[S.tableHdrT, { flex: 3.6 }]}>Description</Text>
                   </View>
                   {plants.map((p: any, i: number) => (
                     <View key={i} wrap={false} style={i % 2 === 0 ? S.tableRow : S.tableRowAlt}>
                       <Text style={[S.tableCellB, { flex: 0.4, color: T.accent }]}>{i + 1}</Text>
-                      <Text style={[S.tableCellB, { flex: 0.8 }]}>{safe(p.gridLocation)}</Text>
+                      <Text style={[S.tableCellB, { flex: 1.8 }]}>{safe(p.location || p.gridLocation || '—')}</Text>
                       <Text style={[S.tableCellB, { flex: 3.2, fontSize: 7.5 }]}>{safe(p.botanicalName)}{p.commonName && p.commonName !== p.botanicalName ? ` — ${p.commonName}` : ''}</Text>
                       <Text style={[S.tableCell, { flex: 3.6, fontSize: 7.5 }]}>{safe(p.designRationale)}</Text>
                     </View>

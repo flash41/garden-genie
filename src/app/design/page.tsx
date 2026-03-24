@@ -107,6 +107,7 @@ You MUST return ONLY a valid JSON object (no markdown fences, no commentary) mat
         "designRationale": "string — plain explanation of why this plant was chosen",
         "layer": "Canopy|Understorey|Shrub|Ground|Climber",
         "gridLocation": "string e.g. B3 or C4-D5",
+        "location": "string — 2-5 word plain English position e.g. 'Rear left border', 'Central focal point', 'Front right edge'",
         "zoneIds": ["zone id strings"]
       }
     ],
@@ -174,6 +175,7 @@ You MUST return ONLY a valid JSON object (no markdown fences, no commentary) mat
 
 GRID INSTRUCTION: The image has a 6-column x 6-row reference grid (columns A-F, rows 1-6).
 Assign every plant a gridLocation string (e.g. "B3", "C4-D5") based on the visible site layout.
+Each plant must include a `location` field: a 2–5 word plain English description of where that plant is positioned in the garden (e.g. 'Rear left border', 'Central focal point', 'Along back wall'). Do not use grid codes.
 Design language: DESIGN_LANGUAGE_PLACEHOLDER
 All plants must suit the observed hardiness zone and site conditions.
 recommendations: 2–4 optional enhancements that would benefit this specific garden — drip irrigation, smart lighting, edging systems, composting, water harvesting etc. Each must include a genuine justification tied to this garden's specific conditions. Do not include anything already specified in the main design.`;
@@ -944,7 +946,7 @@ function StatGrid({ items }: { items: { label: string; value: string }[] }) {
 
 function PlantTable({ plants }: { plants: any[] }) {
   if (!plants?.length) return null;
-  const cols = ["#", "Grid", "Botanical Name", "Common Name", "Type", "Qty", "Layer", "Sun", "Water", "Mature Size"];
+  const cols = ["#", "Location", "Botanical Name", "Common Name", "Type", "Qty", "Layer", "Sun", "Water", "Mature Size"];
   return (
     <div style={{ overflowX: "auto", borderRadius: C.rLg, border: `1px solid ${C.rule}`, marginTop: 12 }}>
       <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: C.font, fontSize: px(14) }}>
@@ -959,8 +961,8 @@ function PlantTable({ plants }: { plants: any[] }) {
           {plants.map((p, i) => (
             <tr key={p.id} style={{ background: i % 2 === 0 ? C.surface : C.card, borderBottom: `1px solid ${C.rule}` }}>
               <td style={{ padding: "9px 13px", color: C.accent, fontWeight: 700 }}>{i + 1}</td>
-              <td style={{ padding: "9px 13px" }}>
-                <span style={{ background: C.brand, color: C.accent, borderRadius: C.r, padding: "2px 8px", fontSize: px(12), fontWeight: 700 }}>{p.gridLocation || "—"}</span>
+              <td style={{ padding: "9px 13px", color: C.inkMid, fontSize: px(13) }}>
+                {p.location || p.gridLocation || '—'}
               </td>
               <td style={{ padding: "9px 13px", fontStyle: "italic", color: C.brand, fontWeight: 600 }}>{cleanPlantName(p.botanicalName)}</td>
               <td style={{ padding: "9px 13px", color: C.ink }}>{cleanPlantName(p.commonName)}{(p.cultivar && p.cultivar !== 'null' && p.cultivar !== '') ? ` '${p.cultivar}'` : ""}</td>
@@ -1092,7 +1094,7 @@ function AfterPlantTable({ plants }: { plants: any[] }) {
             <th style={{ padding: "9px 12px", color: "#fff", fontSize: px(12), fontWeight: 600, width: 36, textAlign: "center" }}>#</th>
             <th style={{ padding: "9px 12px", color: "#fff", fontSize: px(12), fontWeight: 600, width: 60, textAlign: "center" }}>Photo</th>
             <th style={{ padding: "9px 12px", color: "#fff", textAlign: "left", fontSize: px(12), fontWeight: 600 }}>Plant</th>
-            <th style={{ padding: "9px 12px", color: "#fff", textAlign: "left", fontSize: px(12), fontWeight: 600, width: 54 }}>Grid</th>
+            <th style={{ padding: "9px 12px", color: "#fff", textAlign: "left", fontSize: px(12), fontWeight: 600, width: 120 }}>Location</th>
             <th style={{ padding: "9px 12px", color: "#fff", textAlign: "left", fontSize: px(12), fontWeight: 600, width: 44 }}>Qty</th>
             <th style={{ padding: "9px 12px", color: "#fff", textAlign: "left", fontSize: px(12), fontWeight: 600 }}>Size</th>
             <th style={{ padding: "9px 12px", color: "#fff", textAlign: "left", fontSize: px(12), fontWeight: 600 }}>Sun</th>
@@ -1140,14 +1142,8 @@ function AfterPlantTable({ plants }: { plants: any[] }) {
                     {cleanPlantName(p.commonName)}
                   </div>
                 </td>
-                <td style={{ padding: "8px 12px" }}>
-                  <span style={{
-                    background: C.brand, color: C.accent,
-                    borderRadius: C.r, padding: "2px 7px",
-                    fontSize: px(11), fontWeight: 700,
-                  }}>
-                    {p.gridLocation || "—"}
-                  </span>
+                <td style={{ padding: "8px 12px", color: C.inkMid, fontSize: px(12) }}>
+                  {p.location || p.gridLocation || '—'}
                 </td>
                 <td style={{ padding: "8px 12px", fontWeight: 700, color: C.ink, textAlign: "center" }}>
                   {p.quantity}
@@ -1372,7 +1368,6 @@ export default function GardigApp() {
   const [emailStatus, setEmailStatus] = useState<"idle"|"sending"|"sent"|"error">("idle");
   const [emailError, setEmailError]   = useState<string | null>(null);
   const [showBefore, setShowBefore]   = useState(false);
-  const [showPlantMarkers, setShowPlantMarkers] = useState(false);
   const [fileSizeError, setFileSizeError] = useState(false);
   const [selfSendToast, setSelfSendToast] = useState<string | null>(null);
   const [selfSendStatus, setSelfSendStatus] = useState<"idle"|"sending"|"sent"|"error">("idle");
@@ -1476,8 +1471,10 @@ export default function GardigApp() {
       }),
     });
     if (!response.ok) {
-      if (response.status === 504) {
-        throw new Error("The design is taking longer than expected. Please try again — complex garden photos occasionally need a second attempt.");
+      if (response.status === 504 || response.status === 408) {
+        setError("Your design took longer than expected to generate. No credit has been used. Please try again — this is usually resolved on a second attempt.");
+        setStep("upload");
+        return;
       }
       const err = await response.json().catch(() => ({}));
       throw new Error(err.error || `Design pipeline failed (${response.status})`);
@@ -2597,29 +2594,12 @@ export default function GardigApp() {
             {showBefore
               ? imageDataUrl && <img src={imageDataUrl} alt="Before" style={{ width: "100%", borderRadius: C.rLg, maxHeight: 480, objectFit: "cover", border: `1px solid ${C.rule}` }} />
               : renderUrl
-                ? showPlantMarkers
-                  ? <GridOverlayImage src={renderUrl} plants={plants} label="After" showGrid={false}
-                      perspectiveData={fingerprint?.horizonLinePercent != null ? { horizonLinePercent: fingerprint.horizonLinePercent, vanishingPointXPercent: fingerprint.vanishingPointXPercent, cameraElevationAngle: fingerprint.cameraElevationAngle, scaleCalibrationHeightMetres: fingerprint.scaleCalibrationHeightMetres, scaleCalibrationPixelHeightPercent: fingerprint.scaleCalibrationPixelHeightPercent, foregroundYPercent: fingerprint.foregroundToBackgroundRatio != null ? 55 + (fingerprint.foregroundToBackgroundRatio * 35) : 85, foregroundBoundaryYPercent: fingerprint.foregroundBoundaryYPercent } : null}
-                      boundaryPolygon={fingerprint?.boundaryPolygon?.length >= 3 ? fingerprint.boundaryPolygon : null}
-                      g2Grid={g2Grid} />
-                  : <img src={renderUrl} alt="Proposed Vision" style={{ width: "100%", borderRadius: C.rLg, maxHeight: 480, objectFit: "cover", border: `1px solid ${C.rule}` }} />
+                ? <GridOverlayImage src={renderUrl} plants={plants} label="After" showGrid={false} showMarkers={false}
+                    perspectiveData={fingerprint?.horizonLinePercent != null ? { horizonLinePercent: fingerprint.horizonLinePercent, vanishingPointXPercent: fingerprint.vanishingPointXPercent, cameraElevationAngle: fingerprint.cameraElevationAngle, scaleCalibrationHeightMetres: fingerprint.scaleCalibrationHeightMetres, scaleCalibrationPixelHeightPercent: fingerprint.scaleCalibrationPixelHeightPercent, foregroundYPercent: fingerprint.foregroundToBackgroundRatio != null ? 55 + (fingerprint.foregroundToBackgroundRatio * 35) : 85, foregroundBoundaryYPercent: fingerprint.foregroundBoundaryYPercent } : null}
+                    boundaryPolygon={fingerprint?.boundaryPolygon?.length >= 3 ? fingerprint.boundaryPolygon : null}
+                    g2Grid={g2Grid} />
                 : <div style={{ background: C.surface, borderRadius: C.rLg, height: 260, display: "flex", alignItems: "center", justifyContent: "center", color: C.inkLight, fontSize: px(BASE), border: `1px solid ${C.rule}` }}>Render not available</div>
             }
-            {!showBefore && renderUrl && (
-              <button
-                onClick={() => setShowPlantMarkers(v => !v)}
-                style={{
-                  marginTop: 8, fontSize: px(11), fontFamily: C.font, fontWeight: 600,
-                  color: showPlantMarkers ? C.accent : C.inkLight,
-                  background: showPlantMarkers ? C.brand : 'transparent',
-                  border: `1px solid ${showPlantMarkers ? C.accent : C.rule}`,
-                  borderRadius: C.r, padding: '4px 10px', cursor: 'pointer',
-                  letterSpacing: '0.04em', transition: 'all 0.15s',
-                }}
-              >
-                {showPlantMarkers ? '✓ Hide plant markers' : 'Show plant markers'}
-              </button>
-            )}
           </div>
 
           {/* Plant reference */}
@@ -2635,7 +2615,7 @@ export default function GardigApp() {
         {activeTab === "layout-plan" && <>
           <SectionTitle n="11b" title="Layout Plan Sketch" />
           <div style={{ marginBottom: 14, fontSize: px(BASE - 1), color: C.inkMid }}>
-            Your planting guide — print this and take it outside. Numbers correspond to the plant list below.
+            Your planting guide — print this and take it outside.
           </div>
           {gardenOrientation && (
             <div style={{
@@ -2659,7 +2639,7 @@ export default function GardigApp() {
 
               {plants.length > 0 && (
                 <div style={{ marginTop: 22 }}>
-                  <Label>Plant Reference — numbers match the plan above</Label>
+                  <Label>Plant Reference</Label>
                   <AfterPlantTable plants={plants} />
                 </div>
               )}
