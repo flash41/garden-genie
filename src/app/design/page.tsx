@@ -2347,6 +2347,7 @@ export default function GardigApp() {
             <Card accent><Body>{doc.hardscapeSpecification.paletteNarrative}</Body></Card>
           )}
           {doc.hardscapeSpecification?.materials?.length > 0 && (
+            <>
             <div style={{ overflowX: "auto", borderRadius: C.rLg, border: `1px solid ${C.rule}`, marginBottom: 18 }}>
               <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: C.font, fontSize: px(BASE - 1) }}>
                 <thead>
@@ -2376,8 +2377,9 @@ export default function GardigApp() {
               </table>
             </div>
             <p style={{ fontSize: px(12), color: C.inkLight, fontStyle: "italic", marginTop: 6, marginBottom: 18 }}>
-              All costs are unit cost estimates only and may vary by supplier, region, and project scope. Obtain formal quotes before committing to purchase.
+              {"All costs are unit cost estimates only and may vary by supplier, region, and project scope. Obtain formal quotes before committing to purchase."}
             </p>
+            </>
           )}
           <div className="grid-2col" style={{ gap: 14 }}>
             {doc.hardscapeSpecification?.boundaryTreatments?.length > 0 && (
