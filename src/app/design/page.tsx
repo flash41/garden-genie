@@ -151,6 +151,14 @@ You MUST return ONLY a valid JSON object (no markdown fences, no commentary) mat
     "longTermManagementNotes": "string",
     "professionalVisitsPerYear": 0
   },
+  "recommendations": [
+    {
+      "title": "string — short name of the recommendation",
+      "description": "string — what to do and how",
+      "justification": "string — why this is particularly suited to this garden",
+      "estimatedCost": "string — optional, e.g. £300–£600 installed"
+    }
+  ],
   "costEstimate": {
     "currency": "GBP",
     "lines": [
@@ -167,7 +175,8 @@ You MUST return ONLY a valid JSON object (no markdown fences, no commentary) mat
 GRID INSTRUCTION: The image has a 6-column x 6-row reference grid (columns A-F, rows 1-6).
 Assign every plant a gridLocation string (e.g. "B3", "C4-D5") based on the visible site layout.
 Design language: DESIGN_LANGUAGE_PLACEHOLDER
-All plants must suit the observed hardiness zone and site conditions.`;
+All plants must suit the observed hardiness zone and site conditions.
+recommendations: 2–4 optional enhancements that would benefit this specific garden — drip irrigation, smart lighting, edging systems, composting, water harvesting etc. Each must include a genuine justification tied to this garden's specific conditions. Do not include anything already specified in the main design.`;
 
 // ─── DESIGN TOKENS — Modern Professional ─────────────────────────────────────
 
@@ -1003,16 +1012,27 @@ function SeasonMatrix({ plants }: { plants: any[] }) {
 }
 
 function detectCurrency(): string {
-  if (typeof navigator === 'undefined') return 'EUR';
-  const lang = navigator.language;
-  if (lang === 'en-GB') return 'GBP';
-  if (lang === 'en-IE') return 'EUR';
-  if (lang.startsWith('en-US')) return 'USD';
-  if (lang.startsWith('en-CA')) return 'CAD';
-  if (lang.startsWith('en-AU')) return 'AUD';
-  if (lang.startsWith('en-NZ')) return 'NZD';
-  // For European locales default to EUR, others fall back to EUR
-  return 'EUR';
+  if (typeof window === 'undefined') return 'USD';
+  try {
+    const locale = new Intl.NumberFormat().resolvedOptions().locale;
+    const lang = locale.toLowerCase();
+    if (lang === 'en-gb') return 'GBP';
+    if (lang === 'en-ie') return 'EUR';
+    if (lang.startsWith('en-us')) return 'USD';
+    if (lang.startsWith('en-ca')) return 'CAD';
+    if (lang.startsWith('en-au')) return 'AUD';
+    if (lang.startsWith('en-nz')) return 'NZD';
+    if (lang.startsWith('en-za')) return 'ZAR';
+    if (lang.startsWith('en-sg')) return 'SGD';
+    if (lang.startsWith('en-in')) return 'INR';
+    // European locales
+    const region = locale.split('-')[1]?.toUpperCase();
+    const eurRegions = ['AT','BE','CY','EE','FI','FR','DE','GR','IE','IT','LV','LT','LU','MT','NL','PT','SK','SI','ES'];
+    if (region && eurRegions.includes(region)) return 'EUR';
+  } catch {
+    // Intl not available
+  }
+  return 'USD';
 }
 
 function cleanPlantName(name: string): string {
@@ -1342,7 +1362,7 @@ export default function GardigApp() {
   const [aerialGridImageUrl, setAerialGridImageUrl] = useState<string | null>(null);
   const [validationResult, setValidationResult] = useState<{ result: any; retried: boolean } | null>(null);
   const [turnstileToken, setTurnstileToken]     = useState('');
-  const [userCurrency, setUserCurrency]         = useState('GBP');
+  const [userCurrency, setUserCurrency]         = useState(() => detectCurrency());
   const [termsAccepted, setTermsAccepted]       = useState(false);
   const [loadingMsg, setLoadingMsg]   = useState("");
   const [error, setError]             = useState<string | null>(null);
@@ -1400,12 +1420,9 @@ export default function GardigApp() {
     (window as any).onTurnstileSuccess = (token: string) => setTurnstileToken(token);
   }, []);
 
-  // Detect currency from IP on mount
+  // Confirm currency from locale on mount (handles SSR hydration)
   useEffect(() => {
-    fetch('http://ip-api.com/json/?fields=currency')
-      .then(r => r.json())
-      .then(d => { if (d.currency) setUserCurrency(d.currency); })
-      .catch(() => { /* keep default GBP */ });
+    setUserCurrency(detectCurrency());
   }, []);
 
   const missingFields = () => {
@@ -2139,6 +2156,29 @@ export default function GardigApp() {
               <strong>Analysis notes: </strong>{doc.caveats.join(" · ")}
             </div>
           )}
+          {doc.recommendations?.length > 0 && (
+            <div style={{ marginBottom: 24 }}>
+              <Label>Recommendations</Label>
+              {doc.recommendations.map((r: any, i: number) => (
+                <div key={i} style={{
+                  borderLeft: `3px solid ${C.accent}`,
+                  paddingLeft: 14,
+                  marginBottom: 16,
+                  background: C.card,
+                  borderRadius: C.r,
+                  padding: '14px 16px 14px 16px',
+                }}>
+                  <div style={{ fontSize: px(10), letterSpacing: 2, textTransform: 'uppercase', color: C.accent, fontWeight: 700, marginBottom: 6 }}>Recommendation</div>
+                  <div style={{ fontSize: px(BASE), fontWeight: 700, color: C.ink, marginBottom: 6 }}>{r.title}</div>
+                  <div style={{ fontSize: px(BASE - 1), color: C.inkMid, lineHeight: 1.6, marginBottom: 6 }}>{r.description}</div>
+                  <div style={{ fontSize: px(BASE - 1), color: C.inkLight, lineHeight: 1.6, fontStyle: 'italic' }}>{r.justification}</div>
+                  {r.estimatedCost && (
+                    <div style={{ fontSize: px(BASE - 1), color: C.accent, fontWeight: 600, marginTop: 8 }}>{r.estimatedCost}</div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </>}
 
         {/* ── SITE ANALYSIS ── */}
@@ -2311,7 +2351,7 @@ export default function GardigApp() {
               <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: C.font, fontSize: px(BASE - 1) }}>
                 <thead>
                   <tr style={{ background: C.brand }}>
-                    {["Element","Material","Finish","Colour","Unit Cost","Notes"].map(h => (
+                    {["Element","Material","Finish","Colour","Unit Cost Estimate","Notes"].map(h => (
                       <th key={h} style={{ padding: "10px 13px", color: "#fff", textAlign: "left", fontSize: px(12), fontWeight: 600 }}>{h}</th>
                     ))}
                   </tr>
@@ -2335,6 +2375,9 @@ export default function GardigApp() {
                 </tbody>
               </table>
             </div>
+            <p style={{ fontSize: px(12), color: C.inkLight, fontStyle: "italic", marginTop: 6, marginBottom: 18 }}>
+              All costs are unit cost estimates only and may vary by supplier, region, and project scope. Obtain formal quotes before committing to purchase.
+            </p>
           )}
           <div className="grid-2col" style={{ gap: 14 }}>
             {doc.hardscapeSpecification?.boundaryTreatments?.length > 0 && (
@@ -2391,33 +2434,75 @@ export default function GardigApp() {
         {/* ── PHASING ── */}
         {activeTab === "implementation" && <>
           <SectionTitle n="08" title="Implementation Phasing" />
-          <StatGrid items={[
-            { label: "Total Duration",  value: doc.implementationPlan?.totalWeeks ? `${doc.implementationPlan.totalWeeks} weeks` : "—" },
-            { label: "Critical Path",   value: doc.implementationPlan?.criticalPathNotes || "—" },
-          ]} />
+          {doc.recommendations?.length > 0 && (
+            <div style={{ marginBottom: 24 }}>
+              <Label>Recommendations</Label>
+              {doc.recommendations.map((r: any, i: number) => (
+                <div key={i} style={{
+                  borderLeft: `3px solid ${C.accent}`,
+                  paddingLeft: 14,
+                  marginBottom: 16,
+                  background: C.card,
+                  borderRadius: C.r,
+                  padding: '14px 16px 14px 16px',
+                }}>
+                  <div style={{ fontSize: px(10), letterSpacing: 2, textTransform: 'uppercase', color: C.accent, fontWeight: 700, marginBottom: 6 }}>Recommendation</div>
+                  <div style={{ fontSize: px(BASE), fontWeight: 700, color: C.ink, marginBottom: 6 }}>{r.title}</div>
+                  <div style={{ fontSize: px(BASE - 1), color: C.inkMid, lineHeight: 1.6, marginBottom: 6 }}>{r.description}</div>
+                  <div style={{ fontSize: px(BASE - 1), color: C.inkLight, lineHeight: 1.6, fontStyle: 'italic' }}>{r.justification}</div>
+                  {r.estimatedCost && (
+                    <div style={{ fontSize: px(BASE - 1), color: C.accent, fontWeight: 600, marginTop: 8 }}>{r.estimatedCost}</div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+          {(doc.implementationPlan?.totalWeeks || doc.implementationPlan?.criticalPathNotes) && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 18 }}>
+              {doc.implementationPlan.totalWeeks && (
+                <div style={{ background: C.card, borderRadius: C.r, padding: "12px 16px", border: `1px solid ${C.rule}`, borderLeft: `3px solid ${C.accent}` }}>
+                  <div style={{ fontSize: px(11), color: C.inkLight, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 4 }}>Total Duration (Estimate)</div>
+                  <div style={{ fontSize: px(BASE), color: C.ink, fontWeight: 500 }}>{doc.implementationPlan.totalWeeks} weeks</div>
+                  <div style={{ fontSize: px(12), color: C.inkLight, marginTop: 4, fontStyle: "italic" }}>Based on a standard contractor team. Actual duration may vary.</div>
+                </div>
+              )}
+              {doc.implementationPlan.criticalPathNotes && (
+                <div style={{ background: C.card, borderRadius: C.r, padding: "12px 16px", border: `1px solid ${C.rule}`, borderLeft: `3px solid ${C.accent}` }}>
+                  <div style={{ fontSize: px(11), color: C.inkLight, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 4 }}>Critical Path</div>
+                  <div style={{ fontSize: px(BASE), color: C.ink, fontWeight: 500 }}>{doc.implementationPlan.criticalPathNotes}</div>
+                </div>
+              )}
+            </div>
+          )}
           {["Phase 1 — Hardscape","Phase 2 — Planting","Phase 3 — Finishing"].map(phase => {
             const tasks = doc.implementationPlan?.tasks?.filter((t: any) => t.phase === phase) || [];
             if (!tasks.length) return null;
             return (
-              <Card key={phase}>
-                <Label>{phase}</Label>
+              <div key={phase} style={{
+                background: C.card, borderRadius: C.rLg, border: `1px solid ${C.rule}`,
+                borderLeft: `4px solid ${C.accent}`, padding: "18px 22px", marginBottom: 14, boxShadow: C.shadow,
+              }}>
+                <div style={{ fontSize: px(11), color: C.accent, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 12 }}>{phase}</div>
                 {tasks.map((t: any) => (
-                  <div key={t.id} style={{ display: "flex", justifyContent: "space-between", padding: "9px 0", borderBottom: `1px solid ${C.rule}` }}>
-                    <div>
-                      <div style={{ fontSize: px(BASE), color: C.ink }}>{t.task}</div>
-                      {t.notes && <div style={{ fontSize: px(13), color: C.inkLight, marginTop: 2 }}>{t.notes}</div>}
+                  <div key={t.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "10px 0", borderBottom: `1px solid ${C.rule}` }}>
+                    <div style={{ flex: 1, paddingRight: 16 }}>
+                      <div style={{ fontSize: px(BASE), color: C.ink, lineHeight: 1.4 }}>{t.task}</div>
+                      {t.notes && <div style={{ fontSize: px(13), color: C.inkLight, marginTop: 3, lineHeight: 1.5 }}>{t.notes}</div>}
                     </div>
-                    <div style={{ fontSize: px(13), color: C.accent, fontWeight: 700, minWidth: 50, textAlign: "right" }}>{t.estimatedDays}d</div>
+                    <div style={{ fontSize: px(13), color: C.accent, fontWeight: 700, whiteSpace: "nowrap" }}>{t.estimatedDays}d</div>
                   </div>
                 ))}
-              </Card>
+              </div>
             );
           })}
         </>}
 
         {/* ── MAINTENANCE ── */}
         {activeTab === "maintenance" && <>
-          <SectionTitle n="09" title="Maintenance Schedule" />
+          <SectionTitle n="09" title="Maintenance Schedule (Indicative)" />
+          <p style={{ fontSize: px(BASE - 1), color: C.inkLight, fontStyle: "italic", lineHeight: 1.65, marginBottom: 18, marginTop: 0 }}>
+            The following schedule is an indicative estimate based on typical seasonal requirements for the proposed plant palette. Adjust based on your local climate, soil conditions, and plant establishment progress.
+          </p>
           <StatGrid items={[
             { label: "Deep Maintenance Days/Year",  value: String(doc.maintenanceSchedule?.professionalVisitsPerYear || "—") },
             { label: "Annual Pruning",             value: doc.maintenanceSchedule?.annualPruningRegime || "—" },

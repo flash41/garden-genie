@@ -122,9 +122,13 @@ const safe = (v: any, fallback = '—') =>
 const safeArr = (v: any): any[] =>
   Array.isArray(v) ? v : [];
 
-const currency = (n: number, cur = 'GBP') => {
-  const sym: Record<string, string> = { GBP: '£', USD: '$', EUR: '€' };
-  return `${sym[cur] || cur}${Number(n).toLocaleString()}`;
+const currency = (n: number, cur = 'USD') => {
+  try {
+    return new Intl.NumberFormat(undefined, { style: 'currency', currency: cur, maximumFractionDigits: 0 }).format(Math.round(Number(n)));
+  } catch {
+    const sym: Record<string, string> = { GBP: '£', USD: '$', EUR: '€', AUD: 'A$', CAD: 'C$', NZD: 'NZ$' };
+    return `${sym[cur] || cur}${Math.round(Number(n)).toLocaleString()}`;
+  }
 };
 
 // Section wrapper component
@@ -191,7 +195,7 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
   const d = doc || {};
   const hasBefore = !!imageDataUrl;
   const hasAfter  = !!imageBase64;
-  const cur = d.costEstimate?.currency || 'GBP';
+  const cur = d.costEstimate?.currency || 'USD';
   const coverImg = imageBase64 || imageDataUrl || null;
 
   const dateStr = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -380,6 +384,14 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
 
         {/* ── 4. Spatial Layout ───────────────────────────────── */}
         <Section num="04" title="Spatial Layout &amp; Zoning">
+          {aerialImageUrl ? (
+            <>
+              <Image src={aerialImageUrl} style={[S.imgSingle, { height: 300, objectFit: 'contain', marginBottom: 4 }]} />
+              <Text style={[S.small, { color: T.inkLight, fontStyle: 'italic', marginBottom: 12, textAlign: 'center' }]}>
+                Fig. 1 — AI-Generated Layout Sketch. For indicative purposes only.
+              </Text>
+            </>
+          ) : null}
           {d.spatialLayout ? (
             <>
               {d.spatialLayout.compositionNotes
@@ -516,7 +528,7 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
                       <Text style={[S.tableHdrT, { flex: 2 }]}>Element</Text>
                       <Text style={[S.tableHdrT, { flex: 2 }]}>Material</Text>
                       <Text style={S.tableHdrT}>Finish</Text>
-                      <Text style={S.tableHdrT}>Unit Cost</Text>
+                      <Text style={S.tableHdrT}>Unit Cost Estimate</Text>
                     </View>
                     {safeArr(d.hardscapeSpecification.materials).map((m: any, i: number) => (
                       <View key={i} wrap={false} style={i % 2 === 0 ? S.tableRow : S.tableRowAlt}>
@@ -527,6 +539,9 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
                       </View>
                     ))}
                   </View>
+                  <Text style={[S.small, { color: T.inkLight, fontStyle: 'italic', marginTop: 6 }]}>
+                    All costs are unit cost estimates only and may vary by supplier, region, and project scope. Obtain formal quotes before committing to purchase.
+                  </Text>
                 </>
               ) : null}
 
@@ -617,9 +632,31 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
 
         {/* ── 8. Implementation Plan ──────────────────────────── */}
         <Section num="08" title="Phasing &amp; Implementation Plan">
+          {safeArr(d.recommendations).length > 0 ? (
+            <>
+              <SubHead text="Recommendations" />
+              {safeArr(d.recommendations).map((r: any, i: number) => (
+                <View key={i} wrap={false} style={{ borderLeftWidth: 3, borderLeftColor: T.accent, borderLeftStyle: 'solid', paddingLeft: 10, marginBottom: 12, backgroundColor: '#f9f7f3' }}>
+                  <Text style={{ fontSize: 7, color: T.accent, fontFamily: 'Helvetica-Bold', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 4 }}>Recommendation</Text>
+                  <Text style={[S.body, { fontFamily: 'Helvetica-Bold', marginBottom: 3 }]}>{safe(r.title)}</Text>
+                  <Text style={[S.body, { marginBottom: 3 }]}>{safe(r.description)}</Text>
+                  <Text style={[S.small, { fontStyle: 'italic', color: T.inkLight }]}>{safe(r.justification)}</Text>
+                  {r.estimatedCost ? (
+                    <Text style={[S.small, { color: T.accent, fontFamily: 'Helvetica-Bold', marginTop: 4 }]}>{safe(r.estimatedCost)}</Text>
+                  ) : null}
+                </View>
+              ))}
+            </>
+          ) : null}
           {d.implementationPlan ? (
             <>
-              <KV label="Total Duration" value={d.implementationPlan.totalWeeks ? `${d.implementationPlan.totalWeeks} weeks` : '—'} />
+              <View style={S.kvRow}>
+                <Text style={S.kvLabel}>Total Duration (Estimate)</Text>
+                <View>
+                  <Text style={S.kvValue}>{d.implementationPlan.totalWeeks ? `${d.implementationPlan.totalWeeks} weeks` : '—'}</Text>
+                  <Text style={[S.small, { color: T.inkLight, fontStyle: 'italic', marginTop: 2 }]}>Based on a standard contractor team. Actual duration may vary.</Text>
+                </View>
+              </View>
               {d.implementationPlan.criticalPathNotes
                 ? <Text style={[S.body, { marginBottom: 6 }]}>{d.implementationPlan.criticalPathNotes}</Text>
                 : null}
@@ -644,7 +681,10 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
         </Section>
 
         {/* ── 9. Maintenance Schedule ─────────────────────────── */}
-        <Section num="09" title="Maintenance Schedule">
+        <Section num="09" title="Maintenance Schedule (Indicative)">
+          <Text style={[S.small, { color: T.inkLight, fontStyle: 'italic', marginBottom: 10 }]}>
+            The following schedule is an indicative estimate based on typical seasonal requirements for the proposed plant palette. Adjust based on your local climate, soil conditions, and plant establishment progress.
+          </Text>
           {d.maintenanceSchedule ? (
             <>
               {safeArr(d.maintenanceSchedule.tasks).length > 0 ? (

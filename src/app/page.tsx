@@ -529,8 +529,8 @@ export default function LandingPage() {
               },
               {
                 icon: <svg style={{ width: 40, height: 40, color: 'var(--gold)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
-                title: 'A Layout & Spatial Plan', tag: 'Practical Layout',
-                desc: "A clear plan showing how to arrange your garden — borders, paths, focal points, and structure. Designed around the space you actually have, not a showroom that looks nothing like your garden.",
+                title: 'Layout Plan Sketch', tag: 'Practical Layout',
+                desc: "A hand-interpreted spatial sketch showing suggested planting zones, borders, paths, and focal points — drawn from your photo and overlaid with a reference grid. Note: where site photography is complex or perspective is ambiguous, the sketch is indicative rather than surveyed.",
                 delay: 'delay-4',
               },
               {

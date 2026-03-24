@@ -125,6 +125,14 @@ const DESIGN_SCHEMA = `{
     "longTermManagementNotes": "5-10 year management and renewal strategy",
     "professionalVisitsPerYear": 2
   },
+  "recommendations": [
+    {
+      "title": "string — short name of the recommendation",
+      "description": "string — what to do and how",
+      "justification": "string — why this is particularly suited to this garden",
+      "estimatedCost": "string — optional, e.g. £300–£600 installed"
+    }
+  ],
   "costEstimate": {
     "currency": "GBP",
     "lines": [
@@ -827,6 +835,7 @@ Minimum counts you must meet:
 - implementationPlan tasks: 9+ across 3 phases
 - maintenanceSchedule tasks: 8+ across 4 seasons
 - costEstimate lines: 6+ with realistic non-zero ${currency} values
+- recommendations: 2–4 optional enhancements that would benefit this specific garden — drip irrigation, smart lighting, edging systems, composting, water harvesting etc. Each must include a genuine justification tied to this garden's specific conditions. Do not include anything already specified in the main design.
 
 SCHEMA:
 ${DESIGN_SCHEMA}`;
