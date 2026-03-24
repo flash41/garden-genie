@@ -11,6 +11,7 @@ interface QuoteRow {
   design_records: {
     design_style: string | null;
     pdf_url: string | null;
+    reference_number: string | null;
   } | null;
 }
 
@@ -32,7 +33,8 @@ export default async function AdminLeadsPage() {
       created_at,
       design_records (
         design_style,
-        pdf_url
+        pdf_url,
+        reference_number
       )
     `)
     .order('created_at', { ascending: false });
@@ -64,6 +66,7 @@ export default async function AdminLeadsPage() {
             <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', border: '1px solid #e5ddd0', borderRadius: 8, overflow: 'hidden', fontSize: 14 }}>
               <thead>
                 <tr style={{ background: '#0a3d2b' }}>
+                  <th style={{ padding: '14px 16px', textAlign: 'left', color: '#b8962e', fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', fontWeight: 600 }}>Reference</th>
                   <th style={{ padding: '14px 16px', textAlign: 'left', color: '#b8962e', fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', fontWeight: 600 }}>Date</th>
                   <th style={{ padding: '14px 16px', textAlign: 'left', color: '#b8962e', fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', fontWeight: 600 }}>Email</th>
                   <th style={{ padding: '14px 16px', textAlign: 'left', color: '#b8962e', fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', fontWeight: 600 }}>Postcode</th>
@@ -75,6 +78,9 @@ export default async function AdminLeadsPage() {
               <tbody>
                 {leads.map((lead, i) => (
                   <tr key={lead.id} style={{ borderTop: '1px solid #e5ddd0', background: i % 2 === 0 ? '#fff' : '#faf8f4' }}>
+                    <td style={{ padding: '13px 16px', color: '#0a3d2b', fontFamily: 'monospace', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                      {lead.design_records?.reference_number || '—'}
+                    </td>
                     <td style={{ padding: '13px 16px', color: '#4a3f32', whiteSpace: 'nowrap' }}>
                       {new Date(lead.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
                     </td>

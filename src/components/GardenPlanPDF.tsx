@@ -162,16 +162,16 @@ const SubHead = ({ text }: { text: string }) => (
 );
 
 // Running header + footer (fixed, repeats every page)
-const PageChrome = ({ clientName, dateStr, style }: any) => (
+const PageChrome = ({ clientName, dateStr, style, referenceNumber }: any) => (
   <>
     <View style={S.runHdr} fixed>
       <Text style={S.runBrand}>dedrab.com · Garden Design Proposal</Text>
-      <Text style={S.runRight}>{clientName ? `${clientName} · ` : ''}{style}</Text>
+      <Text style={S.runRight}>{clientName ? clientName + ' · ' : ''}{style}</Text>
     </View>
     <View style={S.footer} fixed>
       <Text style={S.footerBrand}>dedrab.com</Text>
-      <Text style={S.footerMid}>{clientName ? `${clientName} · ` : ''}{dateStr} · Confidential</Text>
-      <Text style={S.footerPg} render={({ pageNumber, totalPages }) => `Page ${pageNumber} / ${totalPages}`} />
+      <Text style={S.footerMid}>{'Dedrab Design Reference: ' + (referenceNumber || 'Pending')}</Text>
+      <Text style={S.footerPg} render={({ pageNumber, totalPages }: { pageNumber: number; totalPages: number }) => 'Page ' + pageNumber + ' / ' + totalPages} />
     </View>
   </>
 );
@@ -190,9 +190,10 @@ interface Props {
   siteAddress?: string;
   gardenOrientation?: string;
   transformationLevel?: number;
+  referenceNumber?: string;
 }
 
-export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageUrl, aerialImageUrl, style, clientName, siteAddress, gardenOrientation, transformationLevel }: Props) => {
+export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageUrl, aerialImageUrl, style, clientName, siteAddress, gardenOrientation, transformationLevel, referenceNumber }: Props) => {
   const d = doc || {};
   const hasBefore = !!imageDataUrl;
   const hasAfter  = !!imageBase64;
@@ -281,7 +282,7 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
           SECTION PAGES
       ══════════════════════════════════════════════════════════ */}
       <Page size="A4" style={S.page}>
-        <PageChrome clientName={clientName} dateStr={dateStr} style={style} />
+        <PageChrome clientName={clientName} dateStr={dateStr} style={style} referenceNumber={referenceNumber} />
 
         {/* ── 1. Project Overview ─────────────────────────────── */}
         <Section num="01" title="Project Overview">
@@ -393,7 +394,7 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
 
       {/* ── Page 3: Spatial Layout + Planting ─────────────────── */}
       <Page size="A4" style={S.page}>
-        <PageChrome clientName={clientName} dateStr={dateStr} style={style} />
+        <PageChrome clientName={clientName} dateStr={dateStr} style={style} referenceNumber={referenceNumber} />
 
         {/* ── 4. Spatial Layout ───────────────────────────────── */}
         <Section num="04" title="Spatial Layout &amp; Zoning">
@@ -456,7 +457,7 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
 
       {/* ── Page 3b: Planting Schedule ────────────────────────── */}
       <Page size="A4" style={S.page}>
-        <PageChrome clientName={clientName} dateStr={dateStr} style={style} />
+        <PageChrome clientName={clientName} dateStr={dateStr} style={style} referenceNumber={referenceNumber} />
 
         <Section num="05" title="Planting Specification">
           {d.plantingSpecification?.layeringStrategy
@@ -491,7 +492,7 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
 
       {/* ── Page 3c: Seasonal Matrix ──────────────────────────── */}
       <Page size="A4" style={S.page}>
-        <PageChrome clientName={clientName} dateStr={dateStr} style={style} />
+        <PageChrome clientName={clientName} dateStr={dateStr} style={style} referenceNumber={referenceNumber} />
 
         <Section num="05b" title="Seasonal Interest Matrix">
           {plants.length > 0 ? (
@@ -523,7 +524,7 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
 
       {/* ── Page 4: Hardscape + Soil/Irrigation ───────────────── */}
       <Page size="A4" style={S.page}>
-        <PageChrome clientName={clientName} dateStr={dateStr} style={style} />
+        <PageChrome clientName={clientName} dateStr={dateStr} style={style} referenceNumber={referenceNumber} />
 
         {/* ── 6. Hardscape ────────────────────────────────────── */}
         <Section num="06" title="Hardscape &amp; Materials Palette">
@@ -641,7 +642,7 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
 
       {/* ── Page 5: Implementation + Maintenance + Costs ──────── */}
       <Page size="A4" style={S.page}>
-        <PageChrome clientName={clientName} dateStr={dateStr} style={style} />
+        <PageChrome clientName={clientName} dateStr={dateStr} style={style} referenceNumber={referenceNumber} />
 
         {/* ── 8. Implementation Plan ──────────────────────────── */}
         <Section num="08" title="Phasing &amp; Implementation Plan">
@@ -767,7 +768,7 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
       {/* ── Page 6: Aerial Layout Plan ────────────────────────── */}
       {aerialImageUrl ? (
         <Page size="A4" style={S.page}>
-          <PageChrome clientName={clientName} dateStr={dateStr} style={style} />
+          <PageChrome clientName={clientName} dateStr={dateStr} style={style} referenceNumber={referenceNumber} />
 
           <Section num="App A" title="Garden Layout Plan">
             <Text style={[S.small, { marginBottom: 8 }]}>
@@ -801,7 +802,7 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
 
       {/* ── Page 7: Appendices ────────────────────────────────── */}
       <Page size="A4" style={S.page}>
-        <PageChrome clientName={clientName} dateStr={dateStr} style={style} />
+        <PageChrome clientName={clientName} dateStr={dateStr} style={style} referenceNumber={referenceNumber} />
 
         <Section num="App B" title="Appendices">
 

@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
   // Look up design_records by session_id
   const { data: designRecord } = await supabase
     .from('design_records')
-    .select('id, design_style, pdf_url')
+    .select('id, design_style, pdf_url, reference_number')
     .eq('session_id', sessionId)
     .maybeSingle();
 
@@ -57,8 +57,12 @@ export async function POST(req: NextRequest) {
 
   const designStyle = designRecord?.design_style || 'Custom';
   const quotesLabel = quotesRequested === 1 ? '1 quote' : '3 quotes';
+  const refNum = designRecord?.reference_number || null;
+  const pdfUrl = designRecord?.pdf_url || null;
 
-  const subject = 'Your Dedrab quote request is confirmed';
+  const subject = refNum
+    ? 'Your garden plan [' + refNum + '] — quote request confirmed'
+    : 'Your Dedrab quote request is confirmed';
 
   const html = `
 <!DOCTYPE html>
@@ -89,7 +93,9 @@ export async function POST(req: NextRequest) {
           <tr>
             <td style="background:#ffffff;padding:48px 48px 40px;">
               <p style="margin:0 0 8px;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:#b8962e;">Quote request received.</p>
-              <h1 style="margin:0 0 24px;font-family:'Georgia',serif;font-size:28px;font-weight:400;color:#0a3d2b;line-height:1.25;">We're finding your landscaper</h1>
+              <h1 style="margin:0 0 24px;font-family:'Georgia',serif;font-size:28px;font-weight:400;color:#0a3d2b;line-height:1.25;">We&apos;re finding your landscaper</h1>
+
+              ${refNum ? '<table cellpadding="0" cellspacing="0" style="margin-bottom:24px;background:#f0f4f0;padding:16px 20px;border-radius:4px;width:100%;border-left:3px solid #0a3d2b;"><tr><td style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#0a3d2b;padding-bottom:6px;font-weight:700;">Your reference number</td></tr><tr><td style="font-size:20px;color:#0a3d2b;font-family:monospace;font-weight:700;letter-spacing:1px;">' + refNum + '</td></tr><tr><td style="font-size:12px;color:#4a3f32;padding-top:6px;">Please quote this reference in any correspondence with us or your landscaper.</td></tr></table>' : ''}
 
               <table cellpadding="0" cellspacing="0" style="margin-bottom:32px;border-left:3px solid #b8962e;padding-left:20px;">
                 <tr>
@@ -116,6 +122,8 @@ export async function POST(req: NextRequest) {
                   </td>
                 </tr>
               </table>
+
+              ${pdfUrl ? '<table cellpadding="0" cellspacing="0" style="margin-bottom:24px;"><tr><td style="background:#0a3d2b;padding:12px 24px;border-radius:4px;"><a href="' + pdfUrl + '" style="font-family:Arial,sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#b8962e;text-decoration:none;">View your full garden plan &rarr;</a></td></tr></table>' : ''}
 
               <p style="margin:0 0 32px;font-size:17px;line-height:1.75;color:#4a3f32;font-family:'Georgia',serif;">
                 Your garden design plan will be shared with each landscaper so they can provide an accurate, personalised quote.

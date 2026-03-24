@@ -19,12 +19,25 @@ function NextStepsContent() {
   const [shareError, setShareError] = useState('');
 
   const [sendSelfStatus, setSendSelfStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [referenceNumber, setReferenceNumber] = useState('');
+  const [pdfUrl, setPdfUrl] = useState('');
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     setUserEmail(sessionStorage.getItem('garden_user_email') || '');
     setDesignStyle(sessionStorage.getItem('garden_design_style') || '');
     setRenderUrl(sessionStorage.getItem('garden_render_url') || '');
+    setReferenceNumber(sessionStorage.getItem('garden_reference_number') || '');
+    setPdfUrl(sessionStorage.getItem('garden_pdf_url') || '');
   }, []);
+
+  function handleCopyReference() {
+    if (!referenceNumber) return;
+    navigator.clipboard.writeText(referenceNumber).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }).catch(() => {});
+  }
 
   async function handleRequestQuote(e: React.FormEvent) {
     e.preventDefault();
@@ -191,7 +204,28 @@ function NextStepsContent() {
       {/* Body */}
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '48px 32px' }}>
         <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 34, fontWeight: 400, color: '#0a3d2b', marginBottom: 8, marginTop: 0 }}>What would you like to do next?</h1>
-        <p style={{ fontSize: 15, color: '#8a7e6e', marginBottom: 40, marginTop: 0 }}>Your garden design proposal is ready. Choose how you&apos;d like to proceed.</p>
+        <p style={{ fontSize: 15, color: '#8a7e6e', marginBottom: referenceNumber ? 20 : 40, marginTop: 0 }}>Your garden design proposal is ready. Choose how you&apos;d like to proceed.</p>
+
+        {/* Reference number display */}
+        {referenceNumber && (
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 12, background: '#fff', border: '1px solid #e5ddd0', borderRadius: 8, padding: '12px 18px', marginBottom: 36 }}>
+            <div>
+              <div style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#b8962e', fontWeight: 700, marginBottom: 3 }}>Your Reference</div>
+              <div style={{ fontFamily: 'monospace', fontSize: 18, fontWeight: 600, color: '#0a3d2b', letterSpacing: '0.04em' }}>{referenceNumber}</div>
+            </div>
+            <button
+              onClick={handleCopyReference}
+              title="Copy reference number"
+              style={{
+                background: copied ? '#f0f7f0' : '#f4efe4', border: '1px solid #e5ddd0', borderRadius: 6,
+                padding: '6px 10px', cursor: 'pointer', fontSize: 12, color: copied ? '#2d5a2d' : '#6b5e50',
+                fontFamily: 'inherit', fontWeight: 600, transition: 'all 0.15s',
+              }}
+            >
+              {copied ? 'Copied!' : 'Copy'}
+            </button>
+          </div>
+        )}
 
         {/* Two-column grid */}
         <div className="ns-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32, alignItems: 'stretch' }}>
@@ -351,6 +385,9 @@ function NextStepsContent() {
           }}>
             <div style={{ fontSize: 10, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#b8962e', marginBottom: 10, fontWeight: 700 }}>Option 2</div>
             <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 24, fontWeight: 400, color: '#0a3d2b', marginBottom: 10, marginTop: 0 }}>Get it done for me</h2>
+            {referenceNumber && (
+              <p style={{ fontSize: 12, color: '#8a7e6e', marginBottom: 14, marginTop: 0 }}>{'Reference: ' + referenceNumber}</p>
+            )}
             <p style={{ fontSize: 14, color: '#6b5e50', lineHeight: 1.7, marginBottom: 20, marginTop: 0 }}>
               Prefer to hand it over? Enter your postcode below and one of our landscape partners will be in touch with a quote. Your full plan will be shared with them.
             </p>

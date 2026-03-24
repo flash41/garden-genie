@@ -11,6 +11,9 @@
     },
     "src/app/api/image-proxy/route.ts": {
       "maxDuration": 60
+    },
+    "src/app/api/upload-pdf/route.ts": {
+      "maxDuration": 60
     }
   }
 }

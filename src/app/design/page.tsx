@@ -3,6 +3,8 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useRouter } from 'next/navigation';
 import PDFButton from "@/components/PDFButton";
+import { pdf } from '@react-pdf/renderer';
+import { GardenPlanPDF } from '@/components/GardenPlanPDF';
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 
@@ -1389,6 +1391,8 @@ export default function GardigApp() {
   const [g2Grid, setG2Grid]                   = useState<Record<string, any>>({});
   const [sessionId, setSessionId]             = useState<string | null>(null);
   const [designRecordId, setDesignRecordId]   = useState<string | null>(null);
+  const [referenceNumber, setReferenceNumber] = useState<string | null>(null);
+  const [isSaving, setIsSaving]               = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
@@ -1943,11 +1947,16 @@ export default function GardigApp() {
   }
 
   async function handleSaveAndProceed() {
+    if (isSaving) return;
+    setIsSaving(true);
     const newSessionId = crypto.randomUUID();
     setSessionId(newSessionId);
     sessionStorage.setItem('garden_user_email', userEmail);
     sessionStorage.setItem('garden_design_style', designLang);
     sessionStorage.setItem('garden_render_url', renderUrl || '');
+
+    let refNum: string | null = null;
+
     try {
       const res = await fetch('/api/save-design', {
         method: 'POST',
@@ -1964,13 +1973,59 @@ export default function GardigApp() {
       if (res.ok) {
         const data = await res.json();
         setDesignRecordId(data.id);
+        refNum = data.reference_number || null;
+        if (refNum) {
+          setReferenceNumber(refNum);
+          sessionStorage.setItem('garden_reference_number', refNum);
+        }
       } else {
         console.error('Save design failed:', await res.text());
       }
     } catch (err) {
       console.error('Save design error:', err);
     }
-    // Always proceed regardless of save success
+
+    // Generate and upload PDF (non-blocking — failure does not prevent navigation)
+    if (refNum) {
+      try {
+        const pdfDoc = (
+          <GardenPlanPDF
+            doc={docData}
+            imageBase64={renderUrl || ''}
+            imageDataUrl={imageDataUrl || undefined}
+            gridImageUrl={gridImageUrl || undefined}
+            aerialImageUrl={aerialGridImageUrl || aerialImageUrl || undefined}
+            style={designLang}
+            clientName={clientName}
+            gardenOrientation={gardenOrientation}
+            transformationLevel={transformationLevel}
+            referenceNumber={refNum}
+          />
+        );
+        const blob = await pdf(pdfDoc).toBlob();
+        const pdfBase64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+        const uploadRes = await fetch('/api/upload-pdf', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pdfBase64, referenceNumber: refNum, sessionId: newSessionId }),
+        });
+        if (uploadRes.ok) {
+          const { pdfUrl } = await uploadRes.json();
+          if (pdfUrl) sessionStorage.setItem('garden_pdf_url', pdfUrl);
+        } else {
+          console.error('PDF upload failed:', await uploadRes.text());
+        }
+      } catch (err) {
+        console.error('PDF generation/upload error:', err);
+      }
+    }
+
+    setIsSaving(false);
     router.push('/next-steps?sessionId=' + newSessionId);
   }
 
@@ -2024,16 +2079,17 @@ export default function GardigApp() {
           </button>
           <button
             onClick={handleSaveAndProceed}
+            disabled={isSaving}
             style={{
               display: 'flex', alignItems: 'center', gap: 8,
               background: '#b8962e', color: '#fff',
               border: 'none', borderRadius: C.r,
-              padding: '10px 22px', cursor: 'pointer',
+              padding: '10px 22px', cursor: isSaving ? 'not-allowed' : 'pointer',
               fontFamily: C.font, fontSize: px(BASE), fontWeight: 600,
-              letterSpacing: '0.02em',
+              letterSpacing: '0.02em', opacity: isSaving ? 0.7 : 1,
             }}
           >
-            Save and proceed →
+            {isSaving ? 'Preparing your plan\u2026' : 'Save and proceed \u2192'}
           </button>
         </div>
       </header>
@@ -2105,6 +2161,7 @@ export default function GardigApp() {
                       clientName={clientName || undefined}
                       gardenOrientation={gardenOrientation || undefined}
                       transformationLevel={transformationLevel}
+                      referenceNumber={referenceNumber || undefined}
                       onPdfReady={sendPlan}
                       sendMode
                       sendDisabled={!emailAddr || emailStatus === 'sending'}
