@@ -1393,6 +1393,9 @@ export default function GardigApp() {
   const [designRecordId, setDesignRecordId]   = useState<string | null>(null);
   const [referenceNumber, setReferenceNumber] = useState<string | null>(null);
   const [isSaving, setIsSaving]               = useState(false);
+  const [inviteCode, setInviteCode]           = useState<string | null>(null);
+  const [rendersRemaining, setRendersRemaining] = useState<number | null>(null);
+  const [maxRenders, setMaxRenders]           = useState<number | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
@@ -1435,6 +1438,21 @@ export default function GardigApp() {
   // Confirm currency from locale on mount (handles SSR hydration)
   useEffect(() => {
     setUserCurrency(detectCurrency());
+  }, []);
+
+  // Read invite cookie and fetch remaining renders on mount
+  useEffect(() => {
+    const match = document.cookie.match(/(?:^|;\s*)dedrab_invite=([^;]+)/);
+    const code = match ? decodeURIComponent(match[1]) : null;
+    if (!code) return;
+    setInviteCode(code);
+    fetch('/api/invite-status?code=' + encodeURIComponent(code))
+      .then(r => r.json())
+      .then(d => {
+        if (typeof d.remaining === 'number') setRendersRemaining(d.remaining);
+        if (typeof d.max_renders === 'number') setMaxRenders(d.max_renders);
+      })
+      .catch(() => {});
   }, []);
 
   const missingFields = () => {
@@ -1589,6 +1607,16 @@ export default function GardigApp() {
       await new Promise(r => setTimeout(r, 300));
       setStep("result");
       setActiveTab("overview");
+      // Refresh remaining renders count
+      if (inviteCode) {
+        fetch('/api/invite-status?code=' + encodeURIComponent(inviteCode))
+          .then(r => r.json())
+          .then(d => {
+            if (typeof d.remaining === 'number') setRendersRemaining(d.remaining);
+            if (typeof d.max_renders === 'number') setMaxRenders(d.max_renders);
+          })
+          .catch(() => {});
+      }
     } catch (err: any) {
       setError(err.message);
       setStep("upload");
@@ -2056,6 +2084,11 @@ export default function GardigApp() {
           </div>
           <span style={{ fontFamily: C.fontSerif, fontWeight: 700, fontSize: px(18), color: "#fff", letterSpacing: "1px" }}>Dedrab</span>
           <span style={{ fontSize: px(12), color: "rgba(255,255,255,0.4)", letterSpacing: "0.05em" }}>dedrab.com</span>
+          {rendersRemaining !== null && maxRenders !== null && (
+            <span style={{ fontSize: px(11), color: "rgba(255,255,255,0.45)", marginLeft: 8, letterSpacing: "0.04em" }}>
+              {rendersRemaining} of {maxRenders} renders remaining
+            </span>
+          )}
         </div>
         <div className="result-header-actions">
           <button onClick={() => {

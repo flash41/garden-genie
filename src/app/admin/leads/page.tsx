@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase-server';
+import InviteManager from '@/app/admin/InviteManager';
 
 interface QuoteRow {
   id: string;
@@ -54,6 +55,8 @@ export default async function AdminLeadsPage() {
       </div>
 
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '40px 32px' }}>
+        <InviteManager />
+
         <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 28, fontWeight: 400, color: '#0a3d2b', marginBottom: 8 }}>Quote Requests</h1>
         <p style={{ fontSize: 14, color: '#8a7e6e', marginBottom: 32 }}>{leads.length} total {leads.length === 1 ? 'lead' : 'leads'}</p>
 
