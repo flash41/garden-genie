@@ -103,18 +103,41 @@ function NextStepsContent() {
     }
   }
 
+  function shareOnWhatsApp(text: string) {
+    const encoded = encodeURIComponent(text);
+    const appUrl = 'whatsapp://send?text=' + encoded;
+    const webUrl = 'https://api.whatsapp.com/send?text=' + encoded;
+    const start = Date.now();
+    window.location.href = appUrl;
+    setTimeout(() => {
+      if (Date.now() - start < 1500) {
+        window.open(webUrl, '_blank');
+      }
+    }, 1000);
+  }
+
+  function shareOnTelegram(text: string, url: string) {
+    const encodedUrl = encodeURIComponent(url);
+    const encodedText = encodeURIComponent(text);
+    const appUrl = 'tg://msg_url?url=' + encodedUrl + '&text=' + encodedText;
+    const webUrl = 'https://t.me/share/url?url=' + encodedUrl + '&text=' + encodedText;
+    const start = Date.now();
+    window.location.href = appUrl;
+    setTimeout(() => {
+      if (Date.now() - start < 1500) {
+        window.open(webUrl, '_blank');
+      }
+    }, 1000);
+  }
+
   function handleWhatsAppShare() {
-    const text = renderUrl
-      ? 'Take a look at my garden redesign! ' + renderUrl
-      : 'Take a look at my garden redesign!';
-    window.open('https://web.whatsapp.com/send?text=' + encodeURIComponent(text), '_blank');
+    const urlToShare = renderUrl || window.location.href;
+    shareOnWhatsApp('Take a look at my garden redesign! ' + urlToShare);
   }
 
   function handleTelegramShare() {
-    window.open(
-      'https://t.me/share/url?url=' + encodeURIComponent(renderUrl || '') + '&text=' + encodeURIComponent('Take a look at my garden redesign!'),
-      '_blank'
-    );
+    const urlToShare = renderUrl || window.location.href;
+    shareOnTelegram('Take a look at my garden redesign!', urlToShare);
   }
 
   const summaryBoxes = [
