@@ -1476,6 +1476,9 @@ export default function GardigApp() {
       }),
     });
     if (!response.ok) {
+      if (response.status === 504) {
+        throw new Error("The design is taking longer than expected. Please try again — complex garden photos occasionally need a second attempt.");
+      }
       const err = await response.json().catch(() => ({}));
       throw new Error(err.error || `Design pipeline failed (${response.status})`);
     }
