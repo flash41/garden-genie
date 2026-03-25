@@ -1,6 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
-import dynamic from 'next/dynamic';
+import { useState, useEffect, useRef } from 'react';
 import InviteManager from '@/app/admin/InviteManager';
 
 export interface LeadRow {
@@ -20,94 +19,97 @@ export interface LeadRow {
   } | null;
 }
 
-// ── Leaflet map (dynamically imported — no top-level leaflet in this file) ─────
-// dynamic() with ssr: false is allowed here because this file is 'use client'
+// ── Leaflet map — all leaflet code lives inside useEffect, never at module level ──
 
-const LeafletMap = dynamic(
-  async () => {
-    const { MapContainer, TileLayer, Marker, Popup } = await import('react-leaflet');
+function LeadsMapView({ leads }: { leads: LeadRow[] }) {
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<any>(null);
 
-    function LeafletMapImpl({ leads }: { leads: LeadRow[] }) {
-      useEffect(() => {
-        // Inject Leaflet CSS once
-        if (!document.getElementById('leaflet-css')) {
-          const link = document.createElement('link');
-          link.id = 'leaflet-css';
-          link.rel = 'stylesheet';
-          link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-          document.head.appendChild(link);
-        }
-        // Fix default icon paths
-        const L = require('leaflet');
-        delete L.Icon.Default.prototype._getIconUrl;
-        L.Icon.Default.mergeOptions({
-          iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-          iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-          shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-        });
-      }, []);
+  const validLeads = leads.filter(l => l.latitude !== null && l.longitude !== null);
+  const missing = leads.length - validLeads.length;
 
-      const mappable = leads.filter(l => l.latitude !== null && l.longitude !== null);
-      const missing = leads.length - mappable.length;
+  useEffect(() => {
+    if (!mapContainerRef.current || mapInstanceRef.current) return;
 
-      return (
-        <div>
-          <p style={{ fontSize: 14, color: '#8a7e6e', marginBottom: 16 }}>
-            {'Showing ' + mappable.length + ' location' + (mappable.length !== 1 ? 's' : '')}
-            {missing > 0
-              ? ' (' + missing + ' lead' + (missing !== 1 ? 's' : '') + ' have no location data)'
-              : ''}
-          </p>
-          <MapContainer
-            center={[54, -4]}
-            zoom={6}
-            style={{ height: 600, borderRadius: 8, border: '1px solid #e5ddd0' }}
-          >
-            <TileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution="Map data from OpenStreetMap contributors"
-            />
-            {mappable.map(lead => {
-              const greyIcon = lead.actioned
-                ? (require('leaflet') as typeof import('leaflet')).divIcon({
-                    className: '',
-                    html: '<div style="width:12px;height:12px;background:#888;border-radius:50%;border:2px solid #555;"></div>',
-                    iconSize: [12, 12],
-                    iconAnchor: [6, 6],
-                  })
-                : undefined;
+    const initMap = async () => {
+      // Inject Leaflet CSS once via a link tag — avoids Turbopack CSS module errors
+      if (!document.getElementById('leaflet-css')) {
+        const link = document.createElement('link');
+        link.id = 'leaflet-css';
+        link.rel = 'stylesheet';
+        link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+        document.head.appendChild(link);
+      }
 
-              return (
-                <Marker
-                  key={lead.id}
-                  position={[lead.latitude as number, lead.longitude as number]}
-                  icon={greyIcon}
-                >
-                  <Popup>
-                    <div style={{ fontSize: 13, lineHeight: 1.7, minWidth: 160 }}>
-                      <strong>{lead.email}</strong><br />
-                      {lead.postcode}<br />
-                      {new Date(lead.created_at).toLocaleDateString('en-GB', {
-                        day: '2-digit', month: 'short', year: 'numeric',
-                      })}<br />
-                      {'Quotes: ' + lead.quotes_requested}<br />
-                      {lead.actioned ? 'Actioned' : 'Pending'}
-                    </div>
-                  </Popup>
-                </Marker>
-              );
-            })}
-          </MapContainer>
-        </div>
-      );
-    }
+      const L = (await import('leaflet')).default;
 
-    return { default: LeafletMapImpl };
-  },
-  { ssr: false }
-);
+      // Fix default icon path resolution
+      delete (L.Icon.Default.prototype as any)._getIconUrl;
+      L.Icon.Default.mergeOptions({
+        iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+        iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+        shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+      });
 
-// ── Table header cell style ───────────────────────────────────────────────────
+      if (!mapContainerRef.current) return;
+      const map = L.map(mapContainerRef.current).setView([54, -4], 6);
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: 'Map data from OpenStreetMap contributors',
+      }).addTo(map);
+
+      const greyIcon = L.divIcon({
+        className: '',
+        html: '<div style="width:12px;height:12px;background:#888;border-radius:50%;border:2px solid #555;"></div>',
+        iconSize: [12, 12],
+        iconAnchor: [6, 6],
+      });
+
+      validLeads.forEach(lead => {
+        if (lead.latitude === null || lead.longitude === null) return;
+        const marker = lead.actioned
+          ? L.marker([lead.latitude, lead.longitude], { icon: greyIcon })
+          : L.marker([lead.latitude, lead.longitude]);
+
+        marker.addTo(map).bindPopup(
+          '<strong>' + lead.email + '</strong><br>' +
+          lead.postcode + '<br>' +
+          new Date(lead.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + '<br>' +
+          'Quotes: ' + lead.quotes_requested + '<br>' +
+          (lead.actioned ? 'Actioned' : 'Pending')
+        );
+      });
+
+      mapInstanceRef.current = map;
+    };
+
+    initMap();
+
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
+    };
+  }, []);
+
+  return (
+    <div>
+      <p style={{ fontSize: 14, color: '#8a7e6e', marginBottom: 16 }}>
+        {'Showing ' + validLeads.length + ' location' + (validLeads.length !== 1 ? 's' : '')}
+        {missing > 0
+          ? ' (' + missing + ' lead' + (missing !== 1 ? 's' : '') + ' have no location data)'
+          : ''}
+      </p>
+      <div
+        ref={mapContainerRef}
+        style={{ height: 600, borderRadius: 8, border: '1px solid #e5ddd0' }}
+      />
+    </div>
+  );
+}
+
+// ── Table header style ────────────────────────────────────────────────────────
 
 const thStyle: React.CSSProperties = {
   padding: '14px 16px',
@@ -119,7 +121,7 @@ const thStyle: React.CSSProperties = {
   fontWeight: 600,
 };
 
-// ── Main export — full interactive page content ───────────────────────────────
+// ── Main export ───────────────────────────────────────────────────────────────
 
 export default function AdminLeadsContent({ initialLeads }: { initialLeads: LeadRow[] }) {
   const [activeTab, setActiveTab] = useState<'leads' | 'map'>('leads');
@@ -169,7 +171,7 @@ export default function AdminLeadsContent({ initialLeads }: { initialLeads: Lead
         ))}
       </div>
 
-      {/* ── Leads tab ───────────────────────────────────────────────────────── */}
+      {/* ── Leads tab ─────────────────────────────────────────────────────── */}
       {activeTab === 'leads' && (
         <>
           <InviteManager />
@@ -252,13 +254,13 @@ export default function AdminLeadsContent({ initialLeads }: { initialLeads: Lead
         </>
       )}
 
-      {/* ── Map tab ─────────────────────────────────────────────────────────── */}
+      {/* ── Map tab ───────────────────────────────────────────────────────── */}
       {activeTab === 'map' && (
         <div>
           <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 28, fontWeight: 400, color: '#0a3d2b', marginBottom: 24, marginTop: 0 }}>
             Lead Locations
           </h1>
-          <LeafletMap leads={leads} />
+          <LeadsMapView leads={leads} />
         </div>
       )}
 
