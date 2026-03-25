@@ -87,7 +87,7 @@ export default function LegalPage() {
             Terms &amp; Privacy
           </h1>
           <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 19, color: 'var(--warm-grey)', lineHeight: 1.7 }}>
-            Last updated: March 2025
+            Last updated: March 2026
           </p>
         </div>
 
@@ -160,68 +160,91 @@ export default function LegalPage() {
         <section id="privacy">
           <h2 className="legal-h2">Privacy Policy</h2>
 
-          <h3 className="legal-h3">1. Who We Are</h3>
+          <h3 className="legal-h3">Who We Are</h3>
           <p className="legal-p">
-            Dedrab (&ldquo;we&rdquo;, &ldquo;us&rdquo;, &ldquo;our&rdquo;) operates the garden design service at dedrab.com. This Privacy Policy explains how we collect, use, and protect information when you use our Service.
+            Dedrab is a garden design tool that uses artificial intelligence to generate visual redesigns and design proposals from photographs of your garden. We are based in Ireland and this policy is written in compliance with the General Data Protection Regulation (GDPR).
           </p>
 
-          <h3 className="legal-h3">2. Information We Collect</h3>
-          <p className="legal-p">When you use the Service, we may collect:</p>
+          <h3 className="legal-h3">What Information We Collect</h3>
+          <p className="legal-p">We collect the following information when you use Dedrab:</p>
           <ul className="legal-ul">
-            <li><strong>Garden photographs</strong> — uploaded by you for the purpose of generating a design proposal. These are processed in real time and are not stored after your session ends.</li>
-            <li><strong>Email address</strong> — provided voluntarily by you if you choose to receive your plan by email. Used solely to deliver your design plan and not added to any marketing list.</li>
-            <li><strong>Usage data</strong> — standard server logs including IP address, browser type, and pages visited. Used for security, performance monitoring, and service improvement.</li>
-            <li><strong>Approximate location</strong> — derived from your IP address to tailor plant suggestions and cost estimates to your region. We do not store precise location data.</li>
+            <li><strong>Your email address</strong> — provided by you when you request your design plan to be delivered, when you request quotes from landscaping partners, or when you share your plan with someone else.</li>
+            <li><strong>Your postcode or ZIP code</strong> — provided by you when you request a quote from one of our landscaping partners.</li>
+            <li><strong>Your garden photograph</strong> — the image you upload to generate your design proposal.</li>
+            <li><strong>Your design preferences</strong> — the design style, transformation level, garden orientation, and hardiness zone you select.</li>
+            <li><strong>Your design report and render</strong> — the AI-generated design proposal, plant list, render image, and PDF report produced from your inputs.</li>
+            <li><strong>Your unique reference number</strong> — a reference code assigned to your design session for reconciliation and support purposes.</li>
+            <li><strong>Usage data</strong> — standard server logs including IP address, browser type, and pages visited, retained for security and performance monitoring.</li>
           </ul>
 
-          <h3 className="legal-h3">3. How We Use Your Information</h3>
-          <p className="legal-p">We use the information we collect to:</p>
+          <h3 className="legal-h3">How We Use Your Information</h3>
+          <p className="legal-p">We use your information for the following purposes:</p>
           <ul className="legal-ul">
-            <li>Generate and deliver your personalised garden design proposal.</li>
-            <li>Send your plan to the email address you provide, if requested.</li>
-            <li>Improve the accuracy and quality of the Service.</li>
-            <li>Monitor and protect the security and integrity of the Service.</li>
-          </ul>
-          <p className="legal-p">
-            We do not sell, rent, or share your personal information with third parties for marketing purposes.
-          </p>
-
-          <h3 className="legal-h3">4. Third-Party Services</h3>
-          <p className="legal-p">We use the following third-party services to operate the Service:</p>
-          <ul className="legal-ul">
-            <li><strong>Google Gemini API</strong> — your garden photograph and design preferences are sent to Google&apos;s AI models to generate the design proposal. Google&apos;s data processing terms apply.</li>
-            <li><strong>Cloudflare Turnstile</strong> — used to verify that requests come from real users. No personal data is stored by this check.</li>
-            <li><strong>IP geolocation (ip-api.com)</strong> — used to determine your approximate region for plant and cost localisation. Only country and region data are used.</li>
+            <li><strong>To deliver your design proposal</strong> — your email address is used to send you your plan PDF and any confirmation emails you request.</li>
+            <li><strong>To process quote requests</strong> — if you request quotes from landscaping partners, your email address, postcode, and design plan are shared with those partners so they can contact you with a quote. By submitting a quote request you are giving explicit consent to this sharing.</li>
+            <li><strong>To improve our service</strong> — we may retain anonymised design data to improve the quality of our AI outputs.</li>
+            <li><strong>For security and fraud prevention</strong> — usage logs are retained to protect the service from abuse.</li>
           </ul>
 
-          <h3 className="legal-h3">5. Data Retention</h3>
+          <h3 className="legal-h3">Sharing Your Information</h3>
           <p className="legal-p">
-            Uploaded photographs are not stored after your session. Email addresses provided for plan delivery are retained only long enough to send the email and are not stored in a marketing database. Server logs are retained for up to 30 days for security and diagnostic purposes.
+            We do not sell your personal information.
+          </p>
+          <p className="legal-p">
+            If you request a quote from a landscaping partner, we will share the following with that partner: your email address, your postcode, and a copy of your design plan. This sharing happens only when you explicitly request it by submitting the quote request form.
+          </p>
+          <p className="legal-p">We use the following third-party services to operate Dedrab, each of which may process your data as a data processor on our behalf:</p>
+          <ul className="legal-ul">
+            <li><strong>Vercel</strong> — website hosting and serverless infrastructure (USA, with EU data transfer safeguards)</li>
+            <li><strong>Supabase</strong> — database storage for design records and quote requests (EU region)</li>
+            <li><strong>Resend</strong> — transactional email delivery</li>
+            <li><strong>Google Gemini API</strong> — AI processing of your garden photograph and design generation</li>
+            <li><strong>Cloudflare</strong> — DNS, security, and performance</li>
+          </ul>
+          <p className="legal-p">
+            Each of these providers operates under their own privacy policies and data processing agreements.
           </p>
 
-          <h3 className="legal-h3">6. Cookies</h3>
+          <h3 className="legal-h3">Your Garden Photographs</h3>
           <p className="legal-p">
-            The Service does not use tracking cookies or advertising cookies. Session-level data may be held in browser memory during your visit but is not persisted beyond the session.
+            When you upload a photograph of your garden, it is processed by our AI provider (Google Gemini) to generate your design proposal. Your photograph may be retained as part of your design record in our database and included within your PDF design report. We do not use your photographs for any purpose other than generating and storing your design proposal.
           </p>
 
-          <h3 className="legal-h3">7. Your Rights</h3>
+          <h3 className="legal-h3">How Long We Retain Your Data</h3>
           <p className="legal-p">
-            Under applicable data protection law (including GDPR where it applies), you have the right to request access to, correction of, or deletion of personal data we hold about you. Given that we do not persistently store personal data, most requests will be resolved immediately. To exercise any right, contact us at the address below.
+            Email addresses provided for plan delivery are retained only for the purpose of delivering what you requested and are not used for marketing.
+          </p>
+          <p className="legal-p">
+            Design records including your photograph reference, report data, and PDF are retained to allow us to reconcile quote requests and provide support. You may request deletion of your record at any time by contacting us.
+          </p>
+          <p className="legal-p">
+            Quote request records including your email and postcode are retained for business reconciliation purposes.
           </p>
 
-          <h3 className="legal-h3">8. Children&apos;s Privacy</h3>
+          <h3 className="legal-h3">Your Rights Under GDPR</h3>
+          <p className="legal-p">If you are based in the EU or UK you have the following rights:</p>
+          <ul className="legal-ul">
+            <li>The right to access the personal data we hold about you.</li>
+            <li>The right to request correction of inaccurate data.</li>
+            <li>The right to request deletion of your data.</li>
+            <li>The right to object to processing of your data.</li>
+            <li>The right to data portability.</li>
+          </ul>
           <p className="legal-p">
-            The Service is not directed at children under the age of 16. We do not knowingly collect personal data from children. If you believe a child has submitted personal data through the Service, please contact us and we will take appropriate action.
+            To exercise any of these rights, contact us at <a href="mailto:privacy@dedrab.com" className="legal-link">privacy@dedrab.com</a>.
+          </p>
+          <p className="legal-p">
+            You also have the right to lodge a complaint with the Data Protection Commission (Ireland) at <a href="https://www.dataprotection.ie" className="legal-link" target="_blank" rel="noopener noreferrer">dataprotection.ie</a>.
           </p>
 
-          <h3 className="legal-h3">9. Changes to this Policy</h3>
+          <h3 className="legal-h3">Cookies</h3>
           <p className="legal-p">
-            We may update this Privacy Policy from time to time. Any changes will be posted on this page with an updated revision date. We encourage you to review this page periodically.
+            Dedrab uses a session cookie to remember your access code during your visit. We do not use advertising cookies or tracking cookies. We use Cloudflare Turnstile for bot protection which may set a functional cookie.
           </p>
 
-          <h3 className="legal-h3">10. Contact</h3>
+          <h3 className="legal-h3">Contact</h3>
           <p className="legal-p">
-            For any questions about these Terms or this Privacy Policy, please contact us at: <a href="mailto:hello@dedrab.com" className="legal-link">hello@dedrab.com</a>
+            For any privacy-related questions or requests, contact us at <a href="mailto:privacy@dedrab.com" className="legal-link">privacy@dedrab.com</a>.
           </p>
         </section>
       </main>
