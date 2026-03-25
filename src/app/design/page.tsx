@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import PDFButton from "@/components/PDFButton";
 import { pdf } from '@react-pdf/renderer';
 import { GardenPlanPDF } from '@/components/GardenPlanPDF';
+import { compressImage } from '@/lib/compressImage';
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 
@@ -1380,7 +1381,7 @@ export default function GardigApp() {
   const [emailStatus, setEmailStatus] = useState<"idle"|"sending"|"sent"|"error">("idle");
   const [emailError, setEmailError]   = useState<string | null>(null);
   const [showBefore, setShowBefore]   = useState(false);
-  const [fileSizeError, setFileSizeError] = useState(false);
+  const [isCompressing, setIsCompressing] = useState(false);
   const [selfSendToast, setSelfSendToast] = useState<string | null>(null);
   const [selfSendStatus, setSelfSendStatus] = useState<"idle"|"sending"|"sent"|"error">("idle");
   const [hasAttempted, setHasAttempted]   = useState(false);
@@ -1469,20 +1470,23 @@ export default function GardigApp() {
   };
   const isFormValid = () => missingFields().length === 0;
 
-  const handleFile = (file: File) => {
+  const handleFile = async (file: File) => {
     if (!file) return;
+    let fileToUse = file;
     if (file.size > 4 * 1024 * 1024) {
-      setFileSizeError(true);
-      setImageFile(null);
-      setImageDataUrl(null);
-      if (fileRef.current) fileRef.current.value = '';
-      return;
+      setIsCompressing(true);
+      try {
+        fileToUse = await compressImage(file);
+      } catch (err) {
+        console.error('Compression error:', err);
+      } finally {
+        setIsCompressing(false);
+      }
     }
-    setFileSizeError(false);
-    setImageFile(file);
+    setImageFile(fileToUse);
     const reader = new FileReader();
     reader.onload = e => setImageDataUrl(e.target?.result as string);
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(fileToUse);
   };
 
   const handleDrop = useCallback((e: React.DragEvent) => {
@@ -1698,17 +1702,13 @@ export default function GardigApp() {
                 : <div>
                     <div style={{ fontSize: 28, marginBottom: 6 }}>📷</div>
                     <div style={{ color: C.inkMid, fontSize: px(14), fontWeight: 500 }}>Drop image or click to browse</div>
-                    <div style={{ color: C.inkLight, fontSize: px(12), marginTop: 3 }}>JPG, PNG, WEBP · Max 4 MB</div>
+                    <div style={{ color: C.inkLight, fontSize: px(12), marginTop: 3 }}>JPG, PNG, WEBP</div>
                   </div>
               }
             </div>
-            {fileSizeError && (
-              <div style={{
-                marginTop: 10, padding: "10px 14px",
-                background: C.surface, borderLeft: `3px solid ${C.accent}`,
-                borderRadius: C.r, fontSize: px(13), color: C.red, lineHeight: 1.5,
-              }}>
-                Your file is too large — please try another image or reduce its size before uploading.
+            {isCompressing && (
+              <div style={{ marginTop: 10, fontSize: 13, color: C.inkLight }}>
+                Optimising image...
               </div>
             )}
             <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])} />
