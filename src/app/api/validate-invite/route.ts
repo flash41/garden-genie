@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
     }, { status: 200 });
   }
 
-  const response = NextResponse.json({
+  return NextResponse.json({
     success: true,
     code: data.code,
     label: data.label,
@@ -49,13 +49,4 @@ export async function POST(req: NextRequest) {
     renders_used: data.renders_used,
     max_renders: data.max_renders,
   });
-
-  response.cookies.set('dedrab_invite', data.code, {
-    httpOnly: false,
-    path: '/',
-    maxAge: 60 * 60 * 24 * 30,
-    sameSite: 'lax',
-  });
-
-  return response;
 }

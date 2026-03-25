@@ -1,12 +1,10 @@
 'use client';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 
 export default function InvitePage() {
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const router = useRouter();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -22,7 +20,9 @@ export default function InvitePage() {
       });
       const data = await res.json();
       if (data.success) {
-        router.push('/design');
+        const validatedCode = data.code || upper;
+        document.cookie = 'dedrab_invite=' + validatedCode + '; path=/; max-age=' + (60 * 60 * 24 * 30) + '; SameSite=Lax';
+        window.location.href = '/design';
       } else if (data.error === 'exhausted') {
         setError('This code has already been used. If this is a mistake please get in touch.');
       } else {
