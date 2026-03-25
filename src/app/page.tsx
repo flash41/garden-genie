@@ -128,8 +128,10 @@ export default function LandingPage() {
         .footer-legal-link { font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:rgba(255,255,255,0.2); text-decoration:none; transition:color 0.2s; }
         .footer-legal-link:hover { color: rgba(255,255,255,0.5); }
 
+        .mobile-nav-cta { display:none; }
         @media (max-width:900px) {
           .nav-links-hide { display:none !important; }
+          .mobile-nav-cta { display:inline-flex !important; align-items:center; background:#b8962e; color:#fff; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500; padding:8px 16px; border-radius:6px; border:none; text-decoration:none; cursor:pointer; white-space:nowrap; }
           .hero-preview-wrap { display:none !important; }
           .steps-connector { display:none !important; }
           .steps-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
@@ -164,6 +166,7 @@ export default function LandingPage() {
         <a href="/" style={{ display: 'flex', alignItems: 'center' }}>
           <img src="/dd_logo.png" alt="Dedrab" className="site-logo-h" />
         </a>
+        <Link href="/design" className="mobile-nav-cta">Get Inspired</Link>
         <ul className="nav-links-hide" style={{ display: 'flex', gap: 40, listStyle: 'none', alignItems: 'center', margin: 0, padding: 0 }}>
           <li><a href="#examples" className="nav-link-item">Examples</a></li>
           <li><a href="#how" className="nav-link-item">How It Works</a></li>
