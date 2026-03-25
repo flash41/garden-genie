@@ -64,7 +64,8 @@ export async function POST(req: NextRequest) {
   try {
     const countryOption = COUNTRY_OPTIONS.find(c => c.code === countryCode) || COUNTRY_OPTIONS[0];
     const geocodingQuery = buildGeocodingQuery(postcode, countryOption);
-    const countrycodesParam = (countryCode && countryCode !== 'OTHER') ? '&countrycodes=' + countryCode.toLowerCase() : '';
+    const hasCountryCode = countryCode && countryCode !== 'OTHER';
+    const countrycodesParam = hasCountryCode ? '&countrycodes=' + countryCode.toLowerCase() : '';
     const geocodeUrl = 'https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(geocodingQuery) + '&limit=1' + countrycodesParam;
 
     const geoResponse = await fetch(geocodeUrl, {
@@ -77,6 +78,15 @@ export async function POST(req: NextRequest) {
       const routingKey = postcode.trim().substring(0, 3);
       const fallbackQuery = routingKey + ', ' + countryOption.geocodeName;
       const fallbackUrl = 'https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(fallbackQuery) + '&limit=1&countrycodes=ie';
+      const fallbackResponse = await fetch(fallbackUrl, {
+        headers: { 'User-Agent': 'Dedrab/1.0 (dedrab.com)' },
+      });
+      geoData = await fallbackResponse.json();
+    }
+
+    // Final fallback: retry without countrycodes restriction if still no results
+    if ((!geoData || geoData.length === 0) && hasCountryCode) {
+      const fallbackUrl = 'https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(geocodingQuery) + '&limit=1';
       const fallbackResponse = await fetch(fallbackUrl, {
         headers: { 'User-Agent': 'Dedrab/1.0 (dedrab.com)' },
       });
