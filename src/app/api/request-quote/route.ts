@@ -55,6 +55,25 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: false, error: insertError.message }, { status: 500 });
   }
 
+  // Geocode postcode — non-blocking, coordinates are optional enrichment
+  try {
+    const geocodeUrl = 'https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(postcode) + '&limit=1';
+    const geoResponse = await fetch(geocodeUrl, {
+      headers: { 'User-Agent': 'Dedrab/1.0 (dedrab.com)' },
+    });
+    const geoData = await geoResponse.json();
+    if (geoData && geoData.length > 0) {
+      const latitude = parseFloat(geoData[0].lat);
+      const longitude = parseFloat(geoData[0].lon);
+      await supabase
+        .from('quote_requests')
+        .update({ latitude, longitude })
+        .eq('id', quoteData.id);
+    }
+  } catch (geoErr) {
+    console.error('Geocoding error (non-fatal):', geoErr);
+  }
+
   const designStyle = designRecord?.design_style || 'Custom';
   const quotesLabel = quotesRequested === 1 ? '1 quote' : '3 quotes';
   const refNum = designRecord?.reference_number || null;
