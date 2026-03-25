@@ -17,6 +17,12 @@ export async function POST(req: NextRequest) {
     sessionId?: string;
   };
 
+  console.log('[upload-pdf] Received:', {
+    sessionId,
+    referenceNumber,
+    base64Length: typeof pdfBase64 === 'string' ? pdfBase64.length : 0,
+  });
+
   if (!pdfBase64 || !referenceNumber || !sessionId) {
     return NextResponse.json({ error: 'pdfBase64, referenceNumber and sessionId are required' }, { status: 400 });
   }
@@ -26,30 +32,58 @@ export async function POST(req: NextRequest) {
 
   const filePath = referenceNumber + '.pdf';
 
-  const { error: uploadError } = await supabaseAdmin.storage
+  const uploadResult = await supabaseAdmin.storage
     .from('pdfs')
     .upload(filePath, buffer, {
       contentType: 'application/pdf',
       upsert: true,
     });
 
-  if (uploadError) {
-    console.error('[upload-pdf] Storage upload error:', uploadError);
-    return NextResponse.json({ error: uploadError.message }, { status: 500 });
+  console.log('[upload-pdf] Storage upload result:', {
+    data: uploadResult.data,
+    error: uploadResult.error,
+  });
+
+  if (uploadResult.error) {
+    console.error('[upload-pdf] Storage upload error:', uploadResult.error);
+    return NextResponse.json({ error: uploadResult.error.message }, { status: 500 });
   }
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-  const pdfUrl = supabaseUrl + '/storage/v1/object/public/pdfs/' + filePath;
+  const supabaseUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL || '').replace(/\/$/, '');
+  const publicUrl = supabaseUrl + '/storage/v1/object/public/pdfs/' + filePath;
 
-  const { error: updateError } = await supabaseAdmin
+  console.log('[upload-pdf] Constructed public URL:', publicUrl);
+
+  const { data, error: updateError } = await supabaseAdmin
     .from('design_records')
-    .update({ pdf_url: pdfUrl })
-    .eq('session_id', sessionId);
+    .update({ pdf_url: publicUrl })
+    .eq('session_id', sessionId)
+    .select();
+
+  console.log('[upload-pdf] Update by session_id result:', {
+    rowsAffected: data ? data.length : 0,
+    data,
+    error: updateError,
+  });
 
   if (updateError) {
-    console.error('[upload-pdf] DB update error:', updateError);
-    // Non-fatal — the file is uploaded, just log it
+    console.error('[upload-pdf] DB update error (session_id):', updateError);
   }
 
-  return NextResponse.json({ pdfUrl });
+  if (!data || data.length === 0) {
+    console.warn('[upload-pdf] 0 rows matched session_id — trying reference_number fallback');
+    const fallback = await supabaseAdmin
+      .from('design_records')
+      .update({ pdf_url: publicUrl })
+      .eq('reference_number', referenceNumber)
+      .select();
+
+    console.log('[upload-pdf] Fallback update by reference_number result:', {
+      rowsAffected: fallback.data ? fallback.data.length : 0,
+      data: fallback.data,
+      error: fallback.error,
+    });
+  }
+
+  return NextResponse.json({ pdfUrl: publicUrl });
 }

@@ -243,7 +243,7 @@ export default function AdminLeadsContent({ initialLeads }: { initialLeads: Lead
                             rel="noopener noreferrer"
                             style={{ color: '#b8962e', fontWeight: 600, textDecoration: 'none', fontSize: 13 }}
                           >
-                            Download
+                            View PDF
                           </a>
                         ) : (
                           <span style={{ color: '#c4b8a8', fontSize: 13 }}>—</span>

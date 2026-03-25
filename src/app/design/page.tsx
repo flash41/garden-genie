@@ -2063,6 +2063,7 @@ export default function GardigApp() {
           reader.onerror = reject;
           reader.readAsDataURL(blob);
         });
+        console.log('[handleSaveAndProceed] Uploading PDF — sessionId:', newSessionId, 'referenceNumber:', refNum);
         const uploadRes = await fetch('/api/upload-pdf', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -2070,9 +2071,11 @@ export default function GardigApp() {
         });
         if (uploadRes.ok) {
           const { pdfUrl } = await uploadRes.json();
+          console.log('[handleSaveAndProceed] PDF upload succeeded, pdfUrl:', pdfUrl);
           if (pdfUrl) sessionStorage.setItem('garden_pdf_url', pdfUrl);
         } else {
-          console.error('PDF upload failed:', await uploadRes.text());
+          const errText = await uploadRes.text();
+          console.error('[handleSaveAndProceed] PDF upload failed — status:', uploadRes.status, 'body:', errText);
         }
       } catch (err) {
         console.error('PDF generation/upload error:', err);
