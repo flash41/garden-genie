@@ -1394,6 +1394,8 @@ export default function GardigApp() {
   const [designRecordId, setDesignRecordId]   = useState<string | null>(null);
   const [referenceNumber, setReferenceNumber] = useState<string | null>(null);
   const [isSaving, setIsSaving]               = useState(false);
+  const [saveError, setSaveError]             = useState<string | null>(null);
+  const [saveComplete, setSaveComplete]       = useState(false);
   const [showRestoreBanner, setShowRestoreBanner] = useState(false);
   const [savedResults, setSavedResults]           = useState<any>(null);
   const [inviteCode, setInviteCode]           = useState<string | null>(null);
@@ -1402,6 +1404,7 @@ export default function GardigApp() {
   const [renderBlocked, setRenderBlocked]     = useState(false);
   const [inviteRedirectNeeded, setInviteRedirectNeeded] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const intentionalNavRef = useRef(false);
   const router = useRouter();
 
   const loadingMessages = [
@@ -1481,10 +1484,11 @@ export default function GardigApp() {
     }
   }, []);
 
-  // Warn on tab close / refresh while results are shown
+  // Warn on tab close / refresh while results are shown — skipped for intentional navigation
   useEffect(() => {
     if (!hasResults) return;
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (intentionalNavRef.current) return;
       e.preventDefault();
       e.returnValue = '';
     };
@@ -1750,7 +1754,18 @@ export default function GardigApp() {
           <span style={{ flex: 1, fontSize: 14 }}>Your last design is still available.</span>
           <button
             onClick={() => {
+              if (!savedResults) return;
+              console.log('Restored results from session:', savedResults);
+              setDocData(savedResults.planData || null);
+              setRenderUrl(savedResults.renderUrl || null);
+              setDesignLang(savedResults.designStyle || 'Japanese Zen');
+              setHardinessZone(savedResults.hardinessZone || '');
+              setGardenOrientation(savedResults.orientation || '');
+              setTransformationLevel(savedResults.transformationLevel || 3);
+              setClientName(savedResults.clientName || '');
+              setUserEmail(savedResults.userEmail || '');
               setStep('result');
+              setActiveTab('overview');
               setShowRestoreBanner(false);
             }}
             style={{ background: '#b8962e', color: '#fff', border: 'none', borderRadius: 4, padding: '6px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
@@ -2098,8 +2113,11 @@ export default function GardigApp() {
   }
 
   async function handleSaveAndProceed() {
+    console.log('Save and proceed clicked', { sessionId, userEmail, hasResults });
     if (isSaving) return;
     setIsSaving(true);
+    setSaveError(null);
+    setSaveComplete(false);
     const newSessionId = crypto.randomUUID();
     setSessionId(newSessionId);
     sessionStorage.setItem('garden_user_email', userEmail);
@@ -2109,7 +2127,7 @@ export default function GardigApp() {
     let refNum: string | null = null;
 
     try {
-      const res = await fetch('/api/save-design', {
+      const saveResponse = await fetch('/api/save-design', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -2121,65 +2139,80 @@ export default function GardigApp() {
           fullReport: docData || {},
         }),
       });
-      if (res.ok) {
-        const data = await res.json();
-        setDesignRecordId(data.id);
-        refNum = data.reference_number || null;
+      const saveData = await saveResponse.json();
+      console.log('save-design response:', saveResponse.status, saveData);
+      if (saveResponse.ok) {
+        setDesignRecordId(saveData.id);
+        refNum = saveData.reference_number || null;
         if (refNum) {
           setReferenceNumber(refNum);
           sessionStorage.setItem('garden_reference_number', refNum);
         }
       } else {
-        console.error('Save design failed:', await res.text());
+        console.error('Save design failed:', saveData);
+        setSaveError('Could not save your plan. Please try again.');
+        setIsSaving(false);
+        return;
       }
     } catch (err) {
       console.error('Save design error:', err);
+      setSaveError('Could not save your plan. Please try again.');
+      setIsSaving(false);
+      return;
     }
 
-    // Generate and upload PDF (non-blocking — failure does not prevent navigation)
+    // PDF generation — fire and forget so navigation is not blocked
+    // Using router.push (SPA navigation) so this IIFE continues running after navigation
     if (refNum) {
-      try {
-        const pdfDoc = (
-          <GardenPlanPDF
-            doc={docData}
-            imageBase64={renderUrl || ''}
-            imageDataUrl={imageDataUrl || undefined}
-            gridImageUrl={gridImageUrl || undefined}
-            aerialImageUrl={aerialGridImageUrl || aerialImageUrl || undefined}
-            style={designLang}
-            clientName={clientName}
-            gardenOrientation={gardenOrientation}
-            transformationLevel={transformationLevel}
-            referenceNumber={refNum}
-          />
-        );
-        const blob = await pdf(pdfDoc).toBlob();
-        const pdfBase64 = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
-          reader.onerror = reject;
-          reader.readAsDataURL(blob);
-        });
-        console.log('[handleSaveAndProceed] Uploading PDF — sessionId:', newSessionId, 'referenceNumber:', refNum);
-        const uploadRes = await fetch('/api/upload-pdf', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ pdfBase64, referenceNumber: refNum, sessionId: newSessionId }),
-        });
-        if (uploadRes.ok) {
-          const { pdfUrl } = await uploadRes.json();
-          console.log('[handleSaveAndProceed] PDF upload succeeded, pdfUrl:', pdfUrl);
-          if (pdfUrl) sessionStorage.setItem('garden_pdf_url', pdfUrl);
-        } else {
-          const errText = await uploadRes.text();
-          console.error('[handleSaveAndProceed] PDF upload failed — status:', uploadRes.status, 'body:', errText);
+      const capturedRefNum = refNum;
+      const capturedSessionId = newSessionId;
+      (async () => {
+        try {
+          const pdfDoc = (
+            <GardenPlanPDF
+              doc={docData}
+              imageBase64={renderUrl || ''}
+              imageDataUrl={imageDataUrl || undefined}
+              gridImageUrl={gridImageUrl || undefined}
+              aerialImageUrl={aerialGridImageUrl || aerialImageUrl || undefined}
+              style={designLang}
+              clientName={clientName}
+              gardenOrientation={gardenOrientation}
+              transformationLevel={transformationLevel}
+              referenceNumber={capturedRefNum}
+            />
+          );
+          const blob = await pdf(pdfDoc).toBlob();
+          const pdfBase64 = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          });
+          console.log('[handleSaveAndProceed] Uploading PDF — sessionId:', capturedSessionId, 'referenceNumber:', capturedRefNum);
+          const uploadRes = await fetch('/api/upload-pdf', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pdfBase64, referenceNumber: capturedRefNum, sessionId: capturedSessionId }),
+          });
+          if (uploadRes.ok) {
+            const { pdfUrl } = await uploadRes.json();
+            console.log('[handleSaveAndProceed] PDF upload succeeded, pdfUrl:', pdfUrl);
+            if (pdfUrl) sessionStorage.setItem('garden_pdf_url', pdfUrl);
+          } else {
+            const errText = await uploadRes.text();
+            console.error('[handleSaveAndProceed] PDF upload failed — status:', uploadRes.status, 'body:', errText);
+          }
+        } catch (err) {
+          console.error('PDF generation/upload error:', err);
         }
-      } catch (err) {
-        console.error('PDF generation/upload error:', err);
-      }
+      })();
     }
 
-    setIsSaving(false);
+    // Show saved confirmation briefly, then navigate
+    setSaveComplete(true);
+    await new Promise(r => setTimeout(r, 500));
+    intentionalNavRef.current = true;
     sessionStorage.removeItem('dedrab_last_results');
     router.push('/next-steps?sessionId=' + newSessionId);
   }
@@ -2194,6 +2227,7 @@ export default function GardigApp() {
         .tab-bar-outer{overflow-x:auto;-webkit-overflow-scrolling:touch}
         .grid-2col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
         .result-header-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+        @keyframes spin{to{transform:rotate(360deg)}}
         .site-logo-h{height:40px;width:auto;display:block}
         @media(max-width:640px){
           .grid-2col{grid-template-columns:1fr}
@@ -2237,20 +2271,29 @@ export default function GardigApp() {
             style={{ background: "rgba(255,255,255,0.08)", border: `1px solid rgba(255,255,255,0.2)`, color: "rgba(255,255,255,0.8)", padding: "7px 15px", borderRadius: C.r, cursor: "pointer", fontFamily: C.font, fontSize: px(13), fontWeight: 600 }}>
             ← New Analysis
           </button>
-          <button
-            onClick={handleSaveAndProceed}
-            disabled={isSaving}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 8,
-              background: '#b8962e', color: '#fff',
-              border: 'none', borderRadius: C.r,
-              padding: '10px 22px', cursor: isSaving ? 'not-allowed' : 'pointer',
-              fontFamily: C.font, fontSize: px(BASE), fontWeight: 600,
-              letterSpacing: '0.02em', opacity: isSaving ? 0.7 : 1,
-            }}
-          >
-            {isSaving ? 'Preparing your plan\u2026' : 'Save and proceed \u2192'}
-          </button>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
+            <button
+              onClick={handleSaveAndProceed}
+              disabled={isSaving}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                background: saveComplete ? '#166534' : '#b8962e', color: '#fff',
+                border: 'none', borderRadius: C.r,
+                padding: '10px 22px', cursor: isSaving ? 'not-allowed' : 'pointer',
+                fontFamily: C.font, fontSize: px(BASE), fontWeight: 600,
+                letterSpacing: '0.02em', opacity: isSaving ? 0.85 : 1,
+                transition: 'background 0.2s',
+              }}
+            >
+              {isSaving && !saveComplete && (
+                <span style={{ display: 'inline-block', width: 14, height: 14, border: '2px solid rgba(255,255,255,0.4)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+              )}
+              {!isSaving ? 'Save and proceed \u2192' : saveComplete ? 'Saved! Redirecting\u2026' : 'Saving\u2026'}
+            </button>
+            {saveError && (
+              <span style={{ fontSize: px(12), color: '#fca5a5' }}>{saveError}</span>
+            )}
+          </div>
         </div>
       </header>
 
