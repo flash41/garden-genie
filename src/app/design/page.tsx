@@ -1394,6 +1394,8 @@ export default function GardigApp() {
   const [designRecordId, setDesignRecordId]   = useState<string | null>(null);
   const [referenceNumber, setReferenceNumber] = useState<string | null>(null);
   const [isSaving, setIsSaving]               = useState(false);
+  const [showRestoreBanner, setShowRestoreBanner] = useState(false);
+  const [savedResults, setSavedResults]           = useState<any>(null);
   const [inviteCode, setInviteCode]           = useState<string | null>(null);
   const [rendersRemaining, setRendersRemaining] = useState<number | null>(null);
   const [maxRenders, setMaxRenders]           = useState<number | null>(null);
@@ -1457,6 +1459,58 @@ export default function GardigApp() {
       })
       .catch(() => {});
   }, []);
+
+  // Derived: true once results are displayed
+  const hasResults = step === "result";
+
+  // Restore banner: check sessionStorage on mount for a recent saved result
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem('dedrab_last_results');
+      if (!saved) return;
+      const parsed = JSON.parse(saved);
+      const twoHoursAgo = Date.now() - (2 * 60 * 60 * 1000);
+      if (parsed.savedAt > twoHoursAgo) {
+        setShowRestoreBanner(true);
+        setSavedResults(parsed);
+      } else {
+        sessionStorage.removeItem('dedrab_last_results');
+      }
+    } catch (e) {
+      sessionStorage.removeItem('dedrab_last_results');
+    }
+  }, []);
+
+  // Warn on tab close / refresh while results are shown
+  useEffect(() => {
+    if (!hasResults) return;
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [hasResults]);
+
+  // Intercept back button while results are shown
+  useEffect(() => {
+    if (!hasResults) return;
+    const handlePopState = () => {
+      const confirmed = window.confirm(
+        'Your garden design is ready. If you go back now you will lose your plan.\n\nMake sure you have saved or emailed your plan before leaving.'
+      );
+      if (!confirmed) {
+        window.history.pushState(null, '', window.location.href);
+      }
+    };
+    window.history.pushState(null, '', window.location.href);
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [hasResults]);
 
   const missingFields = () => {
     const missing: string[] = [];
@@ -1630,6 +1684,24 @@ export default function GardigApp() {
 
       setLoadingMsg("Building proposal...");
       await new Promise(r => setTimeout(r, 300));
+
+      // Persist results to sessionStorage so they can be restored on refresh
+      try {
+        sessionStorage.setItem('dedrab_last_results', JSON.stringify({
+          renderUrl: result.imageBase64 || null,
+          planData: result.designJSON || null,
+          designStyle: designLang,
+          hardinessZone: hardinessZone || '',
+          orientation: gardenOrientation || '',
+          transformationLevel,
+          clientName: clientName || '',
+          userEmail: userEmail || '',
+          savedAt: Date.now(),
+        }));
+      } catch (e) {
+        console.error('Could not save results to session:', e);
+      }
+
       setStep("result");
       setActiveTab("overview");
       // Refresh remaining renders count
@@ -1672,6 +1744,31 @@ export default function GardigApp() {
           <img src="/dd_logo.png" alt="Dedrab" className="site-logo-h" />
         </a>
       </header>
+
+      {showRestoreBanner && savedResults && (
+        <div style={{ background: '#0a3d2b', color: '#fff', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+          <span style={{ flex: 1, fontSize: 14 }}>Your last design is still available.</span>
+          <button
+            onClick={() => {
+              setStep('result');
+              setShowRestoreBanner(false);
+            }}
+            style={{ background: '#b8962e', color: '#fff', border: 'none', borderRadius: 4, padding: '6px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
+          >
+            Restore my plan
+          </button>
+          <button
+            onClick={() => {
+              sessionStorage.removeItem('dedrab_last_results');
+              setShowRestoreBanner(false);
+              setSavedResults(null);
+            }}
+            style={{ background: 'transparent', color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 4, padding: '6px 16px', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}
+          >
+            Start fresh
+          </button>
+        </div>
+      )}
 
       <div style={{ maxWidth: 860, margin: "0 auto", padding: "44px 24px" }}>
         <div style={{ marginBottom: 36 }}>
@@ -2083,6 +2180,7 @@ export default function GardigApp() {
     }
 
     setIsSaving(false);
+    sessionStorage.removeItem('dedrab_last_results');
     router.push('/next-steps?sessionId=' + newSessionId);
   }
 
