@@ -1,5 +1,10 @@
 import { Document, Page, Text, View, Image, StyleSheet } from '@react-pdf/renderer';
 
+// ─── LOGO URL ─────────────────────────────────────────────────────────────────
+const logoUrl = process.env.NODE_ENV === 'production'
+  ? 'https://dedrab.com/dd_logo.png'
+  : 'http://localhost:3000/dd_logo.png';
+
 // ─── TOKENS ───────────────────────────────────────────────────────────────────
 const T = {
   brand:    '#0a3d2b',
@@ -169,7 +174,7 @@ const PageChrome = ({ clientName, dateStr, style, referenceNumber }: any) => (
       <Text style={S.runRight}>{clientName ? clientName + ' · ' : ''}{style}</Text>
     </View>
     <View style={S.footer} fixed>
-      <Text style={S.footerBrand}>dedrab.com</Text>
+      <Image src={logoUrl} style={{ width: 60, height: 'auto' }} />
       <Text style={S.footerMid}>{'Dedrab Design Reference: ' + (referenceNumber || 'Pending')}</Text>
       <Text style={S.footerPg} render={({ pageNumber, totalPages }: { pageNumber: number; totalPages: number }) => 'Page ' + pageNumber + ' / ' + totalPages} />
     </View>
@@ -248,7 +253,7 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
         <View style={S.coverTopRule} />
         <View style={S.coverContent}>
           <View style={S.coverTopRow}>
-            <Text style={S.coverBrand}>dedrab.com</Text>
+            <Image src={logoUrl} style={{ width: 150, height: 'auto' }} />
             <Text style={S.coverDate}>{dateStr}</Text>
           </View>
           <View style={S.coverMid}>

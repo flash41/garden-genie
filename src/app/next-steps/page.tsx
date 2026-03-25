@@ -189,6 +189,8 @@ function NextStepsContent() {
       <style>{`
         #postcode-input::placeholder { color: #9a9a9a; opacity: 1; }
         #friend-email-input::placeholder { color: #9a9a9a; opacity: 1; }
+        .site-logo-h { height: 36px; width: auto; display: block; }
+        @media (max-width:640px) { .site-logo-h { height: 28px; } }
         @media (max-width: 767px) {
           .ns-grid { grid-template-columns: 1fr !important; }
           .ns-boxes { grid-template-columns: 1fr !important; }
@@ -197,7 +199,9 @@ function NextStepsContent() {
 
       {/* Header */}
       <div style={{ background: '#0a3d2b', padding: '18px 40px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 700, color: '#fff', letterSpacing: 3, textTransform: 'uppercase' }}>Dedrab</div>
+        <a href="/" style={{ display: 'flex', alignItems: 'center' }}>
+          <img src="/dd_logo.png" alt="Dedrab" className="site-logo-h" />
+        </a>
         <a href="/design" style={{ color: '#b8962e', fontSize: 13, textDecoration: 'none', fontWeight: 600 }}>{'← Start a new design'}</a>
       </div>
 

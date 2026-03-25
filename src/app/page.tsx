@@ -143,6 +143,8 @@ export default function LandingPage() {
           .section-pad { padding: 60px 24px !important; }
           .hero-pad { padding: 80px 24px 40px !important; margin-left: 0 !important; }
         }
+        .site-logo-h { height: 44px; width: auto; display: block; }
+        @media (max-width:640px) { .site-logo-h { height: 28px; } }
       `}</style>
 
       {/* Google Fonts */}
@@ -159,10 +161,9 @@ export default function LandingPage() {
           transition: 'background 0.4s ease, padding 0.3s ease',
         }}
       >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 700, color: 'white', letterSpacing: 3, textTransform: 'uppercase' }}>Dedrab</span>
-          <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 9, color: 'var(--gold-light)', letterSpacing: 4, textTransform: 'uppercase' }}>Garden Inspiration · dedrab.com</span>
-        </div>
+        <a href="/" style={{ display: 'flex', alignItems: 'center' }}>
+          <img src="/dd_logo.png" alt="Dedrab" className="site-logo-h" />
+        </a>
         <ul className="nav-links-hide" style={{ display: 'flex', gap: 40, listStyle: 'none', alignItems: 'center', margin: 0, padding: 0 }}>
           <li><a href="#examples" className="nav-link-item">Examples</a></li>
           <li><a href="#how" className="nav-link-item">How It Works</a></li>
@@ -598,8 +599,8 @@ export default function LandingPage() {
       <footer style={{ background: '#050f0a', padding: 0 }}>
         <div className="footer-main" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '48px 60px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
           <div>
-            <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, fontWeight: 700, color: 'white', letterSpacing: 3, textTransform: 'uppercase' }}>Dedrab</div>
-            <div style={{ fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', color: 'var(--gold)', marginTop: 4 }}>Garden Inspiration</div>
+            <img src="/dd_logo.png" alt="Dedrab" style={{ height: 48, width: 'auto', display: 'block' }} />
+            <div style={{ fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', color: 'var(--gold)', marginTop: 6 }}>Garden Inspiration</div>
           </div>
           <ul className="footer-nav" style={{ display: 'flex', gap: 32, listStyle: 'none', margin: 0, padding: 0 }}>
             <li><a href="#examples" className="footer-link">Examples</a></li>

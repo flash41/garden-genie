@@ -33,7 +33,7 @@ export default function AdminLoginPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#f4efe4', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Sans', sans-serif" }}>
       <div style={{ background: '#fff', border: '1px solid #e5ddd0', borderRadius: 8, padding: '40px 36px', width: 360, maxWidth: '90vw', boxShadow: '0 4px 24px rgba(0,0,0,0.07)' }}>
-        <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 700, color: '#0a3d2b', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 6 }}>Dedrab</div>
+        <img src="/dd_logo.png" alt="Dedrab" style={{ height: 44, width: 'auto', display: 'block', marginBottom: 6 }} />
         <div style={{ fontSize: 12, color: '#8a7e6e', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 28 }}>Admin</div>
         <form onSubmit={handleSubmit}>
           <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#4a3f32', marginBottom: 6, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Password</label>

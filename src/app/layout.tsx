@@ -14,6 +14,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  icons: {
+    icon: '/og-image.png',
+    apple: '/og-image.png',
+  },
   title: 'Dedrab — De-drab your garden',
   description: 'Upload a photo of your garden and get a full AI-powered redesign — a visual render, plant list, materials guide and actionable plan.',
   openGraph: {

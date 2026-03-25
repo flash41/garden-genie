@@ -1658,15 +1658,15 @@ export default function GardigApp() {
         .creativity-slider{-webkit-appearance:none;appearance:none;width:100%;height:5px;border-radius:3px;outline:none;cursor:pointer;background:linear-gradient(to right,#0a3d2b 0%,#0a3d2b var(--cp,50%),#d9cdb8 var(--cp,50%),#d9cdb8 100%)}
         .creativity-slider::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#b8962e;border:2.5px solid #0a3d2b;cursor:pointer;box-shadow:0 1px 4px rgba(44,26,14,0.18)}
         .creativity-slider::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:#b8962e;border:2.5px solid #0a3d2b;cursor:pointer;box-shadow:0 1px 4px rgba(44,26,14,0.18)}
+        .site-logo-h{height:40px;width:auto;display:block}
+        @media(max-width:640px){.site-logo-h{height:28px}}
       `}</style>
 
       {/* Top bar */}
-      <header style={{ background: C.brand, borderBottom: `1px solid rgba(184,150,46,0.3)`, height: 56, display: "flex", alignItems: "center", padding: "0 28px", gap: 12 }}>
-        <div style={{ width: 30, height: 30, borderRadius: C.r, background: "rgba(184,150,46,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#b8962e" strokeWidth="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12"/></svg>
-        </div>
-        <span style={{ fontFamily: C.fontSerif, fontWeight: 700, fontSize: px(18), color: "#fff", letterSpacing: "1px" }}>Dedrab</span>
-        <span style={{ fontSize: px(12), color: "rgba(255,255,255,0.45)", marginLeft: 2, letterSpacing: "0.05em" }}>dedrab.com</span>
+      <header style={{ background: C.brand, borderBottom: `1px solid rgba(184,150,46,0.3)`, height: 56, display: "flex", alignItems: "center", padding: "0 28px" }}>
+        <a href="/" style={{ display: 'flex', alignItems: 'center' }}>
+          <img src="/dd_logo.png" alt="Dedrab" className="site-logo-h" />
+        </a>
       </header>
 
       <div style={{ maxWidth: 860, margin: "0 auto", padding: "44px 24px" }}>
@@ -2093,11 +2093,13 @@ export default function GardigApp() {
         .tab-bar-outer{overflow-x:auto;-webkit-overflow-scrolling:touch}
         .grid-2col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
         .result-header-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+        .site-logo-h{height:40px;width:auto;display:block}
         @media(max-width:640px){
           .grid-2col{grid-template-columns:1fr}
           .result-header-actions{flex-wrap:wrap;gap:6px}
           .result-header-actions>*{flex:1 1 auto;min-width:0;font-size:11px!important;padding:7px 10px!important}
           .result-content-pad{padding:16px 12px 32px!important}
+          .site-logo-h{height:28px}
         }
         @media print{.noprint{display:none!important};body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
       `}</style>
@@ -2105,11 +2107,9 @@ export default function GardigApp() {
       {/* Sticky header */}
       <header className="noprint" style={{ background: C.brand, borderBottom: `1px solid rgba(184,150,46,0.3)`, height: 56, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 24px", position: "sticky", top: 0, zIndex: 100, boxShadow: C.shadow }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <div style={{ width: 30, height: 30, borderRadius: C.r, background: "rgba(184,150,46,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#b8962e" strokeWidth="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12"/></svg>
-          </div>
-          <span style={{ fontFamily: C.fontSerif, fontWeight: 700, fontSize: px(18), color: "#fff", letterSpacing: "1px" }}>Dedrab</span>
-          <span style={{ fontSize: px(12), color: "rgba(255,255,255,0.4)", letterSpacing: "0.05em" }}>dedrab.com</span>
+          <a href="/" style={{ display: 'flex', alignItems: 'center' }}>
+            <img src="/dd_logo.png" alt="Dedrab" className="site-logo-h" />
+          </a>
           {rendersRemaining !== null && maxRenders !== null && (
             <span style={{ fontSize: px(11), color: "rgba(255,255,255,0.45)", marginLeft: 8, letterSpacing: "0.04em" }}>
               {rendersRemaining} of {maxRenders} renders remaining

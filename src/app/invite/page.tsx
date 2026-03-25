@@ -41,12 +41,13 @@ export default function InvitePage() {
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap');
         #invite-code-input { text-transform: uppercase; }
         #invite-code-input::placeholder { text-transform: none; color: #b0a898; }
+        .site-logo-h { height: 44px; width: auto; }
+        @media (max-width:640px) { .site-logo-h { height: 32px; } }
       `}</style>
 
       {/* Logo */}
       <div style={{ marginBottom: 40, textAlign: 'center' }}>
-        <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 28, fontWeight: 700, color: '#0a3d2b', letterSpacing: 4, textTransform: 'uppercase', marginBottom: 4 }}>Dedrab</div>
-        <div style={{ width: 48, height: 2, background: '#b8962e', margin: '0 auto' }} />
+        <img src="/dd_logo.png" alt="Dedrab" className="site-logo-h" style={{ display: 'inline-block' }} />
       </div>
 
       {/* Card */}
