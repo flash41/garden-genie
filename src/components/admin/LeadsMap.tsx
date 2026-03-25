@@ -12,6 +12,8 @@ export interface LeadRow {
   actioned_at: string | null;
   latitude: number | null;
   longitude: number | null;
+  country: string | null;
+  country_code: string | null;
   design_records: {
     design_style: string | null;
     pdf_url: string | null;
@@ -73,7 +75,7 @@ function LeadsMapView({ leads }: { leads: LeadRow[] }) {
 
         marker.addTo(map).bindPopup(
           '<strong>' + lead.email + '</strong><br>' +
-          lead.postcode + '<br>' +
+          lead.postcode + (lead.country ? ' (' + lead.country + ')' : '') + '<br>' +
           new Date(lead.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + '<br>' +
           'Quotes: ' + lead.quotes_requested + '<br>' +
           (lead.actioned ? 'Actioned' : 'Pending')
@@ -197,6 +199,7 @@ export default function AdminLeadsContent({ initialLeads }: { initialLeads: Lead
                     <th style={thStyle}>Date</th>
                     <th style={thStyle}>Email</th>
                     <th style={thStyle}>Postcode</th>
+                    <th style={thStyle}>Country</th>
                     <th style={thStyle}>Quotes</th>
                     <th style={thStyle}>Design Style</th>
                     <th style={thStyle}>PDF</th>
@@ -229,6 +232,7 @@ export default function AdminLeadsContent({ initialLeads }: { initialLeads: Lead
                       </td>
                       <td style={{ padding: '13px 16px', color: '#2d2520' }}>{lead.email}</td>
                       <td style={{ padding: '13px 16px', color: '#4a3f32' }}>{lead.postcode}</td>
+                      <td style={{ padding: '13px 16px', color: '#4a3f32' }}>{lead.country || '—'}</td>
                       <td style={{ padding: '13px 16px', color: '#4a3f32' }}>{lead.quotes_requested}</td>
                       <td style={{ padding: '13px 16px', color: '#4a3f32' }}>{lead.design_records?.design_style || '—'}</td>
                       <td style={{ padding: '13px 16px' }}>

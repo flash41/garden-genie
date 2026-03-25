@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { Resend } from 'resend';
+import { buildGeocodingQuery, COUNTRY_OPTIONS } from '@/lib/detectPostcodeCountry';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,11 +15,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: false, error: 'Invalid request body' }, { status: 400 });
   }
 
-  const { sessionId, email, postcode, quotesRequested } = body as {
+  const { sessionId, email, postcode, quotesRequested, country, countryCode } = body as {
     sessionId?: string;
     email?: string;
     postcode?: string;
     quotesRequested?: number;
+    country?: string;
+    countryCode?: string;
   };
 
   if (!email || !postcode || !sessionId) {
@@ -46,6 +49,8 @@ export async function POST(req: NextRequest) {
       postcode,
       quotes_requested: quotesRequested,
       confirmation_sent: false,
+      country: country || null,
+      country_code: countryCode || null,
     })
     .select('id')
     .single();
@@ -57,11 +62,27 @@ export async function POST(req: NextRequest) {
 
   // Geocode postcode — non-blocking, coordinates are optional enrichment
   try {
-    const geocodeUrl = 'https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(postcode) + '&limit=1';
+    const countryOption = COUNTRY_OPTIONS.find(c => c.code === countryCode) || COUNTRY_OPTIONS[0];
+    const geocodingQuery = buildGeocodingQuery(postcode, countryOption);
+    const countrycodesParam = (countryCode && countryCode !== 'OTHER') ? '&countrycodes=' + countryCode.toLowerCase() : '';
+    const geocodeUrl = 'https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(geocodingQuery) + '&limit=1' + countrycodesParam;
+
     const geoResponse = await fetch(geocodeUrl, {
       headers: { 'User-Agent': 'Dedrab/1.0 (dedrab.com)' },
     });
-    const geoData = await geoResponse.json();
+    let geoData = await geoResponse.json();
+
+    // Eircode fallback: try routing key (first 3 chars) + country if full eircode returns nothing
+    if ((!geoData || geoData.length === 0) && countryCode === 'IE' && postcode.trim().length >= 3) {
+      const routingKey = postcode.trim().substring(0, 3);
+      const fallbackQuery = routingKey + ', ' + countryOption.geocodeName;
+      const fallbackUrl = 'https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(fallbackQuery) + '&limit=1&countrycodes=ie';
+      const fallbackResponse = await fetch(fallbackUrl, {
+        headers: { 'User-Agent': 'Dedrab/1.0 (dedrab.com)' },
+      });
+      geoData = await fallbackResponse.json();
+    }
+
     if (geoData && geoData.length > 0) {
       const latitude = parseFloat(geoData[0].lat);
       const longitude = parseFloat(geoData[0].lon);

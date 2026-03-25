@@ -24,6 +24,8 @@ export default async function AdminLeadsPage() {
       actioned_at,
       latitude,
       longitude,
+      country,
+      country_code,
       design_records (
         design_style,
         pdf_url,
