@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from 'next/navigation';
 import PDFButton from "@/components/PDFButton";
 import { pdf } from '@react-pdf/renderer';
@@ -1471,6 +1471,21 @@ function generateGridOverlay(
 }
 
 
+// ─── THEME PRE-SELECTOR ───────────────────────────────────────────────────────
+// Isolated into its own component so useSearchParams() can be wrapped in Suspense,
+// satisfying Next.js static generation requirements.
+
+function ThemePreSelector({ onTheme }: { onTheme: (label: string) => void }) {
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const theme = searchParams.get('theme');
+    if (!theme) return;
+    const match = DESIGN_LANGUAGES.find(l => l.value === theme);
+    if (match) onTheme(match.label);
+  }, [searchParams, onTheme]);
+  return null;
+}
+
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 
 export default function GardigApp() {
@@ -1523,15 +1538,6 @@ export default function GardigApp() {
   const fileRef = useRef<HTMLInputElement>(null);
   const intentionalNavRef = useRef(false);
   const router = useRouter();
-  const searchParams = useSearchParams();
-
-  // Pre-select design language from ?theme= query param
-  useEffect(() => {
-    const theme = searchParams.get('theme');
-    if (!theme) return;
-    const match = DESIGN_LANGUAGES.find(l => l.value === theme);
-    if (match) setDesignLang(match.label);
-  }, [searchParams]);
 
   const loadingMessages = [
     "Analysing your site and space...",
@@ -1868,6 +1874,10 @@ export default function GardigApp() {
         @media(max-width:640px){.site-logo-h{height:28px}}
         .upload-generate-btn:hover:not(:disabled){background:#053d2f!important;transform:translateY(-1px);box-shadow:0 6px 20px rgba(6,78,59,0.35)!important}
       `}</style>
+
+      <Suspense fallback={null}>
+        <ThemePreSelector onTheme={setDesignLang} />
+      </Suspense>
 
       {/* Top bar */}
       <header style={{ background: C.brand, borderBottom: `1px solid rgba(184,150,46,0.3)`, height: 56, display: "flex", alignItems: "center", padding: "0 28px" }}>
