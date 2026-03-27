@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback, useEffect, Suspense } from "react";
+import { flushSync } from "react-dom";
 import { useRouter, useSearchParams } from 'next/navigation';
 import PDFButton from "@/components/PDFButton";
 import { pdf } from '@react-pdf/renderer';
@@ -2355,6 +2356,12 @@ export default function GardigApp() {
       await new Promise(r => setTimeout(r, 500));
       intentionalNavRef.current = true;
       sessionStorage.removeItem('dedrab_last_results');
+      // Synchronously reset save state before navigation so Next.js router cache
+      // does not snapshot isSaving:true, which would show "Saving..." on back nav.
+      flushSync(() => {
+        setIsSaving(false);
+        setSaveComplete(false);
+      });
       router.push('/next-steps?sessionId=' + newSessionId);
     } catch (err) {
       console.error('[handleSaveAndProceed] Unexpected error:', err);
