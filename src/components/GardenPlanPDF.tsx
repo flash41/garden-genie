@@ -170,7 +170,7 @@ const SubHead = ({ text }: { text: string }) => (
 const PageChrome = ({ clientName, dateStr, style, referenceNumber }: any) => (
   <>
     <View style={S.runHdr} fixed>
-      <Text style={S.runBrand}>dedrab.com · Garden Design Proposal</Text>
+      <Text style={S.runBrand}>dedrab.com · Action Plan</Text>
       <Text style={S.runRight}>{clientName ? clientName + ' · ' : ''}{style}</Text>
     </View>
     <View style={S.footer} fixed>
@@ -258,8 +258,8 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
           </View>
           <View style={S.coverMid}>
             <Text style={S.coverStyleTag}>{style}</Text>
-            <Text style={S.coverTitle}>{coverTitle || 'Garden Design\nProposal'}</Text>
-            <Text style={S.coverSubtitle}>Garden Design Proposal</Text>
+            <Text style={S.coverTitle}>{coverTitle || 'Your Garden\nAction Plan'}</Text>
+            <Text style={S.coverSubtitle}>Action Plan</Text>
             <View style={S.coverRule} />
             <View style={S.coverMetaRow}>
               {clientName ? (
@@ -366,7 +366,7 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
         </Section>
 
         {/* ── 3. Design Concept ───────────────────────────────── */}
-        <Section num="03" title="Design Concept &amp; Vision">
+        <Section num="03" title="Design Direction">
           {d.designConcept ? (
             <>
               {d.designConcept.conceptStatement
@@ -407,7 +407,7 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
             <>
               <Image src={aerialImageUrl} style={[S.imgSingle, { height: 300, objectFit: 'contain', marginBottom: 4 }]} />
               <Text style={[S.small, { color: T.inkLight, fontStyle: 'italic', marginBottom: 12, textAlign: 'center' }]}>
-                Fig. 1 — AI-Generated Layout Sketch. For indicative purposes only.
+                Garden Layout Plan — print this and take it outside.
               </Text>
             </>
           ) : null}
@@ -650,7 +650,11 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
         <PageChrome clientName={clientName} dateStr={dateStr} style={style} referenceNumber={referenceNumber} />
 
         {/* ── 8. Implementation Plan ──────────────────────────── */}
-        <Section num="08" title="Phasing &amp; Implementation Plan">
+        <Section num="08" title="How to Do It — Your Phased Plan">
+          <View style={{ borderLeftWidth: 3, borderLeftColor: T.accent, borderLeftStyle: 'solid', paddingLeft: 10, marginBottom: 14, backgroundColor: '#f9f7f3', padding: 10 }}>
+            <Text style={{ fontSize: 7, color: T.accent, fontFamily: 'Helvetica-Bold', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 4 }}>Getting started</Text>
+            <Text style={S.body}>The phases below break your project into manageable steps. Start with Phase 1 — most of it can be done in a single weekend. Work at your own pace and return to this plan whenever you're ready for the next stage.</Text>
+          </View>
           {safeArr(d.recommendations).length > 0 ? (
             <>
               <SubHead text="Recommendations" />
@@ -700,9 +704,9 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
         </Section>
 
         {/* ── 9. Maintenance Schedule ─────────────────────────── */}
-        <Section num="09" title="Maintenance Schedule (Indicative)">
+        <Section num="09" title="Ongoing Care">
           <Text style={[S.small, { color: T.inkLight, fontStyle: 'italic', marginBottom: 10 }]}>
-            The following schedule is an indicative estimate based on typical seasonal requirements for the proposed plant palette. Adjust based on your local climate, soil conditions, and plant establishment progress.
+            Based on the proposed plant palette. Adjust for your local climate and how plants establish in their first season.
           </Text>
           {d.maintenanceSchedule ? (
             <>
@@ -822,13 +826,13 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
                     <Image src={imageDataUrl!} style={S.imgPhoto} />
                   </View>
                   <View style={S.imgCol}>
-                    <Text style={S.imgCap}>After — Design Render</Text>
+                    <Text style={S.imgCap}>Your finished garden</Text>
                     <Image src={imageBase64} style={S.imgPhoto} />
                   </View>
                 </View>
               ) : hasAfter ? (
                 <>
-                  <Text style={S.imgCap}>Design Render — {style}</Text>
+                  <Text style={S.imgCap}>Your finished garden — {style}</Text>
                   <Image src={imageBase64} style={S.imgSingle} />
                 </>
               ) : (
@@ -843,7 +847,7 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
           {/* C: Garden Render */}
           {imageBase64 ? (
             <>
-              <SubHead text="C — Garden Render" />
+              <SubHead text="C — Your Finished Garden" />
               <Image src={imageBase64} style={[S.imgSingle, { height: 220, marginBottom: 0, borderRadius: 0, borderBottomLeftRadius: 0, borderBottomRightRadius: 0 }]} />
               <View style={{ backgroundColor: '#0a3d2b', flexDirection: 'row', padding: '8pt 16pt', marginBottom: 12 }}>
                 {[
