@@ -4,16 +4,15 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 const exampleGardens = [
-  { slug: 'japanese-zen',         badge: 'Japanese Zen',           title: 'The Tranquil Courtyard',    descriptor: 'Calm. Considered. Timeless.',    image: '/examples/japanese-zen.jpg' },
-  { slug: 'english-cottage',      badge: 'English Cottage',        title: 'The Heritage Walled Garden', descriptor: 'Abundant. Romantic. Structured.', image: '/examples/english-cottage.jpg' },
+  { slug: 'japanese-zen',         badge: 'Japanese Zen',           title: 'The Tranquil Courtyard',    descriptor: 'Calm. Considered. Timeless.',    image: '/examples/zen-after.jpg' },
+  { slug: 'english-cottage',      badge: 'English Cottage',        title: 'The Heritage Walled Garden', descriptor: 'Abundant. Romantic. Structured.', image: '/examples/cottage-after.jpg' },
   { slug: 'city-garden',          badge: 'City Garden',            title: 'The Urban Retreat',          descriptor: 'Smart. Compact. Considered.',     image: '/examples/city-garden.jpg' },
   { slug: 'mediterranean',        badge: 'Mediterranean',          title: 'The Sun-Drenched Terrace',   descriptor: 'Warm. Fragrant. Effortless.',     image: '/examples/mediterranean.jpg' },
-  { slug: 'modern-minimalist',    badge: 'Modern Minimalist',      title: 'The Clean Slate Garden',     descriptor: 'Precise. Calm. Architectural.',   image: '/examples/modern-minimalist.jpg' },
-  { slug: 'wildlife-garden',      badge: 'Wildlife & Pollinator',  title: 'The Living Garden',          descriptor: 'Wild. Purposeful. Alive.',        image: '/examples/wildlife-pollinator-garden.jpg' },
+  { slug: 'modern-minimalist',    badge: 'Modern Minimalist',      title: 'The Clean Slate Garden',     descriptor: 'Precise. Calm. Architectural.',   image: '/examples/city-garden.jpg' },
+  { slug: 'wildlife-garden',      badge: 'Wildlife & Pollinator',  title: 'The Living Garden',          descriptor: 'Wild. Purposeful. Alive.',        image: '/examples/Wildlife.jpg' },
   { slug: 'kitchen-garden',       badge: 'Kitchen & Herb Garden',  title: 'The Productive Garden',      descriptor: 'Useful. Beautiful. Rewarding.',   image: '/examples/kitchen-herb-garden.jpg' },
-  { slug: 'tropical-lush',        badge: 'Tropical & Lush',        title: 'The Jungle Escape',          descriptor: 'Bold. Layered. Immersive.',       image: '/examples/tropical-lush.jpg' },
-
-  { slug: 'urban-party-garden',   badge: 'Urban Party Garden',     title: 'The Social Garden',          descriptor: 'Lush. Lit. Made for people.',     image: '/examples/urban-party-garden.jpg' },
+  { slug: 'tropical-lush',        badge: 'Tropical & Lush',        title: 'The Jungle Escape',          descriptor: 'Bold. Layered. Immersive.',       image: '/examples/zen-after.jpg' },
+  { slug: 'urban-party-garden',   badge: 'Urban Party Garden',     title: 'The Social Garden',          descriptor: 'Lush. Lit. Made for people.',     image: '/examples/urban-party.jpg' },
 ];
 
 export default function LandingPage() {
