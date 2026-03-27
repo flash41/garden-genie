@@ -132,7 +132,9 @@ export default function LandingPage() {
         @media (max-width:900px) {
           .nav-links-hide { display:none !important; }
           .mobile-nav-cta { display:inline-flex !important; align-items:center; background:#b8962e; color:#fff; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500; padding:8px 16px; border-radius:6px; border:none; text-decoration:none; cursor:pointer; white-space:nowrap; }
-          .hero-preview-wrap { display:none !important; }
+          .hero-grid { grid-template-columns: 1fr !important; padding: 100px 24px 60px !important; gap: 40px !important; }
+          .hero-preview-wrap { display:flex !important; justify-content:center !important; }
+          .hero-pad { padding: 0 !important; margin: 0 !important; }
           .steps-connector { display:none !important; }
           .steps-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
           .for-grid { grid-template-columns: 1fr !important; }
@@ -143,7 +145,6 @@ export default function LandingPage() {
           .footer-main { flex-direction: column !important; gap: 28px !important; text-align: center !important; }
           .footer-nav { flex-wrap: wrap !important; justify-content: center !important; }
           .section-pad { padding: 60px 24px !important; }
-          .hero-pad { padding: 80px 24px 40px !important; margin-left: 0 !important; }
         }
         .site-logo-h { height: 44px; width: auto; display: block; }
         @media (max-width:640px) { .site-logo-h { height: 28px; } }
@@ -223,26 +224,29 @@ export default function LandingPage() {
           <svg width="8" height="12" viewBox="0 0 12 18" fill="none"><path d="M6 1 C6 1, 12 6, 10 12 C8 16, 2 17, 1 14 C0 11, 3 5, 6 1Z" stroke="#b8962e" strokeWidth="0.8" fill="none" opacity="0.3"/></svg>
         </div>
 
-        {/* Hero content */}
-        <div className="hero-content hero-pad" style={{ position: 'relative', zIndex: 10, padding: '0 60px', maxWidth: 680, marginLeft: '8%' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 32 }}>
-            <div style={{ width: 40, height: 1, background: 'var(--gold)' }} />
-            <span style={{ fontSize: 10, letterSpacing: 4, textTransform: 'uppercase', color: 'var(--gold-light)', fontFamily: "'DM Sans', sans-serif" }}>Garden Inspiration &amp; Design Vision</span>
-          </div>
-          <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(48px, 6vw, 82px)', fontWeight: 400, lineHeight: 1.1, color: '#fff', marginBottom: 28 }}>
-            Most garden projects never start,<br />because the hard part is knowing where to start.<br /><em style={{ fontStyle: 'italic', color: 'var(--gold-light)' }}>This is where you start.</em>
-          </h1>
-          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 21, fontWeight: 300, lineHeight: 1.75, color: 'rgba(255,255,255,0.75)', marginBottom: 48, maxWidth: 500 }}>
-            Upload a photo of your garden and get a complete Action Plan in under 4 minutes — a visual of your finished garden, a plant list, and a phased weekend guide to make it happen.
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 14 }}>
-            <Link href="/design" className="btn-primary">Build my Action Plan →</Link>
-            <span style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', fontFamily: "'DM Sans', sans-serif" }}>No account needed · Takes about 4 minutes</span>
-          </div>
-        </div>
+        {/* Hero two-column grid */}
+        <div className="hero-grid" style={{ position: 'relative', zIndex: 10, display: 'grid', gridTemplateColumns: '55fr 45fr', gap: '60px', alignItems: 'center', width: '100%', padding: '120px 8% 80px' }}>
 
-        {/* Hero preview card */}
-        <div className="hero-preview-wrap" style={{ position: 'absolute', right: '8%', top: '50%', transform: 'translateY(-50%)', zIndex: 10 }}>
+          {/* Left column */}
+          <div className="hero-content hero-pad">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 32 }}>
+              <div style={{ width: 40, height: 1, background: 'var(--gold)' }} />
+              <span style={{ fontSize: 10, letterSpacing: 4, textTransform: 'uppercase', color: 'var(--gold-light)', fontFamily: "'DM Sans', sans-serif" }}>Garden Inspiration &amp; Design Vision</span>
+            </div>
+            <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(32px, 3.2vw, 48px)', fontWeight: 400, lineHeight: 1.15, color: '#fff', marginBottom: 28 }}>
+              Most garden projects never start,<br />because the hard part is knowing where to start.<br /><em style={{ fontStyle: 'italic', color: 'var(--gold-light)' }}>This is where you start.</em>
+            </h1>
+            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 21, fontWeight: 300, lineHeight: 1.75, color: 'rgba(255,255,255,0.75)', marginBottom: 48, maxWidth: 500 }}>
+              Upload a photo of your garden and get a complete Action Plan in under 4 minutes — a visual of your finished garden, a plant list, and a phased weekend guide to make it happen.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 14 }}>
+              <Link href="/design" className="btn-primary">Build my Action Plan →</Link>
+              <span style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', fontFamily: "'DM Sans', sans-serif" }}>No account needed · Takes about 4 minutes</span>
+            </div>
+          </div>
+
+          {/* Right column — preview card */}
+          <div className="hero-preview-wrap" style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
           <div style={{ width: 340, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(184,150,46,0.3)', backdropFilter: 'blur(20px)', overflow: 'hidden' }}>
             <div style={{ width: '100%', height: 220, background: 'linear-gradient(135deg, rgba(45,80,22,0.8), rgba(10,61,43,0.9))', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
               <svg width="280" height="180" viewBox="0 0 280 180" fill="none">
@@ -276,7 +280,9 @@ export default function LandingPage() {
               </Link>
             </div>
           </div>
-        </div>
+          </div>{/* end hero-preview-wrap */}
+
+        </div>{/* end hero-grid */}
 
         {/* Scroll indicator */}
         <div className="scroll-bob" style={{ position: 'absolute', bottom: 40, left: '50%', zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
