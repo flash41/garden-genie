@@ -103,7 +103,7 @@ export default function LegalPage() {
             Dedrab is an AI-powered garden design tool. You upload a photograph of your garden and receive an AI-generated design proposal including a visual render, plant list, materials guide, and implementation plan.
           </p>
           <p className="legal-p">
-            Dedrab is a design inspiration and planning tool. It is not a surveying service, a professional landscape architecture service, or a guaranteed specification. All outputs are AI-generated and are intended as creative guidance only.
+            Dedrab is a Garden Inspiration Guide. It is not a surveying service, a professional landscape architecture service, or a guaranteed specification. All outputs are AI-generated and are intended as creative inspiration to help you plan.
           </p>
 
           <h3 className="legal-h3">Use of the Service</h3>
@@ -124,7 +124,7 @@ export default function LegalPage() {
             You should always verify plant suitability, material specifications, and implementation plans with a qualified professional before proceeding. Dedrab accepts no liability for any loss or damage arising from reliance on AI-generated design content.
           </p>
           <p className="legal-p">
-            The Layout Plan Sketch included in your report is an indicative creative guide, not a surveyed drawing. It may contain inaccuracies in scale or proportion due to perspective limitations in the source photograph.
+            The Garden Layout Plan included in your report is a starting point for your planning, not a surveyed drawing. It may contain inaccuracies in scale or proportion due to perspective limitations in the source photograph.
           </p>
           <p className="legal-p">
             Cost estimates provided in your report are indicative unit cost estimates only and will vary by supplier, region, and project scope. Always obtain formal quotes before committing to purchase.
