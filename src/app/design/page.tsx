@@ -1408,18 +1408,18 @@ export default function GardigApp() {
   const router = useRouter();
 
   const loadingMessages = [
-    "Go put the kettle on — this could take a few minutes ☕",
-    "Analysing your garden boundaries and light conditions...",
-    "Calculating sun exposure and orientation for your plot...",
-    "Selecting plants that will actually thrive in your climate 🌱",
-    "Designing your spatial layout from front to back...",
-    "Generating your photorealistic garden render...",
-    "This can take up to 4 minutes — good designs aren't rushed 🌿",
-    "Building your full planting specification and cost estimate...",
+    "Analysing your site and space...",
+    "Mapping your planting zones...",
+    "Selecting plants for your climate and style...",
+    "Costing up your materials...",
+    "Putting your Action Plan together...",
+    "Almost there — your plan is nearly ready",
+    "This can take up to 4 minutes — worth the wait \ud83c\udf3f",
+    "Building your full planting schedule and cost estimate...",
     "Cross-checking plant choices against your hardiness zone...",
-    "Finalising your layout plan and seasonal interest matrix...",
-    "Almost there — putting the finishing touches on your proposal...",
-    "Worth the wait — your full garden design proposal is nearly ready ✨",
+    "Finalising your layout and seasonal care guide...",
+    "Almost there — putting the finishing touches on your plan...",
+    "Your Action Plan is nearly ready \u2728",
   ];
   const [rotatingMsgIdx, setRotatingMsgIdx] = useState(0);
   const [rotatingMsgVisible, setRotatingMsgVisible] = useState(true);
@@ -1707,7 +1707,7 @@ export default function GardigApp() {
       }
 
       setStep("result");
-      setActiveTab("overview");
+      setActiveTab("your-garden");
       // Refresh remaining renders count
       if (inviteCode) {
         fetch('/api/invite-status?code=' + encodeURIComponent(inviteCode))
@@ -1988,7 +1988,7 @@ export default function GardigApp() {
                 boxShadow: isFormValid() ? C.shadowMd : "none", letterSpacing: "0.01em",
                 opacity: isFormValid() ? 1 : 0.5, transition: "all 0.15s"
               }}>
-              Generate Design Proposal →
+              Build my Action Plan →
             </button>
           </div>
         )}
@@ -2002,12 +2002,12 @@ export default function GardigApp() {
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');@keyframes spin{to{transform:rotate(360deg)}}@keyframes ellipsis{0%,20%{content:'.'}40%,60%{content:'..'}80%,100%{content:'...'}} .ellipsis::after{content:'...';display:inline-block;animation:ellipsis 1.5s steps(3,end) infinite} .rotating-msg{transition:opacity 0.4s ease}`}</style>
       <div style={{ textAlign: "center", maxWidth: 440, padding: "0 24px" }}>
         <div style={{ width: 44, height: 44, borderRadius: "50%", border: `3px solid ${C.rule}`, borderTopColor: C.accent, margin: "0 auto 24px", animation: "spin 0.75s linear infinite" }} />
-        <div style={{ fontFamily: C.fontSerif, fontSize: px(22), fontWeight: 600, color: C.ink, marginBottom: 16 }}>Designing Your Garden</div>
+        <div style={{ fontFamily: C.fontSerif, fontSize: px(22), fontWeight: 600, color: C.ink, marginBottom: 16 }}>Building Your Action Plan</div>
         <div className="rotating-msg" style={{ fontSize: px(14), color: C.inkMid, marginBottom: 8, minHeight: 44, opacity: rotatingMsgVisible ? 1 : 0 }}>
           {loadingMessages[rotatingMsgIdx]}
         </div>
         <div style={{ fontSize: px(12), color: C.inkLight, marginBottom: 24, fontStyle: "italic" }}>
-          Hang tight — up to 4 minutes depending on system demand
+          This takes up to 4 minutes — your full plan is worth the wait
         </div>
         <div style={{
           background: C.surface, border: `1px solid ${C.rule}`, borderLeft: `3px solid ${C.accent}`,
@@ -2026,18 +2026,11 @@ export default function GardigApp() {
   const plants = doc.plantingSpecification?.plants || [];
 
   const TABS = [
-    { id: "overview",        label: "Overview" },
-    { id: "visuals",         label: "Visuals" },
-    { id: "layout-plan",     label: "Layout Sketch" },
-    { id: "site",            label: "Your Site" },
-    { id: "concept",         label: "The Design" },
-    { id: "spatial",         label: "Garden Zones" },
-    { id: "planting",        label: "Plants" },
-    { id: "hardscape",       label: "Materials" },
-    { id: "soil",            label: "Soil & Water" },
-    { id: "implementation",  label: "How to Build It" },
-    { id: "maintenance",     label: "Upkeep" },
-    { id: "costs",           label: "Cost Estimate" },
+    { id: "your-garden",   label: "Your Garden" },
+    { id: "before-after",  label: "Before & After" },
+    { id: "what-you-need", label: "What You'll Need" },
+    { id: "how-to-do-it",  label: "How to Do It" },
+    { id: "costs",         label: "Cost Estimate" },
   ];
 
   async function safeJson(res: Response) {
@@ -2269,7 +2262,7 @@ export default function GardigApp() {
             setShowBefore(false);
           }}
             style={{ background: "rgba(255,255,255,0.08)", border: `1px solid rgba(255,255,255,0.2)`, color: "rgba(255,255,255,0.8)", padding: "7px 15px", borderRadius: C.r, cursor: "pointer", fontFamily: C.font, fontSize: px(13), fontWeight: 600 }}>
-            ← New Analysis
+            Start a new plan
           </button>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
             <button
@@ -2415,9 +2408,9 @@ export default function GardigApp() {
       {/* Tab content */}
       <div className="result-content-pad" style={{ maxWidth: 980, margin: "0 auto", padding: "24px 24px 48px" }}>
 
-        {/* ── OVERVIEW ── */}
-        {activeTab === "overview" && <>
-          <SectionTitle n="01" title="Project Overview" />
+        {/* ── YOUR GARDEN (merged: overview + site + concept) ── */}
+        {activeTab === "your-garden" && <>
+          <SectionTitle n="01" title="Your Garden" />
           <Card accent>
             <Body>{doc.overview?.scopeDescription}</Body>
           </Card>
@@ -2425,49 +2418,18 @@ export default function GardigApp() {
             { label: "Client",            value: clientName || "Private Client" },
             { label: "Design Language",   value: designLang },
             { label: "Estimated Area",    value: doc.overview?.estimatedAreaSqm ? `${doc.overview.estimatedAreaSqm} m²` : "—" },
-            { label: "Report Date",       value: new Date().toLocaleDateString("en-GB") },
+            { label: "Plan Date",         value: new Date().toLocaleDateString("en-GB") },
           ]} />
           {doc.overview?.objectives?.length > 0 && (
             <Card>
-              <Label>Design Objectives</Label>
+              <Label>What this plan delivers</Label>
               <ul style={{ margin: 0, padding: "0 0 0 20px", fontSize: px(BASE), lineHeight: 1.9, color: C.inkMid }}>
                 {doc.overview.objectives.map((o: string, i: number) => <li key={i}>{o}</li>)}
               </ul>
             </Card>
           )}
-          {doc.caveats?.length > 0 && (
-            <div style={{ background: C.accentLight, border: `1px solid #e5d06a`, borderRadius: C.r, padding: "11px 15px", fontSize: px(14), color: C.amber }}>
-              <strong>Analysis notes: </strong>{doc.caveats.join(" · ")}
-            </div>
-          )}
-          {doc.recommendations?.length > 0 && (
-            <div style={{ marginBottom: 24 }}>
-              <Label>Recommendations</Label>
-              {doc.recommendations.map((r: any, i: number) => (
-                <div key={i} style={{
-                  borderLeft: `3px solid ${C.accent}`,
-                  paddingLeft: 14,
-                  marginBottom: 16,
-                  background: C.card,
-                  borderRadius: C.r,
-                  padding: '14px 16px 14px 16px',
-                }}>
-                  <div style={{ fontSize: px(10), letterSpacing: 2, textTransform: 'uppercase', color: C.accent, fontWeight: 700, marginBottom: 6 }}>Recommendation</div>
-                  <div style={{ fontSize: px(BASE), fontWeight: 700, color: C.ink, marginBottom: 6 }}>{r.title}</div>
-                  <div style={{ fontSize: px(BASE - 1), color: C.inkMid, lineHeight: 1.6, marginBottom: 6 }}>{r.description}</div>
-                  <div style={{ fontSize: px(BASE - 1), color: C.inkLight, lineHeight: 1.6, fontStyle: 'italic' }}>{r.justification}</div>
-                  {r.estimatedCost && (
-                    <div style={{ fontSize: px(BASE - 1), color: C.accent, fontWeight: 600, marginTop: 8 }}>{r.estimatedCost}</div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </>}
 
-        {/* ── SITE ANALYSIS ── */}
-        {activeTab === "site" && <>
-          <SectionTitle n="02" title="Site Analysis" />
+          <SectionTitle n="02" title="What We're Working With" />
           <StatGrid items={[
             { label: "Orientation",    value: doc.siteAnalysis?.sunProfile?.primaryOrientation },
             { label: "Morning Light",  value: doc.siteAnalysis?.sunProfile?.morningLight },
@@ -2502,17 +2464,13 @@ export default function GardigApp() {
           {doc.siteAnalysis?.accessConstraints && (
             <Card><Label>Access Constraints</Label><Body>{doc.siteAnalysis.accessConstraints}</Body></Card>
           )}
-        </>}
 
-        {/* ── DESIGN CONCEPT ── */}
-        {activeTab === "concept" && <>
-          <SectionTitle n="03" title="Design Concept" />
+          <SectionTitle n="03" title="Your Design Direction" />
           <Card accent>
-            <Label>Concept Statement</Label>
             <Body>{doc.designConcept?.conceptStatement}</Body>
           </Card>
           {doc.designConcept?.rationale && (
-            <Card><Label>Rationale</Label><Body>{doc.designConcept.rationale}</Body></Card>
+            <Card><Label>Why this design suits your site</Label><Body>{doc.designConcept.rationale}</Body></Card>
           )}
           {doc.designConcept?.principles?.length > 0 && (
             <Card>
@@ -2539,318 +2497,26 @@ export default function GardigApp() {
               </div>
             </Card>
           )}
-        </>}
-
-        {/* ── SPATIAL LAYOUT ── */}
-        {activeTab === "spatial" && <>
-          <SectionTitle n="04" title="Spatial Layout" />
-          {doc.spatialLayout?.zones?.length > 0 && (
-            <Card>
-              <Label>Design Zones</Label>
-              <div className="grid-2col" style={{ gap: 12, marginTop: 8 }}>
-                {doc.spatialLayout.zones.map((z: any) => (
-                  <div key={z.id} style={{ padding: "14px 16px", background: C.surface, borderRadius: C.r, border: `1px solid ${C.rule}` }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
-                      <strong style={{ fontSize: px(BASE), color: C.brand }}>{z.name}</strong>
-                      <Tag>{z.type}</Tag>
-                    </div>
-                    {z.areaSqm && <div style={{ fontSize: px(12), color: C.accent, fontWeight: 700, marginBottom: 5 }}>{z.areaSqm} m²</div>}
-                    <Body style={{ fontSize: px(BASE - 1) }}>{z.description}</Body>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          )}
-          {doc.spatialLayout?.circulationRoutes?.length > 0 && (
-            <Card>
-              <Label>Circulation Routes</Label>
-              {doc.spatialLayout.circulationRoutes.map((r: any) => (
-                <div key={r.id} style={{ display: "flex", gap: 12, alignItems: "center", padding: "9px 12px", background: C.surface, borderRadius: C.r, marginBottom: 7, fontSize: px(BASE - 1) }}>
-                  <span style={{ color: C.accent, fontWeight: 700 }}>→</span>
-                  <span><strong>{r.from}</strong> to <strong>{r.to}</strong></span>
-                  <span style={{ color: C.inkMid }}>{r.surfaceTreatment}</span>
-                  {r.widthM && <span style={{ color: C.inkLight }}>{r.widthM}m wide</span>}
-                </div>
-              ))}
-            </Card>
-          )}
-          {doc.spatialLayout?.compositionNotes && (
-            <Card><Body>{doc.spatialLayout.compositionNotes}</Body></Card>
-          )}
-        </>}
-
-        {/* ── PLANTING ── */}
-        {activeTab === "planting" && <>
-          <SectionTitle n="05" title="Planting Specification" />
-          <div style={{ background: C.brand, color: "#fff", borderRadius: C.r, padding: "12px 16px", marginBottom: 18, fontSize: px(14), display: "flex", gap: 10, alignItems: "center" }}>
-            <span style={{ fontSize: 16 }}>⊞</span>
-            <span><strong style={{ color: C.accent }}>Grid Reference: </strong>Grid locations (A–F, rows 1–6) match the annotated images in the Visuals tab.</span>
-          </div>
-          <PlantTable plants={plants} />
-          {doc.plantingSpecification?.layeringStrategy && (
-            <Card style={{ marginTop: 18 }}><Label>Layering Strategy</Label><Body>{doc.plantingSpecification.layeringStrategy}</Body></Card>
-          )}
-
-          {plants.length > 0 && <>
-            <SectionTitle n="05b" title="Seasonal Interest" />
-            <SeasonMatrix plants={plants} />
-          </>}
-
-          {plants.length > 0 && <>
-            <SectionTitle n="05c" title="Plant Notes" />
-            {plants.map((p: any, i: number) => (
-              <Card key={p.id} style={{ display: "grid", gridTemplateColumns: "60px 1fr", gap: 14, padding: "16px 18px", marginBottom: 10 }}>
-                <div style={{ textAlign: "center" }}>
-                  <div style={{ width: 40, height: 40, borderRadius: C.r, background: C.brand, color: C.accent, fontSize: px(15), fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 5px" }}>{i + 1}</div>
-                  <div style={{ fontSize: px(11), color: C.accent, fontWeight: 700 }}>{p.gridLocation}</div>
-                </div>
-                <div>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "baseline", marginBottom: 6 }}>
-                    <span style={{ fontStyle: "italic", color: C.brand, fontWeight: 600, fontSize: px(BASE) }}>{p.botanicalName}</span>
-                    {(p.cultivar && p.cultivar !== 'null' && p.cultivar !== '') && <span style={{ color: C.inkLight, fontSize: px(BASE - 1) }}>'{p.cultivar}'</span>}
-                    <span style={{ color: C.inkMid, fontSize: px(BASE - 1) }}>— {p.commonName}</span>
-                    <Tag>{p.type}</Tag>
-                  </div>
-                  <Body style={{ fontSize: px(BASE - 1), marginBottom: 7 }}>{p.designRationale}</Body>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8, fontSize: px(13), color: C.inkLight }}>
-                    <span>Qty: <strong style={{ color: C.ink }}>{p.quantity}</strong></span>
-                    <span>·</span><span>{p.matureSize}</span>
-                    <span>·</span><span>{p.hardinessRating}</span>
-                    <span>·</span><span>{p.growthRate} growth</span>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </>}
-        </>}
-
-        {/* ── HARDSCAPE ── */}
-        {activeTab === "hardscape" && <>
-          <SectionTitle n="06" title="Hardscape & Materials" />
-          {doc.hardscapeSpecification?.paletteNarrative && (
-            <Card accent><Body>{doc.hardscapeSpecification.paletteNarrative}</Body></Card>
-          )}
-          {doc.hardscapeSpecification?.materials?.length > 0 && (
-            <>
-            <div style={{ overflowX: "auto", borderRadius: C.rLg, border: `1px solid ${C.rule}`, marginBottom: 18 }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: C.font, fontSize: px(BASE - 1) }}>
-                <thead>
-                  <tr style={{ background: C.brand }}>
-                    {["Element","Material","Finish","Colour","Unit Cost Estimate","Notes"].map(h => (
-                      <th key={h} style={{ padding: "10px 13px", color: "#fff", textAlign: "left", fontSize: px(12), fontWeight: 600 }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {doc.hardscapeSpecification.materials.map((m: any, i: number) => (
-                    <tr key={m.id} style={{ background: i%2===0?C.surface:C.card, borderBottom: `1px solid ${C.rule}` }}>
-                      <td style={{ padding: "9px 13px", fontWeight: 700, color: C.brand }}>{m.element}</td>
-                      <td style={{ padding: "9px 13px", color: C.ink }}>{m.material}</td>
-                      <td style={{ padding: "9px 13px", color: C.inkMid }}>{m.finish}</td>
-                      <td style={{ padding: "9px 13px" }}>
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-                          <span style={{ width: 14, height: 14, borderRadius: 3, background: m.colour, border: `1px solid ${C.rule}`, display: "inline-block" }} />
-                          {m.colour}
-                        </span>
-                      </td>
-                      <td style={{ padding: "9px 13px", color: C.green, fontWeight: 600 }}>{m.unitCostRange}</td>
-                      <td style={{ padding: "9px 13px", color: C.inkLight, fontSize: px(13) }}>{m.notes}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <p style={{ fontSize: px(12), color: C.inkLight, fontStyle: "italic", marginTop: 6, marginBottom: 18 }}>
-              {"All costs are unit cost estimates only and may vary by supplier, region, and project scope. Obtain formal quotes before committing to purchase."}
-            </p>
-            </>
-          )}
-          <div className="grid-2col" style={{ gap: 14 }}>
-            {doc.hardscapeSpecification?.boundaryTreatments?.length > 0 && (
-              <Card>
-                <Label>Boundary Treatments</Label>
-                {doc.hardscapeSpecification.boundaryTreatments.map((t: string, i: number) => (
-                  <div key={i} style={{ fontSize: px(BASE - 1), color: C.inkMid, padding: "5px 0", borderBottom: `1px solid ${C.rule}` }}>• {t}</div>
-                ))}
-              </Card>
-            )}
-            {doc.hardscapeSpecification?.focalStructures?.length > 0 && (
-              <Card>
-                <Label>Focal Structures</Label>
-                {doc.hardscapeSpecification.focalStructures.map((f: string, i: number) => (
-                  <div key={i} style={{ fontSize: px(BASE - 1), color: C.inkMid, padding: "5px 0", borderBottom: `1px solid ${C.rule}` }}>• {f}</div>
-                ))}
-              </Card>
-            )}
-          </div>
-        </>}
-
-        {/* ── SOIL & IRRIGATION ── */}
-        {activeTab === "soil" && <>
-          <SectionTitle n="07" title="Soil, Drainage & Irrigation" />
-          <div style={{ marginBottom: 18 }}>
-            {[
-              { label: "Soil Preparation",     val: doc.soilAndIrrigation?.soilPreparationPlan },
-              { label: "Drainage Strategy",     val: doc.soilAndIrrigation?.drainageStrategy },
-              { label: "Mulching",              val: doc.soilAndIrrigation?.mulchingRecommendation },
-              { label: "Rainwater Harvesting",  val: doc.soilAndIrrigation?.rainwaterHarvestingNotes },
-            ].filter(x => x.val).map(({ label, val }, i, arr) => (
-              <div key={label} style={{ paddingBottom: 16, marginBottom: i < arr.length - 1 ? 16 : 0, borderBottom: i < arr.length - 1 ? '1px solid ' + C.rule : 'none' }}>
-                <Label>{label}</Label>
-                <Body>{val}</Body>
-              </div>
-            ))}
-          </div>
-          {doc.soilAndIrrigation?.irrigationZones?.length > 0 && (
-            <Card>
-              <Label>Irrigation Zones</Label>
-              {doc.soilAndIrrigation.irrigationZones.map((z: any) => (
-                <div key={z.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "9px 12px", background: C.surface, borderRadius: C.r, marginBottom: 7, fontSize: px(BASE - 1) }}>
-                  <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                    <Tag color={C.blue} bg="#eff6ff">{z.type}</Tag>
-                    <div>
-                      <strong style={{ color: C.ink }}>{z.name}</strong>
-                      {z.notes && <div style={{ color: C.inkMid, fontSize: px(13), marginTop: 2 }}>{z.notes}</div>}
-                    </div>
-                  </div>
-                  <span style={{ color: C.inkLight, fontSize: px(13) }}>{z.coverageAreaSqm} m²</span>
-                </div>
-              ))}
-            </Card>
-          )}
-        </>}
-
-        {/* ── PHASING ── */}
-        {activeTab === "implementation" && <>
-          <SectionTitle n="08" title="Implementation Phasing" />
-          {doc.recommendations?.length > 0 && (
-            <div style={{ marginBottom: 24 }}>
-              <Label>Recommendations</Label>
-              {doc.recommendations.map((r: any, i: number) => (
-                <div key={i} style={{
-                  borderLeft: `3px solid ${C.accent}`,
-                  paddingLeft: 14,
-                  marginBottom: 16,
-                  background: C.card,
-                  borderRadius: C.r,
-                  padding: '14px 16px 14px 16px',
-                }}>
-                  <div style={{ fontSize: px(10), letterSpacing: 2, textTransform: 'uppercase', color: C.accent, fontWeight: 700, marginBottom: 6 }}>Recommendation</div>
-                  <div style={{ fontSize: px(BASE), fontWeight: 700, color: C.ink, marginBottom: 6 }}>{r.title}</div>
-                  <div style={{ fontSize: px(BASE - 1), color: C.inkMid, lineHeight: 1.6, marginBottom: 6 }}>{r.description}</div>
-                  <div style={{ fontSize: px(BASE - 1), color: C.inkLight, lineHeight: 1.6, fontStyle: 'italic' }}>{r.justification}</div>
-                  {r.estimatedCost && (
-                    <div style={{ fontSize: px(BASE - 1), color: C.accent, fontWeight: 600, marginTop: 8 }}>{r.estimatedCost}</div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-          {(doc.implementationPlan?.totalWeeks || doc.implementationPlan?.criticalPathNotes) && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 18 }}>
-              {doc.implementationPlan.totalWeeks && (
-                <div style={{ background: C.card, borderRadius: C.r, padding: "12px 16px", border: `1px solid ${C.rule}`, borderLeft: `3px solid ${C.accent}` }}>
-                  <div style={{ fontSize: px(11), color: C.inkLight, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 4 }}>Total Duration (Estimate)</div>
-                  <div style={{ fontSize: px(BASE), color: C.ink, fontWeight: 500 }}>{doc.implementationPlan.totalWeeks} weeks</div>
-                  <div style={{ fontSize: px(12), color: C.inkLight, marginTop: 4, fontStyle: "italic" }}>Based on a standard contractor team. Actual duration may vary.</div>
-                </div>
-              )}
-              {doc.implementationPlan.criticalPathNotes && (
-                <div style={{ background: C.card, borderRadius: C.r, padding: "12px 16px", border: `1px solid ${C.rule}`, borderLeft: `3px solid ${C.accent}` }}>
-                  <div style={{ fontSize: px(11), color: C.inkLight, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 4 }}>Critical Path</div>
-                  <div style={{ fontSize: px(BASE), color: C.ink, fontWeight: 500 }}>{doc.implementationPlan.criticalPathNotes}</div>
-                </div>
-              )}
-            </div>
-          )}
-          {["Phase 1 — Hardscape","Phase 2 — Planting","Phase 3 — Finishing"].map(phase => {
-            const tasks = doc.implementationPlan?.tasks?.filter((t: any) => t.phase === phase) || [];
-            if (!tasks.length) return null;
-            return (
-              <div key={phase} style={{
-                background: C.card, borderRadius: C.rLg, border: `1px solid ${C.rule}`,
-                borderLeft: `4px solid ${C.accent}`, padding: "18px 22px", marginBottom: 14, boxShadow: C.shadow,
-              }}>
-                <div style={{ fontSize: px(11), color: C.accent, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 12 }}>{phase}</div>
-                {tasks.map((t: any) => (
-                  <div key={t.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "10px 0", borderBottom: `1px solid ${C.rule}` }}>
-                    <div style={{ flex: 1, paddingRight: 16 }}>
-                      <div style={{ fontSize: px(BASE), color: C.ink, lineHeight: 1.4 }}>{t.task}</div>
-                      {t.notes && <div style={{ fontSize: px(13), color: C.inkLight, marginTop: 3, lineHeight: 1.5 }}>{t.notes}</div>}
-                    </div>
-                    <div style={{ fontSize: px(13), color: C.accent, fontWeight: 700, whiteSpace: "nowrap" }}>{t.estimatedDays}d</div>
-                  </div>
-                ))}
-              </div>
-            );
-          })}
-        </>}
-
-        {/* ── MAINTENANCE ── */}
-        {activeTab === "maintenance" && <>
-          <SectionTitle n="09" title="Maintenance Schedule (Indicative)" />
-          <p style={{ fontSize: px(BASE - 1), color: C.inkLight, fontStyle: "italic", lineHeight: 1.65, marginBottom: 18, marginTop: 0 }}>
-            The following schedule is an indicative estimate based on typical seasonal requirements for the proposed plant palette. Adjust based on your local climate, soil conditions, and plant establishment progress.
-          </p>
-          <div style={{ marginBottom: 18 }}>
-            {[
-              { label: "Deep Maintenance Days/Year", val: String(doc.maintenanceSchedule?.professionalVisitsPerYear || "—") },
-              { label: "Annual Pruning",             val: doc.maintenanceSchedule?.annualPruningRegime || "—" },
-              { label: "Feeding Schedule",           val: doc.maintenanceSchedule?.feedingSchedule || "—" },
-            ].map(({ label, val }, i, arr) => (
-              <div key={label} style={{ paddingBottom: 16, marginBottom: i < arr.length - 1 ? 16 : 0, borderBottom: i < arr.length - 1 ? '1px solid ' + C.rule : 'none' }}>
-                <Label>{label}</Label>
-                <Body>{val}</Body>
-              </div>
-            ))}
-          </div>
-          {["Spring","Summer","Autumn","Winter"].map(season => {
-            const tasks = doc.maintenanceSchedule?.tasks?.filter((t: any) => t.season === season) || [];
-            if (!tasks.length) return null;
-            return (
-              <Card key={season}>
-                <Label>{season}</Label>
-                {tasks.map((t: any, i: number) => (
-                  <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "9px 0", borderBottom: `1px solid ${C.rule}`, fontSize: px(BASE) }}>
-                    <span style={{ color: C.inkMid }}>{t.task}</span>
-                    <Tag color={C.inkLight} bg={C.surface}>{t.frequency}</Tag>
-                  </div>
-                ))}
-              </Card>
-            );
-          })}
-          {doc.maintenanceSchedule?.longTermManagementNotes && (
-            <Card accent><Label>Long-Term Management</Label><Body>{doc.maintenanceSchedule.longTermManagementNotes}</Body></Card>
-          )}
-        </>}
-
-        {/* ── COSTS ── */}
-        {activeTab === "costs" && <>
-          <SectionTitle n="10" title="Approximation of Costs" />
-          <div style={{ marginBottom: 16, padding: "12px 16px", background: C.brandLight, borderRadius: C.r, border: `1px solid rgba(10,61,43,0.15)`, fontSize: px(BASE - 1), color: C.inkMid, lineHeight: 1.6 }}>
-            These are <strong>materials and plants costs</strong> for a self-implemented project — things you buy, not contractor rates. Spread it across weekends and tackle one phase at a time.
-          </div>
-          <CostTable costEstimate={doc.costEstimate} currency={userCurrency} />
-          {doc.costEstimate?.costingNotes && (
-            <div style={{ marginTop: 14, padding: "11px 15px", background: C.accentLight, borderRadius: C.r, fontSize: px(BASE - 1), color: C.amber, border: `1px solid #e5d06a` }}>
-              <strong>Notes: </strong>{doc.costEstimate.costingNotes}
+          {doc.caveats?.length > 0 && (
+            <div style={{ background: C.accentLight, border: `1px solid #e5d06a`, borderRadius: C.r, padding: "11px 15px", fontSize: px(14), color: C.amber }}>
+              <strong>Analysis notes: </strong>{doc.caveats.join(" · ")}
             </div>
           )}
         </>}
 
-        {/* ── VISUALS ── */}
-        {activeTab === "visuals" && <>
-          <SectionTitle n="11" title="Visual Documentation" />
+        {/* ── BEFORE & AFTER (merged: visuals + layout-plan) ── */}
+        {activeTab === "before-after" && <>
+          <SectionTitle n="04" title="Before & After" />
 
           {/* Before/After toggle */}
           <div className="noprint" style={{ display: "flex", gap: 8, marginBottom: 18 }}>
-            {["Rendered Design","Original Site"].map(label => (
+            {["Your finished garden","Before"].map(label => (
               <button key={label}
-                onClick={() => setShowBefore(label === "Original Site")}
+                onClick={() => setShowBefore(label === "Before")}
                 style={{
                   padding: "8px 18px", border: `1px solid ${C.rule}`,
-                  background: (showBefore ? label==="Original Site" : label==="Rendered Design") ? C.brand : C.card,
-                  color:      (showBefore ? label==="Original Site" : label==="Rendered Design") ? C.accent : C.inkMid,
+                  background: (showBefore ? label==="Before" : label==="Your finished garden") ? C.brand : C.card,
+                  color:      (showBefore ? label==="Before" : label==="Your finished garden") ? C.accent : C.inkMid,
                   borderRadius: C.r, cursor: "pointer", fontFamily: C.font, fontSize: px(13), fontWeight: 600
                 }}>{label}
               </button>
@@ -2862,8 +2528,8 @@ export default function GardigApp() {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
               <Label>
                 {showBefore
-                  ? "Original Site Photo"
-                  : `Proposed Vision for Your ${gardenOrientation ? gardenOrientation + '-Facing' : ''} Garden — ${designLang} Design`}
+                  ? "Your garden today"
+                  : "This is what you're working towards"}
               </Label>
               {!showBefore && renderUrl && validationResult && (() => {
                 const vr = validationResult.result;
@@ -2914,20 +2580,10 @@ export default function GardigApp() {
             )}
           </div>
 
-          {/* Plant reference */}
-          {plants.length > 0 && (
-            <div style={{ marginBottom: 24 }}>
-              <Label>Plant Reference</Label>
-              <AfterPlantTable plants={plants} />
-            </div>
-          )}
-        </>}
-
-        {/* ── LAYOUT PLAN ── */}
-        {activeTab === "layout-plan" && <>
-          <SectionTitle n="11b" title="Layout Plan Sketch" />
+          {/* Garden Layout Plan */}
+          <SectionTitle n="05" title="Garden Layout Plan" />
           <div style={{ marginBottom: 14, fontSize: px(BASE - 1), color: C.inkMid }}>
-            Your planting guide — print this and take it outside.
+            Garden Layout Plan — print this and take it outside.
           </div>
           {gardenOrientation && (
             <div style={{
@@ -2960,6 +2616,238 @@ export default function GardigApp() {
             <div style={{ background: C.surface, borderRadius: C.rLg, padding: 24, textAlign: 'center', color: C.inkLight, fontSize: px(BASE) }}>
               Layout plan not yet generated. Run a garden analysis first.
             </div>
+          )}
+        </>}
+
+        {/* ── WHAT YOU'LL NEED (planting + hardscape + soil) ── */}
+        {activeTab === "what-you-need" && <>
+          <SectionTitle n="06" title="What you'll need to gather" />
+
+          {/* Plants — shopping-list format */}
+          {plants.length > 0 && (
+            <>
+              <Label>Plants</Label>
+              <div style={{ marginBottom: 6, fontSize: px(BASE - 1), color: C.inkLight }}>
+                Take this list to your garden centre or use it to order online.
+              </div>
+              <div style={{ border: `1px solid ${C.rule}`, borderRadius: C.rLg, overflow: 'hidden', marginBottom: 28 }}>
+                {plants.map((p: any, i: number) => {
+                  const cultivarClean = (p.cultivar && p.cultivar !== 'null' && p.cultivar !== '') ? ` '${p.cultivar}'` : '';
+                  return (
+                    <div key={p.id || i} style={{
+                      display: 'flex', alignItems: 'center', gap: 14,
+                      padding: '11px 16px',
+                      background: i % 2 === 0 ? C.surface : C.card,
+                      borderBottom: i < plants.length - 1 ? `1px solid ${C.rule}` : 'none',
+                    }}>
+                      <div style={{ minWidth: 28, height: 28, borderRadius: '50%', background: C.brand, color: C.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: px(12), fontWeight: 700, flexShrink: 0 }}>
+                        {i + 1}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontStyle: 'italic', color: C.brand, fontWeight: 600, fontSize: px(14) }}>
+                          {cleanPlantName(p.botanicalName)}{cultivarClean}
+                        </div>
+                        <div style={{ color: C.inkLight, fontSize: px(12) }}>{cleanPlantName(p.commonName)}</div>
+                      </div>
+                      <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                        <div style={{ fontSize: px(13), fontWeight: 700, color: C.ink }}>× {p.quantity}</div>
+                        <div style={{ fontSize: px(11), color: C.inkLight }}>{p.location || p.gridLocation || ''}</div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
+
+          {/* Hardscape materials */}
+          {doc.hardscapeSpecification?.materials?.length > 0 && (
+            <>
+              <Label>Materials</Label>
+              <div style={{ border: `1px solid ${C.rule}`, borderRadius: C.rLg, overflow: 'hidden', marginBottom: 28 }}>
+                {doc.hardscapeSpecification.materials.map((m: any, i: number) => (
+                  <div key={m.id || i} style={{
+                    display: 'grid', gridTemplateColumns: '1fr auto', gap: 12,
+                    padding: '11px 16px',
+                    background: i % 2 === 0 ? C.surface : C.card,
+                    borderBottom: i < doc.hardscapeSpecification.materials.length - 1 ? `1px solid ${C.rule}` : 'none',
+                  }}>
+                    <div>
+                      <div style={{ fontWeight: 600, color: C.ink, fontSize: px(14) }}>{m.element}</div>
+                      <div style={{ color: C.inkLight, fontSize: px(12), marginTop: 2 }}>
+                        {[m.material, m.finish, m.colour].filter(Boolean).join(' · ')}
+                        {m.notes ? ` — ${m.notes}` : ''}
+                      </div>
+                    </div>
+                    {m.unitCostRange && (
+                      <div style={{ fontSize: px(13), color: C.accent, fontWeight: 600, whiteSpace: 'nowrap', alignSelf: 'center' }}>
+                        {m.unitCostRange}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* Soil & Irrigation */}
+          {doc.soilAndIrrigation && (
+            <>
+              <Label>Soil & Water</Label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 28 }}>
+                {doc.soilAndIrrigation.soilPreparationPlan && (
+                  <Card>
+                    <div style={{ fontSize: px(11), color: C.accent, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>Soil Prep</div>
+                    <Body>{doc.soilAndIrrigation.soilPreparationPlan}</Body>
+                  </Card>
+                )}
+                {doc.soilAndIrrigation.drainageStrategy && (
+                  <Card>
+                    <div style={{ fontSize: px(11), color: C.accent, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>Drainage</div>
+                    <Body>{doc.soilAndIrrigation.drainageStrategy}</Body>
+                  </Card>
+                )}
+                {doc.soilAndIrrigation.mulchingRecommendation && (
+                  <Card>
+                    <div style={{ fontSize: px(11), color: C.accent, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>Mulching</div>
+                    <Body>{doc.soilAndIrrigation.mulchingRecommendation}</Body>
+                  </Card>
+                )}
+                {doc.soilAndIrrigation.rainwaterHarvestingNotes && (
+                  <Card>
+                    <div style={{ fontSize: px(11), color: C.accent, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>Rainwater</div>
+                    <Body>{doc.soilAndIrrigation.rainwaterHarvestingNotes}</Body>
+                  </Card>
+                )}
+              </div>
+            </>
+          )}
+        </>}
+
+        {/* ── HOW TO DO IT (implementation + zones + maintenance) ── */}
+        {activeTab === "how-to-do-it" && <>
+          <SectionTitle n="07" title="How to Do It" />
+
+          {/* Implementation phases */}
+          {doc.implementationPlan?.tasks?.length > 0 && (() => {
+            const tasksByPhase: Record<string, any[]> = {};
+            doc.implementationPlan.tasks.forEach((t: any) => {
+              const phase = t.phase || 'Other';
+              if (!tasksByPhase[phase]) tasksByPhase[phase] = [];
+              tasksByPhase[phase].push(t);
+            });
+            const phaseEntries = Object.entries(tasksByPhase);
+            return (
+              <div style={{ marginBottom: 28 }}>
+                {phaseEntries.map(([phase, tasks], pi) => {
+                  // Reformat phase header: "Phase 1 — Hardscape" → "Phase 1 (Weekend 1): Clear & Prep" style
+                  const phaseLabel = phase.replace(/Phase (\d+)\s*[—–-]+\s*/i, (_: string, n: string) => `Phase ${n}: `);
+                  return (
+                    <div key={phase} style={{ marginBottom: 20 }}>
+                      <div style={{
+                        borderLeft: `3px solid ${C.accent}`,
+                        paddingLeft: 12,
+                        marginBottom: 10,
+                        fontFamily: C.fontSerif,
+                        fontSize: px(16),
+                        fontWeight: 600,
+                        color: C.brand,
+                      }}>
+                        {phaseLabel}
+                      </div>
+                      <div style={{ border: `1px solid ${C.rule}`, borderRadius: C.rLg, overflow: 'hidden' }}>
+                        {(tasks as any[]).map((t: any, i: number) => (
+                          <div key={t.id || i} style={{
+                            display: 'grid', gridTemplateColumns: '1fr auto',
+                            padding: '10px 16px', gap: 12,
+                            background: i % 2 === 0 ? C.surface : C.card,
+                            borderBottom: i < tasks.length - 1 ? `1px solid ${C.rule}` : 'none',
+                          }}>
+                            <div>
+                              <div style={{ fontWeight: 600, color: C.ink, fontSize: px(14) }}>{t.task}</div>
+                              {t.notes && <div style={{ color: C.inkLight, fontSize: px(12), marginTop: 2 }}>{t.notes}</div>}
+                            </div>
+                            {t.estimatedDays > 0 && (
+                              <div style={{ fontSize: px(12), color: C.inkLight, whiteSpace: 'nowrap', alignSelf: 'center' }}>
+                                {t.estimatedDays}d
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+                {doc.implementationPlan.criticalPathNotes && (
+                  <Card>
+                    <div style={{ fontSize: px(11), color: C.accent, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>Notes</div>
+                    <Body>{doc.implementationPlan.criticalPathNotes}</Body>
+                  </Card>
+                )}
+              </div>
+            );
+          })()}
+
+          {/* Garden zones */}
+          {doc.spatialLayout?.zones?.length > 0 && (
+            <>
+              <Label>Garden Zones</Label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 28 }}>
+                {doc.spatialLayout.zones.map((z: any, i: number) => (
+                  <Card key={z.id || i}>
+                    <div style={{ fontWeight: 600, color: C.brand, fontSize: px(14), marginBottom: 4 }}>{z.name}</div>
+                    {z.description && <Body>{z.description}</Body>}
+                    {z.dominant && <div style={{ fontSize: px(12), color: C.inkLight, marginTop: 4 }}>Dominant character: {z.dominant}</div>}
+                  </Card>
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* Ongoing care */}
+          {doc.maintenanceSchedule?.tasks?.length > 0 && (
+            <>
+              <Label>Ongoing Care</Label>
+              <div style={{ border: `1px solid ${C.rule}`, borderRadius: C.rLg, overflow: 'hidden', marginBottom: 16 }}>
+                {doc.maintenanceSchedule.tasks.map((t: any, i: number) => (
+                  <div key={i} style={{
+                    display: 'grid', gridTemplateColumns: '80px 1fr auto',
+                    padding: '10px 16px', gap: 12, alignItems: 'start',
+                    background: i % 2 === 0 ? C.surface : C.card,
+                    borderBottom: i < doc.maintenanceSchedule.tasks.length - 1 ? `1px solid ${C.rule}` : 'none',
+                  }}>
+                    <div style={{ fontSize: px(12), fontWeight: 700, color: C.accent, textTransform: 'capitalize' }}>{t.season}</div>
+                    <div style={{ fontSize: px(14), color: C.ink }}>{t.task}
+                      {t.notes && <div style={{ fontSize: px(12), color: C.inkLight, marginTop: 2 }}>{t.notes}</div>}
+                    </div>
+                    <div style={{ fontSize: px(12), color: C.inkLight, whiteSpace: 'nowrap' }}>{t.frequency}</div>
+                  </div>
+                ))}
+              </div>
+              {doc.maintenanceSchedule.annualPruningRegime && (
+                <Card style={{ marginBottom: 8 }}>
+                  <div style={{ fontSize: px(11), color: C.accent, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>Annual Pruning</div>
+                  <Body>{doc.maintenanceSchedule.annualPruningRegime}</Body>
+                </Card>
+              )}
+              {doc.maintenanceSchedule.feedingSchedule && (
+                <Card>
+                  <div style={{ fontSize: px(11), color: C.accent, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>Feeding</div>
+                  <Body>{doc.maintenanceSchedule.feedingSchedule}</Body>
+                </Card>
+              )}
+            </>
+          )}
+        </>}
+
+        {/* ── COST ESTIMATE ── */}
+        {activeTab === "costs" && <>
+          <SectionTitle n="08" title="Cost Estimate" />
+          <CostTable costEstimate={doc.costEstimate} />
+          {doc.costEstimate?.costingNotes && (
+            <Card style={{ marginTop: 16 }}>
+              <Body>{doc.costEstimate.costingNotes}</Body>
+            </Card>
           )}
         </>}
 
