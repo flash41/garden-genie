@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import PDFButton from "@/components/PDFButton";
 import { pdf } from '@react-pdf/renderer';
 import { GardenPlanPDF } from '@/components/GardenPlanPDF';
@@ -1523,6 +1523,15 @@ export default function GardigApp() {
   const fileRef = useRef<HTMLInputElement>(null);
   const intentionalNavRef = useRef(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Pre-select design language from ?theme= query param
+  useEffect(() => {
+    const theme = searchParams.get('theme');
+    if (!theme) return;
+    const match = DESIGN_LANGUAGES.find(l => l.value === theme);
+    if (match) setDesignLang(match.label);
+  }, [searchParams]);
 
   const loadingMessages = [
     "Analysing your site and space...",

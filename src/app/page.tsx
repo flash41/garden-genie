@@ -3,6 +3,19 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
+const exampleGardens = [
+  { slug: 'japanese-zen',         badge: 'Japanese Zen',           title: 'The Tranquil Courtyard',    descriptor: 'Calm. Considered. Timeless.',    image: '/examples/japanese-zen.jpg' },
+  { slug: 'english-cottage',      badge: 'English Cottage',        title: 'The Heritage Walled Garden', descriptor: 'Abundant. Romantic. Structured.', image: '/examples/english-cottage.jpg' },
+  { slug: 'city-garden',          badge: 'City Garden',            title: 'The Urban Retreat',          descriptor: 'Smart. Compact. Considered.',     image: '/examples/city-garden.jpg' },
+  { slug: 'mediterranean',        badge: 'Mediterranean',          title: 'The Sun-Drenched Terrace',   descriptor: 'Warm. Fragrant. Effortless.',     image: '/examples/mediterranean.jpg' },
+  { slug: 'modern-minimalist',    badge: 'Modern Minimalist',      title: 'The Clean Slate Garden',     descriptor: 'Precise. Calm. Architectural.',   image: '/examples/modern-minimalist.jpg' },
+  { slug: 'wildlife-garden',      badge: 'Wildlife & Pollinator',  title: 'The Living Garden',          descriptor: 'Wild. Purposeful. Alive.',        image: '/examples/wildlife-pollinator-garden.jpg' },
+  { slug: 'kitchen-garden',       badge: 'Kitchen & Herb Garden',  title: 'The Productive Garden',      descriptor: 'Useful. Beautiful. Rewarding.',   image: '/examples/kitchen-herb-garden.jpg' },
+  { slug: 'tropical-lush',        badge: 'Tropical & Lush',        title: 'The Jungle Escape',          descriptor: 'Bold. Layered. Immersive.',       image: '/examples/tropical-lush.jpg' },
+  { slug: 'nordic-naturalistic',  badge: 'Nordic Naturalistic',    title: 'The Meadow Garden',          descriptor: 'Relaxed. Seasonal. Honest.',      image: '/examples/nordic-naturalistic.jpg' },
+  { slug: 'formal-classical',     badge: 'Formal Classical',       title: 'The Symmetrical Garden',     descriptor: 'Ordered. Elegant. Confident.',    image: '/examples/formal-classical.jpg' },
+];
+
 export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false);
   const [activeStyle, setActiveStyle] = useState('English Cottage');
@@ -105,6 +118,13 @@ export default function LandingPage() {
         .example-card .example-img { transition: transform 0.6s ease; }
         .example-card:hover .example-img { transform: scale(1.03); }
 
+        .carousel-track { scrollbar-width:none; }
+        .carousel-track::-webkit-scrollbar { display:none; }
+        .carousel-card .try-btn { opacity:0; transition:opacity 0.3s ease; }
+        .carousel-card:hover .try-btn { opacity:1; }
+        .carousel-card .carousel-img { transition:transform 0.6s ease; object-fit:cover; }
+        .carousel-card:hover .carousel-img { transform:scale(1.03); }
+
         .ghost-arrow { width:32px; height:1px; background:currentColor; transition:width 0.3s; display:inline-block; vertical-align:middle; }
         .btn-ghost:hover .ghost-arrow { width:48px; }
 
@@ -138,10 +158,12 @@ export default function LandingPage() {
           .steps-connector { display:none !important; }
           .steps-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
           .for-grid { grid-template-columns: 1fr !important; }
-          .examples-grid { grid-template-columns: 1fr !important; }
           .stats-grid { grid-template-columns: repeat(2,1fr) !important; }
           .features-grid { grid-template-columns: 1fr !important; }
           .examples-header { flex-direction: column !important; align-items: flex-start !important; gap: 20px !important; }
+          .examples-header-wrap { padding: 0 24px !important; }
+          .carousel-track { padding-left: 24px !important; }
+          .carousel-card { width: 85vw !important; }
           .footer-main { flex-direction: column !important; gap: 28px !important; text-align: center !important; }
           .footer-nav { flex-wrap: wrap !important; justify-content: center !important; }
           .section-pad { padding: 60px 24px !important; }
@@ -424,10 +446,12 @@ export default function LandingPage() {
       </section>
 
       {/* EXAMPLES */}
-      <section id="examples" className="section-pad" style={{ background: 'var(--forest)', padding: '100px 60px', position: 'relative', overflow: 'hidden' }}>
+      <section id="examples" style={{ background: 'var(--forest)', padding: '100px 0', position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', inset: 0, backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Ccircle cx='30' cy='30' r='1' fill='%23b8962e' opacity='0.15'/%3E%3C/svg%3E")`, backgroundSize: '60px 60px' }} />
-        <div style={{ maxWidth: 1200, margin: '0 auto', position: 'relative', zIndex: 2 }}>
-          <div className="examples-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 60 }}>
+
+        {/* Section header */}
+        <div className="examples-header-wrap" style={{ maxWidth: 1200, margin: '0 auto', padding: '0 60px', position: 'relative', zIndex: 2, marginBottom: 60 }}>
+          <div className="examples-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
                 <div style={{ width: 32, height: 1, background: 'var(--gold)' }} />
@@ -442,30 +466,25 @@ export default function LandingPage() {
               <svg width="20" height="8" viewBox="0 0 20 8" fill="none"><line x1="0" y1="4" x2="18" y2="4" stroke="currentColor" strokeWidth="1"/><polyline points="14,1 18,4 14,7" stroke="currentColor" strokeWidth="1" fill="none"/></svg>
             </Link>
           </div>
+        </div>
 
-          <div className="examples-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-            {[
-              { badge: 'Japanese Zen', title: 'The Tranquil Courtyard', styleLabel: 'Zen Garden', plants: '14 Suggested', area: '85m²', img: '/examples/zen-after.jpg', delay: '' },
-              { badge: 'English Cottage', title: 'The Heritage Walled Garden', styleLabel: 'Cottage', plants: '22 Suggested', area: '140m²', img: '/examples/cottage-after.jpg', delay: ' delay-1' },
-            ].map((ex) => (
-              <div key={ex.title} className={`example-card anim-fade${ex.delay}`} style={{ position: 'relative', overflow: 'hidden', cursor: 'pointer' }}>
-                <div className="example-img" style={{ width: '100%', height: 420, backgroundImage: `url('${ex.img}')`, backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative', overflow: 'hidden' }}>
-                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 50%)', padding: 32, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
-                    <div style={{ position: 'absolute', top: 24, left: 24, background: 'rgba(184,150,46,0.9)', color: 'var(--forest)', fontSize: 9, letterSpacing: 2.5, textTransform: 'uppercase', padding: '6px 14px', fontFamily: "'DM Sans', sans-serif", fontWeight: 500 }}>{ex.badge}</div>
-                    <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 26, fontWeight: 400, color: 'white', marginBottom: 8 }}>{ex.title}</h3>
-                    <div style={{ display: 'flex', gap: 20 }}>
-                      <span style={{ fontSize: 10, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)' }}>Style: <span style={{ color: 'var(--gold-light)' }}>{ex.styleLabel}</span></span>
-                      <span style={{ fontSize: 10, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)' }}>Plants: <span style={{ color: 'var(--gold-light)' }}>{ex.plants}</span></span>
-                      <span style={{ fontSize: 10, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)' }}>Area: <span style={{ color: 'var(--gold-light)' }}>{ex.area}</span></span>
-                    </div>
-                  </div>
-                  <div className="view-btn" style={{ position: 'absolute', bottom: 32, right: 32, width: 48, height: 48, border: '1px solid rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                  </div>
-                </div>
+        {/* Carousel */}
+        <div className="carousel-track" style={{ display: 'flex', overflowX: 'auto', scrollBehavior: 'smooth', gap: 2, paddingLeft: 60, position: 'relative', zIndex: 2 }}>
+          {exampleGardens.map((ex) => (
+            <div key={ex.slug} className="carousel-card" style={{ flexShrink: 0, width: 480, height: 320, position: 'relative', overflow: 'hidden', cursor: 'pointer' }}>
+              <img className="carousel-img" src={ex.image} alt={ex.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+              {/* Badge */}
+              <div style={{ position: 'absolute', top: 20, left: 20, background: '#D4AF37', color: 'var(--forest)', fontSize: 9, letterSpacing: 2.5, textTransform: 'uppercase', padding: '6px 14px', fontFamily: "'DM Sans', sans-serif", fontWeight: 600 }}>{ex.badge}</div>
+              {/* Bottom overlay */}
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 55%)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '24px 24px 22px' }}>
+                <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 400, color: 'white', margin: '0 0 6px', lineHeight: 1.2 }}>{ex.title}</h3>
+                <p style={{ fontSize: 10, letterSpacing: 1.5, color: 'rgba(212,175,55,0.8)', margin: 0, textTransform: 'uppercase' }}>{ex.descriptor}</p>
+                <Link href={`/design?theme=${ex.slug}`} className="try-btn" style={{ marginTop: 12, fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: 'var(--gold-light)', textDecoration: 'none', display: 'inline-block' }}>
+                  Try this style →
+                </Link>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       </section>
 
