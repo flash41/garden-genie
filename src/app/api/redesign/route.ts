@@ -1047,7 +1047,9 @@ Every square metre of ground is deliberately treated — no bare soil, no remnan
     return `- Plant ${i + 1}: ${p.botanicalName || p.commonName} (${p.type}) — ${depth}, grid ${p.gridLocation || '—'}`;
   }).join('\n');
 
-  return `SPATIAL LOCK — THIS RENDER MUST SHOW THE SAME GARDEN AS THE BEFORE PHOTO:
+  return `Full-frame wide-angle photorealistic garden photograph. The entire garden space must fill the complete image frame from edge to edge with no empty borders, no letterboxing, and no partial views. All boundaries of the garden — every wall, fence, path edge, and planting bed — must be visible and fully rendered within the frame.
+
+SPATIAL LOCK — THIS RENDER MUST SHOW THE SAME GARDEN AS THE BEFORE PHOTO:
 
 CAMERA POSITION: ${sc.cameraPosition || 'ground level at garden entrance'}
 The After render must be photographed from EXACTLY the same position and height as the Before photo. Same viewpoint. Same angle.
