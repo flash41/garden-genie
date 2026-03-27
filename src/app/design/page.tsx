@@ -27,7 +27,7 @@ const DESIGN_LANGUAGES = [
   { value: "kitchen-garden",      label: "Kitchen & Herb Garden" },
   { value: "tropical-lush",       label: "Tropical & Lush" },
   { value: "nordic-naturalistic", label: "Nordic Naturalistic" },
-  { value: "formal-classical",    label: "Formal Classical" },
+  { value: "urban-party-garden",  label: "Urban Party Garden" },
 ];
 
 const GEMINI_MODEL = "gemini-2.5-flash";

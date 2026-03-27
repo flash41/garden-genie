@@ -682,6 +682,40 @@ Geometric accuracy of the garden boundary shape is the top priority. The boundar
 }
 
 // ─── STEP 2 — Garden Design ────────────────────────────────────────────────────
+// Per-style extended descriptions injected into the Step 2 prompt.
+// Only required for styles where the name alone is insufficient guidance.
+const STYLE_DESCRIPTIONS: Record<string, string> = {
+  'Urban Party Garden': `An outdoor space designed first and foremost for entertaining and hosting. The garden should feel like an extension of the interior living space — relaxed, sociable, and atmospheric after dark.
+
+Key features: a defined fire pit or fireplace as the focal point and social anchor; generous hard landscaping in urban materials (poured concrete, steel edging, dark porcelain, reclaimed brick) to handle foot traffic and outdoor furniture; lush flowing planting that softens the hard surfaces without overwhelming them — ornamental grasses, large-leaved architectural plants, climbers on boundary walls. Hanging, trailing and cascading plants are a defining feature of this style — use them generously on walls, raised planters, pergolas, and retaining edges to blur the line between hard landscaping and planting. The overall effect should feel deliberately abundant — as if the garden is spilling over its own edges. Lighting is implicit in the design — the render should suggest evening atmosphere even if shot in daylight. The overall feel is generous, grown-up, and made for people. Avoid anything fussy, formal, or high-maintenance. Prioritise: fire pit zone, dining/lounge area, mood planting, boundary softening, trailing and hanging planting on all vertical surfaces.
+
+PLANT PALETTE — URBAN PARTY GARDEN:
+Hanging and trailing (highest priority — must appear in every Urban Party Garden design):
+- Trailing: Lobelia richardsonii, Bacopa, Dichondra 'Silver Falls', Lysimachia nummularia 'Aurea'
+- Cascading over walls and raised beds: Alchemilla mollis, Erigeron karvinskianus, Aubrieta
+- Climbing and self-clinging for boundary walls: Trachelospermum jasminoides, Hydrangea petiolaris, Clematis armandii
+- Hanging planters/baskets: Fuchsia, trailing Pelargonium, Helichrysum petiolare
+
+Structural and architectural:
+- Ornamental grasses: Miscanthus sinensis, Pennisetum alopecuroides, Stipa gigantea
+- Bold foliage: Fatsia japonica, Phormium tenax, Cordyline australis, Tetrapanax papyrifer
+- Canopy and screening: Bamboo (clumping varieties only), Paulownia tomentosa (coppiced)
+
+Ground level softening:
+- Erigeron karvinskianus (self-seeds into paving joints)
+- Alchemilla mollis (spills over hard edges)
+- Ophiopogon planiscapus 'Nigrescens' (black grass — urban character)
+
+Avoid: roses, topiary, formal hedging, bedding plants, anything that reads as suburban or cottage.
+
+HARDSCAPE GUIDANCE:
+- Fire pit: central or corner focal point, circular seating arrangement around it — this must appear in the render
+- Paving: large format, dark or neutral tones, urban character
+- Raised planters: dark steel or reclaimed timber, generously planted and deliberately overflowing at the edges
+- Boundaries: rendered walls or dark timber screening preferred, covered with climbers and trailing plants
+- Pergola or overhead structure if space allows — for hanging planting and evening atmosphere`,
+};
+
 // Produces the full design JSON (including layoutDescription — the master spatial
 // record) from the original photo and fingerprint. Runs before the Concept Base
 // Plan so the design decisions are made once and both visual outputs draw from them.
@@ -814,7 +848,7 @@ Return ONLY valid JSON. No markdown fences. No commentary.`;
   const userText = `Analyse this garden and produce a COMPLETE professional garden design proposal.
 
 Client: ${clientName}
-Design Language: ${style}
+Design Language: ${style}${STYLE_DESCRIPTIONS[style] ? `\n\nDesign Language — Extended Brief:\n${STYLE_DESCRIPTIONS[style]}` : ''}
 Geographic Region: ${region}
 Plant Climate: ${hardinessZone ? `Only suggest plants rated for USDA ${hardinessZone} or colder. All plants must be fully hardy to the minimum temperatures of ${hardinessZone}.` : `Only suggest plants proven to thrive in ${country} — hardy to at least -10°C, tolerating wet winters and cool summers for this region.`}
 Cost Currency: All cost estimates must be provided in ${currency}. Use realistic local market prices for ${country}.${orientation ? `\nGarden Orientation: ${orientation} — The garden faces ${orientation}. Factor sun exposure accordingly.` : ''}
@@ -1206,11 +1240,26 @@ Return ONLY valid JSON:
         { inlineData: { mimeType: imageMimeType, data: imageBase64 } },
         { text: prompt },
       ]}],
-      config: { responseMimeType: 'application/json', temperature: 0.1 },
+      config: { responseMimeType: 'application/json', temperature: 0.1, maxOutputTokens: 8192 },
     });
     const text = response.candidates?.[0]?.content?.parts?.find((p: any) => p.text)?.text || '';
-    const clean = text.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
-    return JSON.parse(clean);
+    let clean = text.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
+
+    // Truncation safety check
+    if (!clean.endsWith('}')) {
+      console.warn('[Step2b] Response appears truncated — attempting recovery');
+      // If we are mid-string (no closing quote), close the string first
+      const quoteCount = (clean.match(/"/g) || []).length;
+      if (quoteCount % 2 !== 0) clean += '"';
+      // Close the object
+      clean += '}';
+    }
+
+    try {
+      return JSON.parse(clean);
+    } catch {
+      throw new Error('Gemini response was truncated. Please try again.');
+    }
   } catch (err) {
     console.error('[Step2b] Validation failed:', err);
     return { passed: true, corrections: '', confidence: 0 };

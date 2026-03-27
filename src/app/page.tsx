@@ -13,7 +13,7 @@ const exampleGardens = [
   { slug: 'kitchen-garden',       badge: 'Kitchen & Herb Garden',  title: 'The Productive Garden',      descriptor: 'Useful. Beautiful. Rewarding.',   image: '/examples/kitchen-herb-garden.jpg' },
   { slug: 'tropical-lush',        badge: 'Tropical & Lush',        title: 'The Jungle Escape',          descriptor: 'Bold. Layered. Immersive.',       image: '/examples/tropical-lush.jpg' },
   { slug: 'nordic-naturalistic',  badge: 'Nordic Naturalistic',    title: 'The Meadow Garden',          descriptor: 'Relaxed. Seasonal. Honest.',      image: '/examples/nordic-naturalistic.jpg' },
-  { slug: 'formal-classical',     badge: 'Formal Classical',       title: 'The Symmetrical Garden',     descriptor: 'Ordered. Elegant. Confident.',    image: '/examples/formal-classical.jpg' },
+  { slug: 'urban-party-garden',   badge: 'Urban Party Garden',     title: 'The Social Garden',          descriptor: 'Lush. Lit. Made for people.',     image: '/examples/urban-party-garden.jpg' },
 ];
 
 export default function LandingPage() {
