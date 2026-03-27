@@ -895,13 +895,12 @@ function GridOverlayImage({ src, plants, label, showMarkers = true, perspectiveD
 
 function SectionTitle({ n, title }: { n: string; title: string }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "32px 0 16px" }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "32px 0 16px" }}>
       <span style={{
-        background: C.brand, color: C.accent,
-        fontSize: px(11), fontFamily: C.font, fontWeight: 700,
-        padding: "3px 8px", borderRadius: C.r, letterSpacing: "0.08em"
+        fontFamily: C.font, fontSize: px(11), fontWeight: 700,
+        color: C.accent, letterSpacing: "0.12em", minWidth: 28,
       }}>{n}</span>
-      <h2 style={{ margin: 0, fontFamily: C.fontSerif, fontSize: px(18), fontWeight: 600, color: C.ink }}>{title}</h2>
+      <h2 style={{ margin: 0, fontFamily: C.fontSerif, fontSize: px(19), fontWeight: 600, color: C.ink }}>{title}</h2>
       <div style={{ flex: 1, height: 1, background: C.rule, marginLeft: 4 }} />
     </div>
   );
@@ -2003,7 +2002,7 @@ export default function GardigApp() {
       <div style={{ textAlign: "center", maxWidth: 440, padding: "0 24px" }}>
         <div style={{ width: 44, height: 44, borderRadius: "50%", border: `3px solid ${C.rule}`, borderTopColor: C.accent, margin: "0 auto 24px", animation: "spin 0.75s linear infinite" }} />
         <div style={{ fontFamily: C.fontSerif, fontSize: px(22), fontWeight: 600, color: C.ink, marginBottom: 16 }}>Building Your Action Plan</div>
-        <div className="rotating-msg" style={{ fontSize: px(14), color: C.inkMid, marginBottom: 8, minHeight: 44, opacity: rotatingMsgVisible ? 1 : 0 }}>
+        <div className="rotating-msg" style={{ fontSize: px(16), color: C.inkMid, marginBottom: 8, minHeight: 44, opacity: rotatingMsgVisible ? 1 : 0 }}>
           {loadingMessages[rotatingMsgIdx]}
         </div>
         <div style={{ fontSize: px(12), color: C.inkLight, marginBottom: 24, fontStyle: "italic" }}>
@@ -2635,23 +2634,23 @@ export default function GardigApp() {
                   const cultivarClean = (p.cultivar && p.cultivar !== 'null' && p.cultivar !== '') ? ` '${p.cultivar}'` : '';
                   return (
                     <div key={p.id || i} style={{
-                      display: 'flex', alignItems: 'center', gap: 14,
-                      padding: '11px 16px',
+                      display: 'flex', alignItems: 'center', gap: 16,
+                      padding: '13px 18px',
                       background: i % 2 === 0 ? C.surface : C.card,
                       borderBottom: i < plants.length - 1 ? `1px solid ${C.rule}` : 'none',
                     }}>
-                      <div style={{ minWidth: 28, height: 28, borderRadius: '50%', background: C.brand, color: C.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: px(12), fontWeight: 700, flexShrink: 0 }}>
+                      <div style={{ minWidth: 30, height: 30, borderRadius: '50%', background: C.brand, color: C.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: px(11), fontWeight: 700, flexShrink: 0, letterSpacing: '0.04em' }}>
                         {i + 1}
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontStyle: 'italic', color: C.brand, fontWeight: 600, fontSize: px(14) }}>
+                        <div style={{ fontFamily: C.fontSerif, fontStyle: 'italic', color: C.brand, fontWeight: 600, fontSize: px(15) }}>
                           {cleanPlantName(p.botanicalName)}{cultivarClean}
                         </div>
-                        <div style={{ color: C.inkLight, fontSize: px(12) }}>{cleanPlantName(p.commonName)}</div>
+                        <div style={{ color: C.inkLight, fontSize: px(12), marginTop: 1 }}>{cleanPlantName(p.commonName)}</div>
                       </div>
                       <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                        <div style={{ fontSize: px(13), fontWeight: 700, color: C.ink }}>× {p.quantity}</div>
-                        <div style={{ fontSize: px(11), color: C.inkLight }}>{p.location || p.gridLocation || ''}</div>
+                        <div style={{ fontSize: px(14), fontWeight: 700, color: C.ink }}>× {p.quantity}</div>
+                        <div style={{ fontSize: px(11), color: C.inkLight, marginTop: 1 }}>{p.location || p.gridLocation || ''}</div>
                       </div>
                     </div>
                   );
