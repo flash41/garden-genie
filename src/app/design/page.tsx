@@ -1857,6 +1857,7 @@ export default function GardigApp() {
         .creativity-slider::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:#b8962e;border:2.5px solid #0a3d2b;cursor:pointer;box-shadow:0 1px 4px rgba(44,26,14,0.18)}
         .site-logo-h{height:40px;width:auto;display:block}
         @media(max-width:640px){.site-logo-h{height:28px}}
+        .upload-generate-btn:hover:not(:disabled){background:#053d2f!important;transform:translateY(-1px);box-shadow:0 6px 20px rgba(6,78,59,0.35)!important}
       `}</style>
 
       {/* Top bar */}
@@ -1866,9 +1867,20 @@ export default function GardigApp() {
         </a>
       </header>
 
+      {/* Hero band */}
+      <div style={{ background: '#064e3b', padding: '52px 8% 48px', textAlign: 'center' }}>
+        <div style={{ fontSize: px(10), letterSpacing: '0.18em', color: 'rgba(212,175,55,0.8)', textTransform: 'uppercase', fontWeight: 600, marginBottom: 16, fontFamily: C.font }}>Garden Design Tool</div>
+        <h1 style={{ fontFamily: C.fontSerif, fontSize: 'clamp(26px, 3vw, 38px)', fontWeight: 400, color: '#fff', margin: '0 0 14px', lineHeight: 1.25 }}>
+          Your garden, redesigned.
+        </h1>
+        <p style={{ fontFamily: C.font, fontSize: px(15), color: 'rgba(255,255,255,0.55)', margin: 0, maxWidth: 460, marginLeft: 'auto', marginRight: 'auto', lineHeight: 1.65 }}>
+          Upload a photo. Get a full action plan — plant list, layout, phased guide, and cost estimate.
+        </p>
+      </div>
+
       {showRestoreBanner && savedResults && (
-        <div style={{ background: '#0a3d2b', color: '#fff', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
-          <span style={{ flex: 1, fontSize: 14 }}>Your last design is still available.</span>
+        <div style={{ background: '#0a3d2b', borderTop: `2px solid ${C.accent}`, color: '#fff', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+          <span style={{ flex: 1, fontSize: 14 }}>You have a previous plan saved.</span>
           <button
             onClick={() => {
               if (!savedResults) return;
@@ -1887,7 +1899,7 @@ export default function GardigApp() {
             }}
             style={{ background: '#b8962e', color: '#fff', border: 'none', borderRadius: 4, padding: '6px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
           >
-            Restore my plan
+            Pick up where I left off
           </button>
           <button
             onClick={() => {
@@ -1897,23 +1909,16 @@ export default function GardigApp() {
             }}
             style={{ background: 'transparent', color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 4, padding: '6px 16px', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}
           >
-            Start fresh
+            Start a new plan
           </button>
         </div>
       )}
 
-      <div style={{ maxWidth: 860, margin: "0 auto", padding: "44px 24px" }}>
-        <div style={{ marginBottom: 36 }}>
-          <div style={{ fontSize: px(10), letterSpacing: "0.15em", color: C.accent, textTransform: "uppercase", fontWeight: 600, marginBottom: 10, fontFamily: C.font }}>Site Analysis & Design</div>
-          <h1 style={{ fontFamily: C.fontSerif, fontSize: px(32), margin: "0 0 10px", color: C.ink, fontWeight: 600 }}>Generate a Garden Design Proposal</h1>
-          <p style={{ color: C.inkMid, maxWidth: 500, margin: 0, fontSize: px(BASE), lineHeight: 1.6, fontFamily: C.font }}>
-            Upload a site photo to receive a full proposal — plant list, spatial layout, cost estimate, and proposed design render.
-          </p>
-        </div>
+      <div style={{ maxWidth: 860, margin: "0 auto", padding: "32px 24px 48px" }}>
 
         <div className="upload-form-grid">
           {/* Upload */}
-          <Card>
+          <Card style={{ borderTop: `2px solid #D4AF37` }}>
             <Label>01 — Site Photo <span style={{ color: C.red }}>*</span></Label>
             <div
               onDrop={handleDrop} onDragOver={e => e.preventDefault()}
@@ -1945,10 +1950,12 @@ export default function GardigApp() {
 {/* Upload guidelines */}
 <div style={{
   marginTop: 14,
-  borderLeft: `2px solid rgba(184,150,46,0.4)`,
-  paddingLeft: 12,
+  background: '#f0f7f4',
+  borderLeft: `3px solid #064e3b`,
+  borderRadius: `0 ${C.r} ${C.r} 0`,
+  padding: '12px 14px',
 }}>
-  <div style={{ fontSize: px(10), letterSpacing: "0.12em", color: C.accent, textTransform: "uppercase", fontWeight: 700, marginBottom: 8, fontFamily: C.font }}>
+  <div style={{ fontSize: px(10), letterSpacing: "0.12em", color: '#064e3b', textTransform: "uppercase", fontWeight: 700, marginBottom: 8, fontFamily: C.font }}>
     For the best result
   </div>
   <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -1958,7 +1965,7 @@ export default function GardigApp() {
       "We'll generate a redesign for everything visible within those boundaries.",
     ].map((tip, i) => (
       <div key={i} style={{ display: "flex", gap: 8, fontSize: px(12), color: C.inkMid, lineHeight: 1.5 }}>
-        <span style={{ color: C.accent, flexShrink: 0, marginTop: 1 }}>·</span>
+        <span style={{ color: '#064e3b', flexShrink: 0, marginTop: 1 }}>·</span>
         <span>{tip}</span>
       </div>
     ))}
@@ -1971,7 +1978,7 @@ export default function GardigApp() {
 </Card>
 
           {/* Project details */}
-          <Card>
+          <Card style={{ borderTop: `2px solid #D4AF37` }}>
             <Label>02 — Project Details</Label>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               <div>
@@ -2029,7 +2036,7 @@ export default function GardigApp() {
           const cl = TRANSFORMATION_LEVELS[transformationLevel - 1];
           const pct = `${(transformationLevel - 1) / 4 * 100}%`;
           return (
-            <div style={{ marginTop: 22, background: C.card, border: `1px solid ${C.rule}`, borderLeft: `4px solid ${C.accent}`, borderRadius: C.rLg, padding: "18px 22px", boxShadow: C.shadow }}>
+            <div style={{ marginTop: 22, background: C.card, border: `1px solid ${C.rule}`, borderTop: `2px solid #D4AF37`, borderLeft: `4px solid ${C.accent}`, borderRadius: C.rLg, padding: "18px 22px", boxShadow: C.shadow }}>
               <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 12, gap: 12 }}>
                 <Label>03 — Level of Transformation</Label>
                 <span style={{ fontFamily: C.fontSerif, fontSize: px(15), fontWeight: 600, color: C.brand, whiteSpace: "nowrap" }}>
@@ -2094,19 +2101,26 @@ export default function GardigApp() {
         </div>
 
         {!renderBlocked && (
-          <div style={{ textAlign: "center", marginTop: 22 }}>
+          <div style={{ marginTop: 28 }}>
             <button onClick={handleAnalyse} className="upload-generate-btn"
               style={{
-                background: isFormValid() ? C.brand : "#d1d5db",
-                color: isFormValid() ? C.accent : "#9ca3af",
-                border: "none", padding: "14px 48px", borderRadius: C.r,
-                fontSize: px(BASE), fontFamily: C.font, fontWeight: 700,
+                display: 'block', width: '100%',
+                background: isFormValid() ? '#064e3b' : "#d1d5db",
+                color: isFormValid() ? '#fff' : "#9ca3af",
+                border: "none", padding: "16px 24px", borderRadius: C.r,
+                fontSize: px(17), fontFamily: C.fontSerif, fontWeight: 600,
                 cursor: isFormValid() ? "pointer" : "not-allowed",
-                boxShadow: isFormValid() ? C.shadowMd : "none", letterSpacing: "0.01em",
-                opacity: isFormValid() ? 1 : 0.5, transition: "all 0.15s"
+                boxShadow: isFormValid() ? '0 4px 14px rgba(6,78,59,0.28)' : "none",
+                letterSpacing: "0.02em",
+                opacity: isFormValid() ? 1 : 0.5, transition: "all 0.2s"
               }}>
               Build my Action Plan →
             </button>
+            {isFormValid() && (
+              <p style={{ textAlign: 'center', fontSize: px(12), color: C.inkLight, margin: '10px 0 0', fontFamily: C.font }}>
+                Takes around 4 minutes · Your plan will be emailed to you
+              </p>
+            )}
           </div>
         )}
       </div>
