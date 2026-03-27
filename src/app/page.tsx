@@ -166,14 +166,14 @@ export default function LandingPage() {
         <a href="/" style={{ display: 'flex', alignItems: 'center' }}>
           <img src="/dd_logo.png" alt="Dedrab" className="site-logo-h" />
         </a>
-        <Link href="/design" className="mobile-nav-cta">Get Inspired</Link>
+        <Link href="/design" className="mobile-nav-cta">Build my Action Plan</Link>
         <ul className="nav-links-hide" style={{ display: 'flex', gap: 40, listStyle: 'none', alignItems: 'center', margin: 0, padding: 0 }}>
           <li><a href="#examples" className="nav-link-item">Examples</a></li>
           <li><a href="#how" className="nav-link-item">How It Works</a></li>
           <li><a href="#features" className="nav-link-item">What You Get</a></li>
           <li>
             <Link href="/design" className="nav-link-item nav-cta-link" style={{ color: 'var(--gold-light)' }}>
-              Get Inspired
+              Build my Action Plan
             </Link>
           </li>
         </ul>
@@ -233,7 +233,7 @@ export default function LandingPage() {
             De-drab your garden.<br /><em style={{ fontStyle: 'italic', color: 'var(--gold-light)' }}>This season.</em>
           </h1>
           <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 21, fontWeight: 300, lineHeight: 1.75, color: 'rgba(255,255,255,0.75)', marginBottom: 48, maxWidth: 500 }}>
-            Out of ideas for your outdoor space? Dedrab gives you a beautiful, inspiring vision for your garden — with suggested plants, layouts, and a clear picture of what it could become.
+            Out of ideas for your outdoor space? Dedrab gives you a complete Action Plan for your garden — plants, layout, costs, and a picture of your finished garden to work towards.
           </p>
           <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
             <a href="#examples" className="btn-primary">View Examples</a>
@@ -257,11 +257,11 @@ export default function LandingPage() {
                 <path d="M160 145 Q155 120 158 105" stroke="rgba(184,150,46,0.5)" strokeWidth="1.5" fill="none"/>
                 <path d="M165 145 Q170 118 166 100" stroke="rgba(184,150,46,0.4)" strokeWidth="1.5" fill="none"/>
                 <path d="M200 180 Q210 160 220 145 Q230 130 240 140" stroke="rgba(184,150,46,0.4)" strokeWidth="2" fill="none"/>
-                <text x="10" y="25" fill="rgba(184,150,46,0.6)" fontSize="8" letterSpacing="2" fontFamily="sans-serif">YOUR GARDEN VISION</text>
+                <text x="10" y="25" fill="rgba(184,150,46,0.6)" fontSize="8" letterSpacing="2" fontFamily="sans-serif">YOUR FINISHED GARDEN</text>
                 <line x1="10" y1="30" x2="100" y2="30" stroke="rgba(184,150,46,0.3)" strokeWidth="0.5"/>
               </svg>
               <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.5)', padding: '8px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'var(--gold-light)' }}>Generating your vision...</span>
+                <span style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'var(--gold-light)' }}>Building your plan...</span>
                 <div className="pulse-dot" style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ade80' }} />
               </div>
             </div>
@@ -269,7 +269,7 @@ export default function LandingPage() {
               <div style={{ fontSize: 10, letterSpacing: 1.5, textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 8 }}>English Cottage · Full Design Plan</div>
               <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 16, color: 'white', marginBottom: 16 }}>The Sunlit Border Garden</div>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                {['Plant List', 'Layout Plan', 'Vision Render', 'Seasonal Guide'].map((t) => (
+                {['Plant List', 'Layout Plan', 'Finished Garden', 'Cost Estimate'].map((t) => (
                   <span key={t} style={{ fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', padding: '4px 10px', border: '1px solid rgba(184,150,46,0.3)', color: 'rgba(255,255,255,0.5)' }}>{t}</span>
                 ))}
               </div>
@@ -309,7 +309,7 @@ export default function LandingPage() {
             <span style={{ fontSize: 10, letterSpacing: 4, textTransform: 'uppercase', color: 'var(--gold)', fontFamily: "'DM Sans', sans-serif" }}>How It Works</span>
           </div>
           <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(32px, 4vw, 52px)', fontWeight: 400, color: 'var(--forest)', lineHeight: 1.2, marginBottom: 60, maxWidth: 540 }}>
-            Three simple steps to your <em style={{ fontStyle: 'italic', color: 'var(--gold)' }}>garden vision</em>
+            Three simple steps to your <em style={{ fontStyle: 'italic', color: 'var(--gold)' }}>finished garden</em>
           </h2>
           <div className="steps-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 0, position: 'relative' }}>
             <div className="steps-connector" />
@@ -342,8 +342,8 @@ export default function LandingPage() {
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
                   </svg>
                 ),
-                title: 'Receive Your Inspiration Plan',
-                desc: 'Get a beautiful visual render of your reimagined space, a curated plant list with what to buy and where to place it, a layout guide, and a phased plan you can actually follow this season.',
+                title: 'Get Your Action Plan',
+                desc: 'Get a picture of your finished garden, a plant list with exactly what to buy and where to place it, a layout guide, and a phased plan to follow this season.',
                 delay: 'delay-2',
               },
             ].map((step) => (
@@ -431,7 +431,7 @@ export default function LandingPage() {
                 <span style={{ fontSize: 10, letterSpacing: 4, textTransform: 'uppercase', color: 'var(--gold-light)', fontFamily: "'DM Sans', sans-serif" }}>Example Plans</span>
               </div>
               <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(32px, 4vw, 52px)', fontWeight: 400, color: 'white', lineHeight: 1.2, maxWidth: 540, marginBottom: 0 }}>
-                See the kind of <em style={{ fontStyle: 'italic', color: 'var(--gold)' }}>inspiration</em><br />Dedrab delivers
+                See the kind of <em style={{ fontStyle: 'italic', color: 'var(--gold)' }}>Action Plans</em><br />Dedrab delivers
               </h2>
             </div>
             <Link href="/design" style={{ fontSize: 10, letterSpacing: 2.5, textTransform: 'uppercase', color: 'var(--gold)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10, whiteSpace: 'nowrap', transition: 'gap 0.3s' }}>
@@ -472,7 +472,7 @@ export default function LandingPage() {
           <div style={{ fontSize: 10, letterSpacing: 3, textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 16, fontFamily: "'DM Sans', sans-serif" }}>Example Output</div>
           <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 34, fontWeight: 400, color: 'var(--forest)', marginBottom: 16, lineHeight: 1.25 }}>See a full example report</h2>
           <p style={{ fontSize: 16, color: 'var(--warm-grey)', lineHeight: 1.75, marginBottom: 36, fontFamily: "'DM Sans', sans-serif" }}>
-            This is the kind of detailed proposal Dedrab generates for your garden — plant list, layout plan, cost estimate, and more.
+            This is the kind of detailed Action Plan Dedrab generates for your garden — plant list, layout plan, cost estimate, and more.
           </p>
           <a href="/example-report-zen-Proposal.pdf" target="_blank" rel="noopener noreferrer" style={{
             display: 'inline-block',
@@ -522,8 +522,8 @@ export default function LandingPage() {
             {[
               {
                 icon: <svg style={{ width: 40, height: 40, color: 'var(--gold)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>,
-                title: 'A Visual Garden Render', tag: 'Inspiring Vision',
-                desc: "A beautiful reimagining of your space — showing you what your garden could look like with the suggested plants and layout in place. A real picture to work toward, not a mood board.",
+                title: 'Your Finished Garden', tag: 'What You\'re Working Towards',
+                desc: "A picture of your garden with the suggested plants and layout in place. This is what you're working towards — a real destination, not a mood board.",
               },
               {
                 icon: <svg style={{ width: 40, height: 40, color: 'var(--gold)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>,
@@ -533,14 +533,14 @@ export default function LandingPage() {
               },
               {
                 icon: <svg style={{ width: 40, height: 40, color: 'var(--gold)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
-                title: 'Layout Plan Sketch', tag: 'Practical Layout',
-                desc: "A hand-interpreted spatial sketch showing suggested planting zones, borders, paths, and focal points — drawn from your photo and overlaid with a reference grid. Note: where site photography is complex or perspective is ambiguous, the sketch is indicative rather than surveyed.",
+                title: 'Garden Layout Plan', tag: 'Practical Layout',
+                desc: "A spatial layout showing suggested planting zones, borders, paths, and focal points — drawn from your photo and overlaid with a reference grid. Print it and take it outside.",
                 delay: 'delay-4',
               },
               {
                 icon: <svg style={{ width: 40, height: 40, color: 'var(--gold)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>,
-                title: 'Your Plan, Beautifully Delivered', tag: 'PDF & Email',
-                desc: "Download your full plan as a beautifully formatted PDF — or share it directly by email. Forward it to a friend, a gardener, or your local nursery. Your vision, ready to take into the world.",
+                title: 'Your Action Plan, Ready to Go', tag: 'PDF & Email',
+                desc: "Download your full Action Plan as a formatted PDF — or send it directly by email. Forward it to a friend, a gardener, or your local nursery. Ready to act on the moment you have it.",
                 delay: 'delay-5',
               },
             ].map((f) => (
@@ -569,17 +569,17 @@ export default function LandingPage() {
         <div style={{ position: 'relative', zIndex: 2, maxWidth: 640, margin: '0 auto' }}>
           <div style={{ width: 60, height: 1, background: 'var(--gold)', margin: '0 auto 32px' }} />
           <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(36px, 5vw, 62px)', fontWeight: 400, color: 'white', lineHeight: 1.15, marginBottom: 20 }}>
-            Ready to see your garden&apos;s <em style={{ fontStyle: 'italic', color: 'var(--gold-light)' }}>true potential?</em>
+            Ready to build your <em style={{ fontStyle: 'italic', color: 'var(--gold-light)' }}>Action Plan?</em>
           </h2>
           <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 21, color: 'rgba(255,255,255,0.65)', marginBottom: 52, lineHeight: 1.65 }}>
-            Upload a photo, pick your style, and receive your personalised garden inspiration plan.
+            Upload a photo, pick your style, and get your personalised garden Action Plan.
           </p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 0, marginBottom: 52, textAlign: 'left', border: '1px solid rgba(184,150,46,0.2)', background: 'rgba(184,150,46,0.04)', padding: '32px 40px' }}>
             {[
               { n: '1', title: 'Upload Your Photo', desc: 'A single photo of your garden — taken on your phone is perfectly fine.' },
               { n: '2', title: 'Pick Your Style', desc: 'Choose from 8 curated garden styles, from Cottage to Contemporary.' },
-              { n: '3', title: 'Receive Your Vision', desc: 'Get a full design plan with render, plant list, layout, and PDF export.' },
+              { n: '3', title: 'Get Your Action Plan', desc: 'A full plan: your finished garden, plant list, layout, cost estimate, and PDF.' },
             ].map((step, i) => (
               <div key={step.n} style={{ display: 'flex', alignItems: 'flex-start', gap: 20, padding: i === 0 ? '0 0 18px' : i === 2 ? '18px 0 0' : '18px 0', borderBottom: i < 2 ? '1px solid rgba(184,150,46,0.12)' : 'none' }}>
                 <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 32, fontWeight: 300, color: 'var(--gold)', lineHeight: 1, flexShrink: 0, width: 28 }}>{step.n}</span>
@@ -592,7 +592,7 @@ export default function LandingPage() {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
-            <Link href="/design" className="btn-primary">Get Your Garden Vision</Link>
+            <Link href="/design" className="btn-primary">Build my Action Plan</Link>
             <span style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)' }}>No account needed · Free to try</span>
           </div>
         </div>
