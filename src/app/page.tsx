@@ -230,17 +230,14 @@ export default function LandingPage() {
             <span style={{ fontSize: 10, letterSpacing: 4, textTransform: 'uppercase', color: 'var(--gold-light)', fontFamily: "'DM Sans', sans-serif" }}>Garden Inspiration &amp; Design Vision</span>
           </div>
           <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(48px, 6vw, 82px)', fontWeight: 400, lineHeight: 1.1, color: '#fff', marginBottom: 28 }}>
-            De-drab your garden.<br /><em style={{ fontStyle: 'italic', color: 'var(--gold-light)' }}>This season.</em>
+            Most garden projects never start,<br />because the hard part is knowing where to start.<br /><em style={{ fontStyle: 'italic', color: 'var(--gold-light)' }}>This is where you start.</em>
           </h1>
           <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 21, fontWeight: 300, lineHeight: 1.75, color: 'rgba(255,255,255,0.75)', marginBottom: 48, maxWidth: 500 }}>
-            Out of ideas for your outdoor space? Dedrab gives you a complete Action Plan for your garden — plants, layout, costs, and a picture of your finished garden to work towards.
+            Upload a photo of your garden and get a complete Action Plan in under 4 minutes — a visual of your finished garden, a plant list, and a phased weekend guide to make it happen.
           </p>
-          <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
-            <a href="#examples" className="btn-primary">View Examples</a>
-            <a href="#how" className="btn-ghost" style={{ background: 'transparent', color: 'rgba(255,255,255,0.7)', fontFamily: "'DM Sans', sans-serif", fontSize: 11, letterSpacing: 2.5, textTransform: 'uppercase', padding: '18px 0', border: 'none', cursor: 'pointer', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10, transition: 'color 0.2s' }}>
-              <span className="ghost-arrow" />
-              How it works
-            </a>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 14 }}>
+            <Link href="/design" className="btn-primary">Build my Action Plan →</Link>
+            <span style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', fontFamily: "'DM Sans', sans-serif" }}>No account needed · Takes about 4 minutes</span>
           </div>
         </div>
 
@@ -309,7 +306,7 @@ export default function LandingPage() {
             <span style={{ fontSize: 10, letterSpacing: 4, textTransform: 'uppercase', color: 'var(--gold)', fontFamily: "'DM Sans', sans-serif" }}>How It Works</span>
           </div>
           <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(32px, 4vw, 52px)', fontWeight: 400, color: 'var(--forest)', lineHeight: 1.2, marginBottom: 60, maxWidth: 540 }}>
-            Three simple steps to your <em style={{ fontStyle: 'italic', color: 'var(--gold)' }}>finished garden</em>
+            From photo to plan in minutes
           </h2>
           <div className="steps-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 0, position: 'relative' }}>
             <div className="steps-connector" />
@@ -321,8 +318,8 @@ export default function LandingPage() {
                     <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
                   </svg>
                 ),
-                title: 'Photograph Your Garden',
-                desc: "Take a simple photo of your outdoor space on any phone or camera. It doesn't need to look good — that's rather the point. Upload it to Dedrab and let us see what we're working with.",
+                title: 'Upload a photo of your garden',
+                desc: "Any angle, any size. The clearer the boundaries, the better your plan.",
               },
               {
                 n: '02',
@@ -331,8 +328,8 @@ export default function LandingPage() {
                     <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
                   </svg>
                 ),
-                title: 'Choose Your Style',
-                desc: "Pick the garden style that inspires you — from a relaxed cottage border to a structured formal design. Dedrab uses this to build a vision that truly fits your taste, not a generic template.",
+                title: 'Choose your style and how much to change',
+                desc: "Pick a design style and set how ambitious you want to be — from a light refresh to a full redesign.",
                 delay: 'delay-1',
               },
               {
@@ -342,8 +339,8 @@ export default function LandingPage() {
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
                   </svg>
                 ),
-                title: 'Get Your Action Plan',
-                desc: 'Get a picture of your finished garden, a plant list with exactly what to buy and where to place it, a layout guide, and a phased plan to follow this season.',
+                title: 'Your Action Plan is ready',
+                desc: 'A visual of your finished garden. A plant list to gather. A phased weekend guide. A cost estimate. Everything you need to get started — nothing you don\'t.',
                 delay: 'delay-2',
               },
             ].map((step) => (
@@ -431,11 +428,11 @@ export default function LandingPage() {
                 <span style={{ fontSize: 10, letterSpacing: 4, textTransform: 'uppercase', color: 'var(--gold-light)', fontFamily: "'DM Sans', sans-serif" }}>Example Plans</span>
               </div>
               <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(32px, 4vw, 52px)', fontWeight: 400, color: 'white', lineHeight: 1.2, maxWidth: 540, marginBottom: 0 }}>
-                See the kind of <em style={{ fontStyle: 'italic', color: 'var(--gold)' }}>Action Plans</em><br />Dedrab delivers
+                See a real Action Plan
               </h2>
             </div>
             <Link href="/design" style={{ fontSize: 10, letterSpacing: 2.5, textTransform: 'uppercase', color: 'var(--gold)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10, whiteSpace: 'nowrap', transition: 'gap 0.3s' }}>
-              Try it yourself
+              See a real Action Plan →
               <svg width="20" height="8" viewBox="0 0 20 8" fill="none"><line x1="0" y1="4" x2="18" y2="4" stroke="currentColor" strokeWidth="1"/><polyline points="14,1 18,4 14,7" stroke="currentColor" strokeWidth="1" fill="none"/></svg>
             </Link>
           </div>
@@ -470,7 +467,7 @@ export default function LandingPage() {
       <section style={{ background: 'var(--linen)', padding: '80px 60px', textAlign: 'center', borderTop: '1px solid var(--cream-dark)' }}>
         <div style={{ maxWidth: 640, margin: '0 auto' }}>
           <div style={{ fontSize: 10, letterSpacing: 3, textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 16, fontFamily: "'DM Sans', sans-serif" }}>Example Output</div>
-          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 34, fontWeight: 400, color: 'var(--forest)', marginBottom: 16, lineHeight: 1.25 }}>See a full example report</h2>
+          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 34, fontWeight: 400, color: 'var(--forest)', marginBottom: 16, lineHeight: 1.25 }}>See a real Action Plan</h2>
           <p style={{ fontSize: 16, color: 'var(--warm-grey)', lineHeight: 1.75, marginBottom: 36, fontFamily: "'DM Sans', sans-serif" }}>
             This is the kind of detailed Action Plan Dedrab generates for your garden — plant list, layout plan, cost estimate, and more.
           </p>
@@ -486,7 +483,7 @@ export default function LandingPage() {
             padding: '14px 36px',
             textDecoration: 'none',
           }}>
-            View Example Report →
+            See a real Action Plan →
           </a>
         </div>
       </section>
@@ -516,29 +513,30 @@ export default function LandingPage() {
             <span style={{ fontSize: 10, letterSpacing: 4, textTransform: 'uppercase', color: 'var(--gold)', fontFamily: "'DM Sans', sans-serif" }}>What You Receive</span>
           </div>
           <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(32px, 4vw, 52px)', fontWeight: 400, color: 'var(--forest)', lineHeight: 1.2, marginBottom: 60, maxWidth: 540 }}>
-            Everything you need to <em style={{ fontStyle: 'italic', color: 'var(--gold)' }}>get started this season</em>
+            What&apos;s in your Action Plan
           </h2>
           <div className="features-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 2 }}>
             {[
               {
                 icon: <svg style={{ width: 40, height: 40, color: 'var(--gold)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>,
-                title: 'Your Finished Garden', tag: 'What You\'re Working Towards',
-                desc: "A picture of your garden with the suggested plants and layout in place. This is what you're working towards — a real destination, not a mood board.",
+                title: 'Your finished garden', tag: 'What You\'re Working Towards',
+                desc: "See exactly where you're heading before you lift a spade. A photorealistic picture of your garden as it could look.",
               },
               {
                 icon: <svg style={{ width: 40, height: 40, color: 'var(--gold)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>,
-                title: 'A Curated Plant List', tag: 'Ready to Plant',
-                desc: "A handpicked selection of plants suited to your garden's style, size, and conditions. With names, quantities, and placement suggestions — so you know exactly what to buy and where to put it.",
+                title: 'What you\'ll need — plants', tag: 'Ready to Plant',
+                desc: "A ready-to-use list of every plant, with quantities and sourcing notes. Take it straight to your garden centre.",
                 delay: 'delay-3',
               },
               {
                 icon: <svg style={{ width: 40, height: 40, color: 'var(--gold)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
                 title: 'Garden Layout Plan', tag: 'Practical Layout',
-                desc: "A spatial layout showing suggested planting zones, borders, paths, and focal points — drawn from your photo and overlaid with a reference grid. Print it and take it outside.",
+                desc: "A top-down plan of your redesigned space. Print it out and take it outside with you.",
                 delay: 'delay-4',
               },
               {
                 icon: <svg style={{ width: 40, height: 40, color: 'var(--gold)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>,
+                // COPY REVIEW NEEDED: This card covers PDF/email delivery — no direct match in the brief's 5 feature cards. The brief's "Your weekend plan" and "Cost estimate" cards also have no existing card. Consider replacing this card or adding two new ones.
                 title: 'Your Action Plan, Ready to Go', tag: 'PDF & Email',
                 desc: "Download your full Action Plan as a formatted PDF — or send it directly by email. Forward it to a friend, a gardener, or your local nursery. Ready to act on the moment you have it.",
                 delay: 'delay-5',
@@ -569,10 +567,10 @@ export default function LandingPage() {
         <div style={{ position: 'relative', zIndex: 2, maxWidth: 640, margin: '0 auto' }}>
           <div style={{ width: 60, height: 1, background: 'var(--gold)', margin: '0 auto 32px' }} />
           <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(36px, 5vw, 62px)', fontWeight: 400, color: 'white', lineHeight: 1.15, marginBottom: 20 }}>
-            Ready to build your <em style={{ fontStyle: 'italic', color: 'var(--gold-light)' }}>Action Plan?</em>
+            The hardest part is starting.<br /><em style={{ fontStyle: 'italic', color: 'var(--gold-light)' }}>You&apos;re already here.</em>
           </h2>
           <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 21, color: 'rgba(255,255,255,0.65)', marginBottom: 52, lineHeight: 1.65 }}>
-            Upload a photo, pick your style, and get your personalised garden Action Plan.
+            Your Action Plan takes about 4 minutes. Everything you need to get going is on the other side of that button.
           </p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 0, marginBottom: 52, textAlign: 'left', border: '1px solid rgba(184,150,46,0.2)', background: 'rgba(184,150,46,0.04)', padding: '32px 40px' }}>
@@ -593,7 +591,7 @@ export default function LandingPage() {
 
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
             <Link href="/design" className="btn-primary">Build my Action Plan</Link>
-            <span style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)' }}>No account needed · Free to try</span>
+            <span style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)' }}>No account needed · Takes about 4 minutes</span>
           </div>
         </div>
       </section>
