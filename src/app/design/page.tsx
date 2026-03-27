@@ -26,7 +26,7 @@ const DESIGN_LANGUAGES = [
   { value: "wildlife-garden",     label: "Wildlife & Pollinator Garden" },
   { value: "kitchen-garden",      label: "Kitchen & Herb Garden" },
   { value: "tropical-lush",       label: "Tropical & Lush" },
-  { value: "nordic-naturalistic", label: "Nordic Naturalistic" },
+
   { value: "urban-party-garden",  label: "Urban Party Garden" },
 ];
 
@@ -2267,6 +2267,12 @@ export default function GardigApp() {
     sessionStorage.setItem('garden_design_style', designLang);
     sessionStorage.setItem('garden_render_url', renderUrl || '');
 
+    // Safety net: force-reset after 10 seconds so the button never stays stuck
+    const saveTimeout = setTimeout(() => {
+      setIsSaving(false);
+      setSaveError('Save is taking too long — please try again.');
+    }, 10000);
+
     let refNum: string | null = null;
 
     try {
@@ -2284,80 +2290,79 @@ export default function GardigApp() {
       });
       const saveData = await saveResponse.json();
       console.log('save-design response:', saveResponse.status, saveData);
-      if (saveResponse.ok) {
-        setDesignRecordId(saveData.id);
-        refNum = saveData.reference_number || null;
-        if (refNum) {
-          setReferenceNumber(refNum);
-          sessionStorage.setItem('garden_reference_number', refNum);
-        }
-      } else {
+      if (!saveResponse.ok) {
         console.error('Save design failed:', saveData);
         setSaveError('Could not save your plan. Please try again.');
-        setIsSaving(false);
         return;
       }
-    } catch (err) {
-      console.error('Save design error:', err);
-      setSaveError('Could not save your plan. Please try again.');
-      setIsSaving(false);
-      return;
-    }
 
-    // PDF generation — fire and forget so navigation is not blocked
-    // Using router.push (SPA navigation) so this IIFE continues running after navigation
-    if (refNum) {
-      const capturedRefNum = refNum;
-      const capturedSessionId = newSessionId;
-      (async () => {
-        try {
-          const pdfDoc = (
-            <GardenPlanPDF
-              doc={docData}
-              imageBase64={renderUrl || ''}
-              imageDataUrl={imageDataUrl || undefined}
-              gridImageUrl={gridImageUrl || undefined}
-              aerialImageUrl={aerialGridImageUrl || aerialImageUrl || undefined}
-              style={designLang}
-              clientName={clientName}
-              gardenOrientation={gardenOrientation}
-              transformationLevel={transformationLevel}
-              referenceNumber={capturedRefNum}
-            />
-          );
-          const blob = await pdf(pdfDoc).toBlob();
-          const pdfBase64 = await new Promise<string>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
-            reader.onerror = reject;
-            reader.readAsDataURL(blob);
-          });
-          console.log('[handleSaveAndProceed] Uploading PDF — sessionId:', capturedSessionId, 'referenceNumber:', capturedRefNum);
-          const uploadRes = await fetch('/api/upload-pdf', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ pdfBase64, referenceNumber: capturedRefNum, sessionId: capturedSessionId }),
-          });
-          if (uploadRes.ok) {
-            const { pdfUrl } = await uploadRes.json();
-            console.log('[handleSaveAndProceed] PDF upload succeeded, pdfUrl:', pdfUrl);
-            if (pdfUrl) sessionStorage.setItem('garden_pdf_url', pdfUrl);
-          } else {
-            const errText = await uploadRes.text();
-            console.error('[handleSaveAndProceed] PDF upload failed — status:', uploadRes.status, 'body:', errText);
+      setDesignRecordId(saveData.id);
+      refNum = saveData.reference_number || null;
+      if (refNum) {
+        setReferenceNumber(refNum);
+        sessionStorage.setItem('garden_reference_number', refNum);
+      }
+
+      // PDF generation — fire and forget so navigation is not blocked
+      if (refNum) {
+        const capturedRefNum = refNum;
+        const capturedSessionId = newSessionId;
+        (async () => {
+          try {
+            const pdfDoc = (
+              <GardenPlanPDF
+                doc={docData}
+                imageBase64={renderUrl || ''}
+                imageDataUrl={imageDataUrl || undefined}
+                gridImageUrl={gridImageUrl || undefined}
+                aerialImageUrl={aerialGridImageUrl || aerialImageUrl || undefined}
+                style={designLang}
+                clientName={clientName}
+                gardenOrientation={gardenOrientation}
+                transformationLevel={transformationLevel}
+                referenceNumber={capturedRefNum}
+              />
+            );
+            const blob = await pdf(pdfDoc).toBlob();
+            const pdfBase64 = await new Promise<string>((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
+              reader.onerror = reject;
+              reader.readAsDataURL(blob);
+            });
+            console.log('[handleSaveAndProceed] Uploading PDF — sessionId:', capturedSessionId, 'referenceNumber:', capturedRefNum);
+            const uploadRes = await fetch('/api/upload-pdf', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ pdfBase64, referenceNumber: capturedRefNum, sessionId: capturedSessionId }),
+            });
+            if (uploadRes.ok) {
+              const { pdfUrl } = await uploadRes.json();
+              console.log('[handleSaveAndProceed] PDF upload succeeded, pdfUrl:', pdfUrl);
+              if (pdfUrl) sessionStorage.setItem('garden_pdf_url', pdfUrl);
+            } else {
+              const errText = await uploadRes.text();
+              console.error('[handleSaveAndProceed] PDF upload failed — status:', uploadRes.status, 'body:', errText);
+            }
+          } catch (err) {
+            console.error('PDF generation/upload error:', err);
           }
-        } catch (err) {
-          console.error('PDF generation/upload error:', err);
-        }
-      })();
-    }
+        })();
+      }
 
-    // Show saved confirmation briefly, then navigate
-    setSaveComplete(true);
-    await new Promise(r => setTimeout(r, 500));
-    intentionalNavRef.current = true;
-    sessionStorage.removeItem('dedrab_last_results');
-    router.push('/next-steps?sessionId=' + newSessionId);
+      // Show saved confirmation briefly, then navigate
+      setSaveComplete(true);
+      await new Promise(r => setTimeout(r, 500));
+      intentionalNavRef.current = true;
+      sessionStorage.removeItem('dedrab_last_results');
+      router.push('/next-steps?sessionId=' + newSessionId);
+    } catch (err) {
+      console.error('[handleSaveAndProceed] Unexpected error:', err);
+      setSaveError('Could not save your plan. Please try again.');
+    } finally {
+      clearTimeout(saveTimeout);
+      setIsSaving(false);
+    }
   }
 
   return (
