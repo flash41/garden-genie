@@ -891,6 +891,124 @@ function GridOverlayImage({ src, plants, label, showMarkers = true, perspectiveD
   );
 }
 
+// ─── LAYOUT PLAN IMAGE — clean display with optional scale grid toggle ─────────
+
+function LayoutPlanImage({ src }: { src: string }) {
+  const [showGrid, setShowGrid] = useState(false);
+  const imgRef    = useRef<HTMLImageElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  function paintGrid() {
+    const img    = imgRef.current;
+    const canvas = canvasRef.current;
+    if (!img || !canvas) return;
+    const W = img.clientWidth;
+    const H = img.clientHeight;
+    canvas.width  = W;
+    canvas.height = H;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.clearRect(0, 0, W, H);
+
+    const COLS = 6, ROWS = 6;
+    const LABELS = ['A','B','C','D','E','F'];
+    const pad = Math.round(W * 0.04);
+    const gL = pad, gR = W - pad, gT = pad, gB = H - pad;
+    const gW = gR - gL, gH = gB - gT;
+    const colW = gW / COLS, rowH = gH / ROWS;
+
+    // Grid lines
+    ctx.strokeStyle = 'rgba(10,61,43,0.2)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(gL, gT, gW, gH);
+    for (let i = 1; i < COLS; i++) {
+      const x = gL + i * colW;
+      ctx.beginPath(); ctx.moveTo(x, gT); ctx.lineTo(x, gB); ctx.stroke();
+    }
+    for (let i = 1; i < ROWS; i++) {
+      const y = gT + i * rowH;
+      ctx.beginPath(); ctx.moveTo(gL, y); ctx.lineTo(gR, y); ctx.stroke();
+    }
+
+    // Labels
+    const labelSize = Math.max(10, Math.round(W / 60));
+    ctx.font = `600 ${labelSize}px 'DM Sans', Arial, sans-serif`;
+    ctx.fillStyle = '#D4AF37';
+
+    // Column labels A–F (top)
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    for (let i = 0; i < COLS; i++) {
+      ctx.fillText(LABELS[i], gL + (i + 0.5) * colW, gT - 3);
+    }
+
+    // Row labels 1–6 (left)
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    for (let i = 0; i < ROWS; i++) {
+      ctx.fillText(String(i + 1), gL - 5, gT + (i + 0.5) * rowH);
+    }
+  }
+
+  function clearGrid() {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+
+  // Repaint when toggled on
+  useEffect(() => {
+    if (showGrid) paintGrid(); else clearGrid();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showGrid]);
+
+  // Resize observer — keep canvas in sync with image layout size
+  useEffect(() => {
+    const img = imgRef.current;
+    if (!img) return;
+    const ro = new ResizeObserver(() => {
+      if (showGrid) paintGrid();
+    });
+    ro.observe(img);
+    return () => ro.disconnect();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showGrid]);
+
+  return (
+    <div>
+      <div style={{ position: 'relative' }}>
+        <img
+          ref={imgRef}
+          src={src}
+          alt="Garden Layout Plan"
+          style={{ width: '100%', height: 'auto', display: 'block', borderRadius: C.rLg, border: `1px solid ${C.rule}` }}
+        />
+        <canvas
+          ref={canvasRef}
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', borderRadius: C.rLg }}
+        />
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 10 }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 7, cursor: 'pointer', userSelect: 'none' }}>
+          <input
+            type="checkbox"
+            checked={showGrid}
+            onChange={e => setShowGrid(e.target.checked)}
+            style={{ width: 14, height: 14, accentColor: C.brand, cursor: 'pointer' }}
+          />
+          <span style={{ fontSize: px(12), color: C.inkLight, fontFamily: C.font }}>Show scale grid</span>
+        </label>
+        {showGrid && (
+          <span style={{ fontSize: px(11), color: C.inkLight, fontFamily: C.font, fontStyle: 'italic' }}>
+            For reference only — not to scale
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── SHARED UI PRIMITIVES ─────────────────────────────────────────────────────
 
 function SectionTitle({ n, title }: { n: string; title: string }) {
@@ -2599,10 +2717,7 @@ export default function GardigApp() {
 
           {(aerialImageUrl || aerialGridImageUrl) ? (
             <>
-              <GridOverlayImage src={aerialImageUrl || aerialGridImageUrl!} plants={[]} label="Layout Plan"
-                isAerial={true} fingerprint={fingerprint} orientation={gardenOrientation || 'N'}
-                perspectiveData={null} boundaryPolygon={null}
-                g2Grid={g2Grid} />
+              <LayoutPlanImage src={aerialImageUrl || aerialGridImageUrl!} />
 
               {plants.length > 0 && (
                 <div style={{ marginTop: 22 }}>
