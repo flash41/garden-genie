@@ -154,29 +154,29 @@ function NextStepsContent() {
 
   function handleWhatsAppShare() {
     const urlToShare = renderUrl || window.location.href;
-    shareOnWhatsApp('Take a look at my garden redesign! ' + urlToShare);
+    shareOnWhatsApp('Look what my garden could become \u2014 got my Action Plan from dedrab.com ' + urlToShare);
   }
 
   function handleTelegramShare() {
     const urlToShare = renderUrl || window.location.href;
-    shareOnTelegram('Take a look at my garden redesign!', urlToShare);
+    shareOnTelegram('Look what my garden could become \u2014 got my Action Plan from dedrab.com', urlToShare);
   }
 
   const summaryBoxes = [
     {
-      label: 'YOUR PLAN',
-      title: 'Full design report',
-      copy: 'Plant list, materials, implementation phases and maintenance guide included.',
+      label: 'YOUR ACTION PLAN',
+      title: 'Everything you need to get started',
+      copy: 'Plant list, materials, implementation phases and ongoing care guide included.',
     },
     {
-      label: 'YOUR RENDER',
-      title: 'AI vision of your garden',
-      copy: 'Photorealistic reimagining based on your chosen theme and transformation level.',
+      label: 'YOUR FINISHED GARDEN',
+      title: 'A picture of what you\'re working towards',
+      copy: 'Based on your chosen style and transformation level.',
     },
     {
       label: 'SHARE IT',
-      title: 'Ready to hand over',
-      copy: 'Share with a contractor or use as a brief for any landscaper.',
+      title: 'Send to a friend or pass to a landscaper',
+      copy: 'Use it as a brief for any contractor or share it with someone who can help.',
     },
   ];
 
@@ -216,8 +216,8 @@ function NextStepsContent() {
 
       {/* Body */}
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '48px 32px' }}>
-        <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 34, fontWeight: 400, color: '#0a3d2b', marginBottom: 8, marginTop: 0 }}>What would you like to do next?</h1>
-        <p style={{ fontSize: 15, color: '#8a7e6e', marginBottom: referenceNumber ? 20 : 40, marginTop: 0 }}>Your garden design proposal is ready. Choose how you&apos;d like to proceed.</p>
+        <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 34, fontWeight: 400, color: '#0a3d2b', marginBottom: 8, marginTop: 0 }}>Your Action Plan is ready.</h1>
+        <p style={{ fontSize: 15, color: '#8a7e6e', marginBottom: referenceNumber ? 20 : 40, marginTop: 0 }}>Here&apos;s what to do next.</p>
 
         {/* Reference number display */}
         {referenceNumber && (
@@ -277,7 +277,7 @@ function NextStepsContent() {
 
             {/* Action buttons */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
-              <a href="/design" style={btnPrimary}>Download PDF</a>
+              <a href="/design" style={btnPrimary}>Get your Action Plan</a>
 
               <button
                 onClick={handleSendToSelf}
@@ -294,7 +294,7 @@ function NextStepsContent() {
                   ? 'Could not send — return to your design'
                   : sendSelfStatus === 'sending'
                   ? 'Sending\u2026'
-                  : 'Send the plan to me'}
+                  : 'Send it to my email'}
               </button>
 
               <button
@@ -350,7 +350,7 @@ function NextStepsContent() {
             {/* Social sharing — only shown when renderUrl is available */}
             {renderUrl && (
               <div style={{ borderTop: '1px solid #e5ddd0', paddingTop: 18, marginTop: 'auto' }}>
-                <div style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#8a7e6e', marginBottom: 10, fontWeight: 600 }}>Share your render</div>
+                <div style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#8a7e6e', marginBottom: 10, fontWeight: 600 }}>Share your finished garden</div>
                 <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                   <button
                     onClick={handleWhatsAppShare}
@@ -402,14 +402,14 @@ function NextStepsContent() {
               <p style={{ fontSize: 12, color: '#8a7e6e', marginBottom: 14, marginTop: 0 }}>{'Reference: ' + referenceNumber}</p>
             )}
             <p style={{ fontSize: 14, color: '#6b5e50', lineHeight: 1.7, marginBottom: 20, marginTop: 0 }}>
-              Prefer to hand it over? Enter your postcode below and one of our landscape partners will be in touch with a quote. Your full plan will be shared with them.
+              Prefer to hand it over? Enter your postcode and one of our landscape partners will contact you within 2 working days with a quote. Your Action Plan goes straight to them.
             </p>
             {userEmail && (
               <p style={{ fontSize: 13, color: '#8a7e6e', marginBottom: 20, marginTop: 0, fontStyle: 'italic' }}>{"We'll contact you at "}{userEmail}</p>
             )}
             {quoteStatus === 'success' ? (
               <div style={{ background: '#f0f7f0', border: '1px solid #b8d4b8', borderRadius: 6, padding: '16px 18px', fontSize: 14, color: '#2d5a2d', lineHeight: 1.6 }}>
-                {"Your request has been sent. We'll be in touch in the coming days with your "}{quotesRequested}{quotesRequested === 1 ? ' quote' : ' quotes'}{". A copy of your plan has been sent to "}{userEmail}{"."}
+                {"Your request has been sent. You'll hear from us within 2 working days with your "}{quotesRequested}{quotesRequested === 1 ? ' quote' : ' quotes'}{". A copy of your Action Plan has been sent to "}{userEmail}{"."}
               </div>
             ) : (
               <form onSubmit={handleRequestQuote} style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
