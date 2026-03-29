@@ -18,13 +18,16 @@ function NextStepsContent() {
 
   const [showSharePanel, setShowSharePanel] = useState(false);
   const [friendEmail, setFriendEmail] = useState('');
-  const [shareStatus, setShareStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [shareStatus, setShareStatus] = useState<'idle' | 'preparing' | 'sending' | 'sent' | 'error'>('idle');
   const [shareError, setShareError] = useState('');
 
-  const [sendSelfStatus, setSendSelfStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [sendSelfStatus, setSendSelfStatus] = useState<'idle' | 'preparing' | 'sending' | 'sent' | 'error'>('idle');
+  const [sendSelfError, setSendSelfError] = useState('');
   const [referenceNumber, setReferenceNumber] = useState('');
   const [pdfUrl, setPdfUrl] = useState('');
+  const [pdfBase64Cached, setPdfBase64Cached] = useState('');
   const [copied, setCopied] = useState(false);
+  const [downloadToast, setDownloadToast] = useState('');
 
   // Redirect to /design if sessionId is missing (direct navigation without a valid session)
   useEffect(() => {
@@ -91,8 +94,38 @@ function NextStepsContent() {
     }
   }
 
+  async function fetchPdfBase64(): Promise<string> {
+    if (pdfBase64Cached) return pdfBase64Cached;
+    const url = pdfUrl || sessionStorage.getItem('garden_pdf_url') || '';
+    if (!url) throw new Error('No PDF URL available');
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Fetch failed: ' + res.status);
+    const blob = await res.blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        setPdfBase64Cached(result);
+        resolve(result);
+      };
+      reader.onerror = () => reject(new Error('FileReader failed'));
+      reader.readAsDataURL(blob);
+    });
+  }
+
   async function handleSendToSelf() {
-    if (!userEmail || sendSelfStatus === 'sending') return;
+    if (!userEmail || sendSelfStatus === 'preparing' || sendSelfStatus === 'sending' || sendSelfStatus === 'sent') return;
+    setSendSelfError('');
+    setSendSelfStatus('preparing');
+    let base64: string;
+    try {
+      base64 = await fetchPdfBase64();
+    } catch (e) {
+      console.error('[handleSendToSelf] PDF fetch failed:', e);
+      setSendSelfError('We could not prepare your plan. Please try downloading it directly.');
+      setSendSelfStatus('idle');
+      return;
+    }
     setSendSelfStatus('sending');
     try {
       const res = await fetch('/api/send-plan', {
@@ -100,7 +133,7 @@ function NextStepsContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           recipientEmail: userEmail,
-          pdfBase64: '',
+          pdfBase64: base64,
           planTitle: designStyle ? designStyle + ' Garden Plan' : 'Garden Design Plan',
           designStyle: designStyle || '',
         }),
@@ -109,25 +142,37 @@ function NextStepsContent() {
       if (res.ok && data.success) {
         setSendSelfStatus('sent');
       } else {
-        setSendSelfStatus('error');
+        setSendSelfError('Could not send. Please try again.');
+        setSendSelfStatus('idle');
       }
     } catch {
-      setSendSelfStatus('error');
+      setSendSelfError('Could not send. Please try again.');
+      setSendSelfStatus('idle');
     }
   }
 
   async function handleShareWithFriend(e: React.FormEvent) {
     e.preventDefault();
-    if (!friendEmail || shareStatus === 'sending') return;
-    setShareStatus('sending');
+    if (!friendEmail || shareStatus === 'preparing' || shareStatus === 'sending') return;
     setShareError('');
+    setShareStatus('preparing');
+    let base64: string;
+    try {
+      base64 = await fetchPdfBase64();
+    } catch (e) {
+      console.error('[handleShareWithFriend] PDF fetch failed:', e);
+      setShareError('We could not prepare your plan. Please try downloading it directly.');
+      setShareStatus('idle');
+      return;
+    }
+    setShareStatus('sending');
     try {
       const res = await fetch('/api/send-plan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           recipientEmail: friendEmail,
-          pdfBase64: '',
+          pdfBase64: base64,
           planTitle: designStyle ? designStyle + ' Garden Plan' : 'Garden Design Plan',
           designStyle: designStyle || '',
         }),
@@ -137,12 +182,55 @@ function NextStepsContent() {
         setShareStatus('sent');
       } else {
         setShareError('Could not send. Please try again.');
-        setShareStatus('error');
+        setShareStatus('idle');
       }
     } catch {
       setShareError('Could not send. Please try again.');
-      setShareStatus('error');
+      setShareStatus('idle');
     }
+  }
+
+  async function handleDownloadPlan(): Promise<boolean> {
+    const url = pdfUrl || sessionStorage.getItem('garden_pdf_url') || '';
+    if (url) {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = (referenceNumber || 'garden-plan') + '.pdf';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      return true;
+    }
+    // PDF not yet available — poll sessionStorage for up to 5 seconds
+    return new Promise(resolve => {
+      const start = Date.now();
+      const interval = setInterval(() => {
+        const polled = sessionStorage.getItem('garden_pdf_url');
+        if (polled) {
+          setPdfUrl(polled);
+          clearInterval(interval);
+          const a = document.createElement('a');
+          a.href = polled;
+          a.download = (referenceNumber || 'garden-plan') + '.pdf';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          resolve(true);
+        } else if (Date.now() - start > 5000) {
+          clearInterval(interval);
+          resolve(false);
+        }
+      }, 500);
+    });
+  }
+
+  async function handleCreateNewPlan() {
+    const success = await handleDownloadPlan();
+    if (!success) {
+      setDownloadToast('Your plan could not be downloaded — you can find it in your email if you saved it.');
+      setTimeout(() => setDownloadToast(''), 5000);
+    }
+    router.push('/design');
   }
 
   function shareOnWhatsApp(text: string) {
@@ -299,25 +387,28 @@ function NextStepsContent() {
 
             {/* Action buttons */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
-              <a href="/design" style={btnPrimary}>Get your Action Plan</a>
+              <button onClick={handleDownloadPlan} style={btnPrimary}>Download my plan</button>
 
               <button
                 onClick={handleSendToSelf}
-                disabled={sendSelfStatus === 'sending' || sendSelfStatus === 'sent'}
+                disabled={sendSelfStatus === 'preparing' || sendSelfStatus === 'sending' || sendSelfStatus === 'sent'}
                 style={{
                   ...btnOutline,
-                  opacity: sendSelfStatus === 'sending' ? 0.6 : 1,
-                  cursor: sendSelfStatus === 'sending' || sendSelfStatus === 'sent' ? 'default' : 'pointer',
+                  opacity: sendSelfStatus === 'preparing' || sendSelfStatus === 'sending' ? 0.6 : 1,
+                  cursor: sendSelfStatus === 'preparing' || sendSelfStatus === 'sending' || sendSelfStatus === 'sent' ? 'default' : 'pointer',
                 }}
               >
                 {sendSelfStatus === 'sent'
                   ? 'Plan sent to ' + (userEmail || 'you')
-                  : sendSelfStatus === 'error'
-                  ? 'Could not send — return to your design'
+                  : sendSelfStatus === 'preparing'
+                  ? 'Preparing your plan\u2026'
                   : sendSelfStatus === 'sending'
                   ? 'Sending\u2026'
                   : 'Send it to my email'}
               </button>
+              {sendSelfError && (
+                <p style={{ margin: '0', fontSize: 12, color: '#8a4a2a' }}>{sendSelfError}</p>
+              )}
 
               <button
                 onClick={() => setShowSharePanel(p => !p)}
@@ -348,23 +439,33 @@ function NextStepsContent() {
                           color: '#1a1a1a', WebkitTextFillColor: '#1a1a1a', opacity: 1, backgroundColor: '#fff',
                         }}
                       />
-                      {shareStatus === 'error' && (
+                      {shareError && (
                         <p style={{ margin: '0 0 8px', fontSize: 12, color: '#c0392b' }}>{shareError}</p>
                       )}
                       <button
                         type="submit"
-                        disabled={shareStatus === 'sending'}
+                        disabled={shareStatus === 'preparing' || shareStatus === 'sending'}
                         style={{
                           width: '100%', padding: '10px 0',
-                          background: shareStatus === 'sending' ? '#d4aa4a' : '#b8962e',
+                          background: shareStatus === 'preparing' || shareStatus === 'sending' ? '#d4aa4a' : '#b8962e',
                           color: '#fff', border: 'none', borderRadius: 6, fontWeight: 600, fontSize: 13,
-                          cursor: shareStatus === 'sending' ? 'not-allowed' : 'pointer', fontFamily: 'inherit',
+                          cursor: shareStatus === 'preparing' || shareStatus === 'sending' ? 'not-allowed' : 'pointer', fontFamily: 'inherit',
                         }}
                       >
-                        {shareStatus === 'sending' ? 'Sending\u2026' : 'Send plan'}
+                        {shareStatus === 'preparing' ? 'Preparing your plan\u2026' : shareStatus === 'sending' ? 'Sending\u2026' : 'Send plan'}
                       </button>
                     </form>
                   )}
+                </div>
+              )}
+
+              <button onClick={handleCreateNewPlan} style={{ ...btnOutline, cursor: 'pointer' }}>
+                Create a new plan
+              </button>
+
+              {downloadToast && (
+                <div style={{ fontSize: 12, color: '#8a4a2a', background: '#fdf3ec', border: '1px solid #f0cba8', borderRadius: 6, padding: '8px 12px', lineHeight: 1.5 }}>
+                  {downloadToast}
                 </div>
               )}
             </div>

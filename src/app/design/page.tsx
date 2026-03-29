@@ -1508,7 +1508,7 @@ export default function GardigApp() {
   const [termsAccepted, setTermsAccepted]       = useState(false);
   const [loadingMsg, setLoadingMsg]   = useState("");
   const [error, setError]             = useState<string | null>(null);
-  const [activeTab, setActiveTab]     = useState("overview");
+  const [activeTab, setActiveTab]     = useState("your-garden");
   const [emailModal, setEmailModal]   = useState(false);
   const [emailAddr, setEmailAddr]     = useState("");
   const [emailStatus, setEmailStatus] = useState<"idle"|"sending"|"sent"|"error">("idle");
@@ -1927,7 +1927,7 @@ export default function GardigApp() {
               setClientName(savedResults.clientName || '');
               setUserEmail(savedResults.userEmail || '');
               setStep('result');
-              setActiveTab('overview');
+              setActiveTab('your-garden');
               setShowRestoreBanner(false);
             }}
             style={{ background: '#b8962e', color: '#fff', border: 'none', borderRadius: 4, padding: '6px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
