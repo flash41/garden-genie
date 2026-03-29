@@ -1,10 +1,11 @@
 'use client';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState, Suspense } from 'react';
 import { detectCountryFromPostcode, COUNTRY_OPTIONS, CountryOption } from '@/lib/detectPostcodeCountry';
 
 function NextStepsContent() {
   const params = useSearchParams();
+  const router = useRouter();
   const sessionId = params.get('sessionId');
   const [userEmail, setUserEmail] = useState('');
   const [designStyle, setDesignStyle] = useState('');
@@ -25,12 +26,31 @@ function NextStepsContent() {
   const [pdfUrl, setPdfUrl] = useState('');
   const [copied, setCopied] = useState(false);
 
+  // Redirect to /design if sessionId is missing (direct navigation without a valid session)
+  useEffect(() => {
+    if (!sessionId) {
+      router.push('/design');
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     setUserEmail(sessionStorage.getItem('garden_user_email') || '');
     setDesignStyle(sessionStorage.getItem('garden_design_style') || '');
     setRenderUrl(sessionStorage.getItem('garden_render_url') || '');
     setReferenceNumber(sessionStorage.getItem('garden_reference_number') || '');
     setPdfUrl(sessionStorage.getItem('garden_pdf_url') || '');
+  }, []);
+
+  // Poll for garden_pdf_url — written by a fire-and-forget IIFE in design/page.tsx
+  // that may not complete before router.push fires. Retry every 2s for up to 30s.
+  useEffect(() => {
+    if (sessionStorage.getItem('garden_pdf_url')) return; // already present on mount
+    const interval = setInterval(() => {
+      const url = sessionStorage.getItem('garden_pdf_url');
+      if (url) { setPdfUrl(url); clearInterval(interval); }
+    }, 2000);
+    const timeout = setTimeout(() => clearInterval(interval), 30000);
+    return () => { clearInterval(interval); clearTimeout(timeout); };
   }, []);
 
   function handleCopyReference() {
@@ -192,6 +212,8 @@ function NextStepsContent() {
     background: 'transparent', color: '#0a3d2b', border: '1.5px solid #0a3d2b', borderRadius: 8,
     fontWeight: 500, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit', letterSpacing: '0.02em',
   };
+
+  if (!sessionId) return null;
 
   return (
     <div style={{ minHeight: '100vh', background: '#f4efe4', fontFamily: "'DM Sans', sans-serif", padding: 0 }}>

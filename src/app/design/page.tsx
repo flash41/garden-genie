@@ -2293,7 +2293,8 @@ export default function GardigApp() {
       console.log('save-design response:', saveResponse.status, saveData);
       if (!saveResponse.ok) {
         console.error('Save design failed:', saveData);
-        setSaveError('Could not save your plan. Please try again.');
+        setSaveError('Could not save your design. Please try again. (' + (saveData.error || saveResponse.status) + ')');
+        setIsSaving(false);
         return;
       }
 
@@ -2361,8 +2362,9 @@ export default function GardigApp() {
       flushSync(() => {
         setIsSaving(false);
         setSaveComplete(false);
+        console.log('[save] navigating to /next-steps, sessionId:', newSessionId);
+        router.push('/next-steps?sessionId=' + newSessionId);
       });
-      router.push('/next-steps?sessionId=' + newSessionId);
     } catch (err) {
       console.error('[handleSaveAndProceed] Unexpected error:', err);
       setSaveError('Could not save your plan. Please try again.');
