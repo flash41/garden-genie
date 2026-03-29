@@ -1904,6 +1904,19 @@ export default function GardigApp() {
           <button
             onClick={() => {
               if (!savedResults) return;
+              const hasPlanData = savedResults.planData !== null && typeof savedResults.planData === 'object' && Object.keys(savedResults.planData).length > 0;
+              const hasRenderUrl = typeof savedResults.renderUrl === 'string' && savedResults.renderUrl.length > 0;
+              if (!hasPlanData || !hasRenderUrl) {
+                console.warn('[restore] Session data incomplete — not restoring to result screen.', {
+                  hasPlanData,
+                  hasRenderUrl,
+                  planDataType: typeof savedResults.planData,
+                  renderUrlLength: typeof savedResults.renderUrl === 'string' ? savedResults.renderUrl.length : 'not a string',
+                });
+                setShowRestoreBanner(false);
+                setStep('upload');
+                return;
+              }
               console.log('Restored results from session:', savedResults);
               setDocData(savedResults.planData || null);
               setRenderUrl(savedResults.renderUrl || null);
@@ -2550,8 +2563,25 @@ export default function GardigApp() {
         </div>
       </div>
 
+      {/* Fallback: result screen with no usable data */}
+      {Object.keys(doc).length === 0 && (
+        <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '48px 24px' }}>
+          <div style={{ textAlign: 'center', maxWidth: 420 }}>
+            <p style={{ fontFamily: C.font, fontSize: px(16), color: C.inkLight, marginBottom: 24, lineHeight: 1.6 }}>
+              We couldn&apos;t restore your previous session. Please start a new design.
+            </p>
+            <button
+              onClick={() => setStep('upload')}
+              style={{ background: C.brand, color: '#fff', border: 'none', borderRadius: C.r, padding: '10px 28px', fontFamily: C.font, fontSize: px(14), fontWeight: 600, cursor: 'pointer' }}
+            >
+              Start new design
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Tab strip */}
-      <div className="noprint tab-bar-outer" style={{ background: C.card, borderBottom: `1px solid ${C.rule}`, overflowX: "auto" }}>
+      <div className="noprint tab-bar-outer" style={{ background: C.card, borderBottom: `1px solid ${C.rule}`, overflowX: "auto", display: Object.keys(doc).length === 0 ? 'none' : undefined }}>
         <div style={{ maxWidth: 980, margin: "0 auto", display: "flex", padding: "0 24px" }}>
           {TABS.map(t => (
             <button key={t.id} className="tab"
@@ -2570,7 +2600,7 @@ export default function GardigApp() {
       </div>
 
       {/* Tab content */}
-      <div className="result-content-pad" style={{ maxWidth: 980, margin: "0 auto", padding: "24px 24px 48px" }}>
+      <div className="result-content-pad" style={{ maxWidth: 980, margin: "0 auto", padding: "24px 24px 48px", display: Object.keys(doc).length === 0 ? 'none' : undefined }}>
 
         {/* ── YOUR GARDEN (merged: overview + site + concept) ── */}
         {activeTab === "your-garden" && <>
