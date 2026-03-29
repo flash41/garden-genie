@@ -2277,9 +2277,14 @@ export default function GardigApp() {
     setSaveComplete(false);
     const newSessionId = crypto.randomUUID();
     setSessionId(newSessionId);
-    sessionStorage.setItem('garden_user_email', userEmail);
-    sessionStorage.setItem('garden_design_style', designLang);
-    sessionStorage.setItem('garden_render_url', renderUrl || '');
+    // garden_render_url intentionally not stored — base64 image exceeds sessionStorage quota.
+    // It is persisted to Supabase via /api/save-design and is not needed in next-steps.
+    try {
+      sessionStorage.setItem('garden_user_email', userEmail);
+      sessionStorage.setItem('garden_design_style', designLang);
+    } catch (e) {
+      console.warn('[handleSaveAndProceed] sessionStorage write failed (quota):', e);
+    }
 
     // Safety net: force-reset after 10 seconds so the button never stays stuck
     const saveTimeout = setTimeout(() => {
@@ -2315,7 +2320,11 @@ export default function GardigApp() {
       refNum = saveData.reference_number || null;
       if (refNum) {
         setReferenceNumber(refNum);
-        sessionStorage.setItem('garden_reference_number', refNum);
+        try {
+          sessionStorage.setItem('garden_reference_number', refNum);
+        } catch (e) {
+          console.warn('[handleSaveAndProceed] sessionStorage write failed (garden_reference_number):', e);
+        }
       }
 
       // PDF generation — fire and forget so navigation is not blocked
@@ -2354,7 +2363,13 @@ export default function GardigApp() {
             if (uploadRes.ok) {
               const { pdfUrl } = await uploadRes.json();
               console.log('[handleSaveAndProceed] PDF upload succeeded, pdfUrl:', pdfUrl);
-              if (pdfUrl) sessionStorage.setItem('garden_pdf_url', pdfUrl);
+              if (pdfUrl) {
+                try {
+                  sessionStorage.setItem('garden_pdf_url', pdfUrl);
+                } catch (e) {
+                  console.warn('[handleSaveAndProceed] sessionStorage write failed (garden_pdf_url):', e);
+                }
+              }
             } else {
               const errText = await uploadRes.text();
               console.error('[handleSaveAndProceed] PDF upload failed — status:', uploadRes.status, 'body:', errText);

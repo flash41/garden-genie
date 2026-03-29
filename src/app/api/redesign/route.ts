@@ -1004,19 +1004,20 @@ New path edging, defined bed edges, or a simple path treatment is visible.
 Moderate planting variety across multiple beds. A clearly designed garden.
 No large structural additions. Changes are clearly intentional but not radical.
 All plants are in-ground. No containers or pots.`,
-    4: `CREATIVITY LEVEL 4 — AMBITIOUS TRANSFORMATION:
+    4: `CREATIVITY LEVEL 4 — AMBITIOUS:
+A significant garden transformation introducing structural elements and bold planting choices with defined zones for relaxing and dining.
 All planting is fully in-ground throughout the garden. No containers or pots.
-New hard surface areas are clearly visible (paved zone, gravel area, or decking).
+New hard surface areas are clearly visible (paved zone or decking).
 Structural shrubs and small trees are planted in-ground.
-A raised bed, level change, or defined structural feature may be present if space allows.
-The garden is clearly transformed. Maximum practical redesign within the existing boundaries.`,
-    5: `CREATIVITY LEVEL 5 — FULL TRANSFORMATION:
+The garden is clearly transformed. Maximum practical redesign within the existing boundaries.
+Rotate from this feature pool and pick up to 2-3 per generation but never allow the garden to appear overcrowded: pergola or garden arch with climbing plants, raised timber or sleeper beds, built-in seating or bench wall, defined dining area with paving, fire pit or chiminea zone, curved or shaped lawn edges with bold border planting, retaining walls creating a gentle level change.`,
+    5: `CREATIVITY LEVEL 5 — FULL REDESIGN:
+A complete reimagining of the space with architectural features and a full in-ground planting scheme. The garden will be unrecognisable from the original.
 All planting is fully in-ground. Absolutely no containers or pots anywhere in the scene.
-Extensive hard landscaping is visible: paved terraces, paths, gravel, edging, steps.
+Extensive hard landscaping is visible: paved terraces, paths, edging, steps.
 Architectural plants and structural specimens dominate. Formal or dramatic planting scheme.
-A water feature, focal structure, or architectural element may be present.
-The garden is unrecognisable from the original. Maximum design ambition.
-Every square metre of ground is deliberately treated — no bare soil, no remnant lawn unless designed.`,
+Every square metre of ground is deliberately treated — no bare soil, no remnant lawn unless designed.
+Rotate from this feature pool and pick up to 2-3 per generation but never allow the garden to appear overcrowded: outdoor kitchen or BBQ area, small pond or rill or wall-mounted water feature, pergola with lighting and climbing plants, pizza oven as a focal feature, espaliered fruit trees against walls or fencing, pleached trees for privacy and structure, ornamental grasses as architectural planting, topiary as focal points, built-in seating with storage underneath.`,
   };
 
   const creativityBlock = creativityInstructions[creativityLevel] || creativityInstructions[3];
@@ -1076,6 +1077,9 @@ EXISTING LARGE PLANTS — RETAIN UNLESS EXPLICITLY REMOVED:
 ${vegetationList}
 
 ${creativityBlock}
+
+GRAVEL SURFACES — HARD CONSTRAINT:
+Gravel surfaces may only appear when the design style is Japanese Zen or Mediterranean. Even then, gravel should be used as an accent only — between stepping stones or around a focal plant — never covering the majority of the garden floor. For all other design styles, do not use gravel as a ground surface under any circumstances.
 
 DESIGN LAYOUT — THIS IS THE MASTER SPATIAL RECORD (the render is a photorealistic version of this layout):
 ${layoutNarrative}
