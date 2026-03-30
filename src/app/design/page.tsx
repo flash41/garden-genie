@@ -2277,13 +2277,16 @@ export default function GardigApp() {
     setSaveComplete(false);
     const newSessionId = crypto.randomUUID();
     setSessionId(newSessionId);
-    // garden_render_url intentionally not stored — base64 image exceeds sessionStorage quota.
-    // It is persisted to Supabase via /api/save-design and is not needed in next-steps.
     try {
       sessionStorage.setItem('garden_user_email', userEmail);
       sessionStorage.setItem('garden_design_style', designLang);
     } catch (e) {
       console.warn('[handleSaveAndProceed] sessionStorage write failed (quota):', e);
+    }
+    try {
+      sessionStorage.setItem('garden_render_url', renderUrl || '');
+    } catch (e) {
+      console.warn('[handleSaveAndProceed] sessionStorage write failed (garden_render_url):', e);
     }
 
     // Safety net: force-reset after 10 seconds so the button never stays stuck

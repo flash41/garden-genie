@@ -26,6 +26,7 @@ function NextStepsContent() {
   const [referenceNumber, setReferenceNumber] = useState('');
   const [pdfUrl, setPdfUrl] = useState('');
   const [pdfBase64Cached, setPdfBase64Cached] = useState('');
+  const [pdfStatus, setPdfStatus] = useState<'waiting' | 'ready' | 'timeout'>('waiting');
   const [copied, setCopied] = useState(false);
   const [downloadToast, setDownloadToast] = useState('');
 
@@ -41,7 +42,9 @@ function NextStepsContent() {
     setDesignStyle(sessionStorage.getItem('garden_design_style') || '');
     setRenderUrl(sessionStorage.getItem('garden_render_url') || '');
     setReferenceNumber(sessionStorage.getItem('garden_reference_number') || '');
-    setPdfUrl(sessionStorage.getItem('garden_pdf_url') || '');
+    const storedPdfUrl = sessionStorage.getItem('garden_pdf_url') || '';
+    setPdfUrl(storedPdfUrl);
+    if (storedPdfUrl) setPdfStatus('ready');
   }, []);
 
   // Poll for garden_pdf_url — written by a fire-and-forget IIFE in design/page.tsx
@@ -50,9 +53,12 @@ function NextStepsContent() {
     if (sessionStorage.getItem('garden_pdf_url')) return; // already present on mount
     const interval = setInterval(() => {
       const url = sessionStorage.getItem('garden_pdf_url');
-      if (url) { setPdfUrl(url); clearInterval(interval); }
+      if (url) { setPdfUrl(url); setPdfStatus('ready'); clearInterval(interval); }
     }, 2000);
-    const timeout = setTimeout(() => clearInterval(interval), 30000);
+    const timeout = setTimeout(() => {
+      clearInterval(interval);
+      setPdfStatus(s => s === 'waiting' ? 'timeout' : s);
+    }, 30000);
     return () => { clearInterval(interval); clearTimeout(timeout); };
   }, []);
 
@@ -314,6 +320,7 @@ function NextStepsContent() {
           .ns-grid { grid-template-columns: 1fr !important; }
           .ns-boxes { grid-template-columns: 1fr !important; }
         }
+        @keyframes spin { to { transform: rotate(360deg); } }
       `}</style>
 
       {/* Header */}
@@ -385,17 +392,36 @@ function NextStepsContent() {
               ))}
             </div>
 
+            {/* PDF preparation status */}
+            {pdfStatus === 'waiting' && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: '#6b5e50', marginBottom: 12, padding: '10px 14px', background: '#faf8f4', borderRadius: 8, border: '1px solid #e5ddd0' }}>
+                <span style={{ display: 'inline-block', width: 14, height: 14, border: '2px solid #b8962e', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite', flexShrink: 0 }} />
+                Your plan is being prepared — this takes about 15 seconds.
+              </div>
+            )}
+            {pdfStatus === 'timeout' && (
+              <div style={{ fontSize: 13, color: '#8a4a2a', marginBottom: 12, padding: '10px 14px', background: '#fdf3ec', borderRadius: 8, border: '1px solid #f0cba8' }}>
+                Your plan is taking longer than expected. Please try again in a moment.
+              </div>
+            )}
+
             {/* Action buttons */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
-              <button onClick={handleDownloadPlan} style={btnPrimary}>Download my plan</button>
+              <button
+                onClick={handleDownloadPlan}
+                disabled={pdfStatus === 'waiting'}
+                style={{ ...btnPrimary, ...(pdfStatus === 'waiting' ? { opacity: 0.4, cursor: 'not-allowed' } : {}) }}
+              >
+                Download my plan
+              </button>
 
               <button
                 onClick={handleSendToSelf}
-                disabled={sendSelfStatus === 'preparing' || sendSelfStatus === 'sending' || sendSelfStatus === 'sent'}
+                disabled={pdfStatus === 'waiting' || sendSelfStatus === 'preparing' || sendSelfStatus === 'sending' || sendSelfStatus === 'sent'}
                 style={{
                   ...btnOutline,
-                  opacity: sendSelfStatus === 'preparing' || sendSelfStatus === 'sending' ? 0.6 : 1,
-                  cursor: sendSelfStatus === 'preparing' || sendSelfStatus === 'sending' || sendSelfStatus === 'sent' ? 'default' : 'pointer',
+                  opacity: pdfStatus === 'waiting' || sendSelfStatus === 'preparing' || sendSelfStatus === 'sending' ? 0.4 : 1,
+                  cursor: pdfStatus === 'waiting' || sendSelfStatus === 'preparing' || sendSelfStatus === 'sending' || sendSelfStatus === 'sent' ? 'not-allowed' : 'pointer',
                 }}
               >
                 {sendSelfStatus === 'sent'
@@ -411,8 +437,9 @@ function NextStepsContent() {
               )}
 
               <button
-                onClick={() => setShowSharePanel(p => !p)}
-                style={{ ...btnOutline, cursor: 'pointer' }}
+                onClick={() => { if (pdfStatus !== 'waiting') setShowSharePanel(p => !p); }}
+                disabled={pdfStatus === 'waiting'}
+                style={{ ...btnOutline, cursor: pdfStatus === 'waiting' ? 'not-allowed' : 'pointer', opacity: pdfStatus === 'waiting' ? 0.4 : 1 }}
               >
                 Share with a friend
               </button>
@@ -459,7 +486,11 @@ function NextStepsContent() {
                 </div>
               )}
 
-              <button onClick={handleCreateNewPlan} style={{ ...btnOutline, cursor: 'pointer' }}>
+              <button
+                onClick={handleCreateNewPlan}
+                disabled={pdfStatus === 'waiting'}
+                style={{ ...btnOutline, cursor: pdfStatus === 'waiting' ? 'not-allowed' : 'pointer', opacity: pdfStatus === 'waiting' ? 0.4 : 1 }}
+              >
                 Create a new plan
               </button>
 
