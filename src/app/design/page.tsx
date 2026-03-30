@@ -2283,11 +2283,8 @@ export default function GardigApp() {
     } catch (e) {
       console.warn('[handleSaveAndProceed] sessionStorage write failed (quota):', e);
     }
-    try {
-      sessionStorage.setItem('garden_render_url', renderUrl || '');
-    } catch (e) {
-      console.warn('[handleSaveAndProceed] sessionStorage write failed (garden_render_url):', e);
-    }
+    // garden_render_url is written to sessionStorage by the IIFE below
+    // once the hosted URL is available from /api/upload-render.
 
     // Safety net: force-reset after 10 seconds so the button never stays stuck
     const saveTimeout = setTimeout(() => {
@@ -2330,16 +2327,21 @@ export default function GardigApp() {
         }
       }
 
-      // PDF generation — fire and forget so navigation is not blocked
+      // PDF + render upload — fire and forget so navigation is not blocked
       if (refNum) {
         const capturedRefNum = refNum;
         const capturedSessionId = newSessionId;
+        const capturedRenderUrl = renderUrl;
         (async () => {
+          let uploadedPdfUrl: string | null = null;
+          let uploadedRenderUrl: string | null = null;
+
+          // ── PDF upload ────────────────────────────────────────────────
           try {
             const pdfDoc = (
               <GardenPlanPDF
                 doc={docData}
-                imageBase64={renderUrl || ''}
+                imageBase64={capturedRenderUrl || ''}
                 imageDataUrl={imageDataUrl || undefined}
                 gridImageUrl={gridImageUrl || undefined}
                 aerialImageUrl={aerialGridImageUrl || aerialImageUrl || undefined}
@@ -2366,6 +2368,7 @@ export default function GardigApp() {
             if (uploadRes.ok) {
               const { pdfUrl } = await uploadRes.json();
               console.log('[handleSaveAndProceed] PDF upload succeeded, pdfUrl:', pdfUrl);
+              uploadedPdfUrl = pdfUrl || null;
               if (pdfUrl) {
                 try {
                   sessionStorage.setItem('garden_pdf_url', pdfUrl);
@@ -2378,7 +2381,54 @@ export default function GardigApp() {
               console.error('[handleSaveAndProceed] PDF upload failed — status:', uploadRes.status, 'body:', errText);
             }
           } catch (err) {
-            console.error('PDF generation/upload error:', err);
+            console.error('[handleSaveAndProceed] PDF generation/upload error:', err);
+          }
+
+          // ── Render image upload ───────────────────────────────────────
+          if (capturedRenderUrl) {
+            try {
+              console.log('[handleSaveAndProceed] Uploading render image — sessionId:', capturedSessionId);
+              const renderRes = await fetch('/api/upload-render', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ renderBase64: capturedRenderUrl, sessionId: capturedSessionId }),
+              });
+              if (renderRes.ok) {
+                const { renderUrl: hostedRenderUrl } = await renderRes.json();
+                console.log('[handleSaveAndProceed] Render upload succeeded, renderUrl:', hostedRenderUrl);
+                uploadedRenderUrl = hostedRenderUrl || null;
+                if (hostedRenderUrl) {
+                  try {
+                    sessionStorage.setItem('garden_render_url', hostedRenderUrl);
+                  } catch (e) {
+                    console.warn('[handleSaveAndProceed] sessionStorage write failed (garden_render_url):', e);
+                  }
+                }
+              } else {
+                const errText = await renderRes.text();
+                console.error('[handleSaveAndProceed] Render upload failed — status:', renderRes.status, 'body:', errText);
+              }
+            } catch (err) {
+              console.error('[handleSaveAndProceed] Render upload error:', err);
+            }
+          }
+
+          // ── Update design_records with both URLs ──────────────────────
+          if (uploadedPdfUrl || uploadedRenderUrl) {
+            try {
+              await fetch('/api/update-design', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  sessionId: capturedSessionId,
+                  pdfUrl: uploadedPdfUrl,
+                  renderUrl: uploadedRenderUrl,
+                }),
+              });
+              console.log('[handleSaveAndProceed] update-design PATCH complete');
+            } catch (err) {
+              console.error('[handleSaveAndProceed] update-design PATCH error:', err);
+            }
           }
         })();
       }
