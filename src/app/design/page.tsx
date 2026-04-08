@@ -2286,8 +2286,11 @@ export default function GardigApp() {
     // garden_render_url is written to sessionStorage by the IIFE below
     // once the hosted URL is available from /api/upload-render.
 
-    // Safety net: force-reset after 10 seconds so the button never stays stuck
+    // Safety net: force-reset after 10 seconds so the button never stays stuck.
+    // cancelled flag prevents the success path running after the timeout fires.
+    let cancelled = false;
     const saveTimeout = setTimeout(() => {
+      cancelled = true;
       setIsSaving(false);
       setSaveError('Save is taking too long — please try again.');
     }, 10000);
@@ -2309,6 +2312,7 @@ export default function GardigApp() {
       });
       const saveData = await saveResponse.json();
       console.log('save-design response:', saveResponse.status, saveData);
+      if (cancelled) return;
       if (!saveResponse.ok) {
         console.error('Save design failed:', saveData);
         setSaveError('Could not save your design. Please try again. (' + (saveData.error || saveResponse.status) + ')');

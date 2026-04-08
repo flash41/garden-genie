@@ -40,12 +40,39 @@ function NextStepsContent() {
   useEffect(() => {
     setUserEmail(sessionStorage.getItem('garden_user_email') || '');
     setDesignStyle(sessionStorage.getItem('garden_design_style') || '');
-    setRenderUrl(sessionStorage.getItem('garden_render_url') || '');
     setReferenceNumber(sessionStorage.getItem('garden_reference_number') || '');
     const storedPdfUrl = sessionStorage.getItem('garden_pdf_url') || '';
     setPdfUrl(storedPdfUrl);
     if (storedPdfUrl) setPdfStatus('ready');
   }, []);
+
+  // Poll for render_url from the DB — the render upload is fire-and-forget in
+  // design/page.tsx and may not complete before router.push fires. The hosted URL
+  // is written to design_records.render_url via /api/update-design once ready.
+  // We do not rely on sessionStorage for this because large URL strings can trigger
+  // a QuotaExceededError.
+  useEffect(() => {
+    if (!sessionId) return;
+    let cancelled = false;
+    async function fetchRenderUrl() {
+      const res = await fetch('/api/design-record?sessionId=' + sessionId);
+      if (!res.ok || cancelled) return null;
+      const data = await res.json();
+      return (data.render_url as string) || null;
+    }
+    // Try immediately on mount
+    fetchRenderUrl().then(url => {
+      if (url && !cancelled) setRenderUrl(url);
+    });
+    // If not available yet, poll every 2s for up to 30s
+    const interval = setInterval(() => {
+      fetchRenderUrl().then(url => {
+        if (url && !cancelled) { setRenderUrl(url); clearInterval(interval); }
+      });
+    }, 2000);
+    const timeout = setTimeout(() => clearInterval(interval), 30000);
+    return () => { cancelled = true; clearInterval(interval); clearTimeout(timeout); };
+  }, [sessionId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Poll for garden_pdf_url — written by a fire-and-forget IIFE in design/page.tsx
   // that may not complete before router.push fires. Retry every 2s for up to 30s.

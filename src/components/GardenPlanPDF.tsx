@@ -774,6 +774,25 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
         </Section>
       </Page>
 
+      {/* ── Key Considerations ────────────────────────────────── */}
+      {safeArr(d.keyConsiderations).length > 0 ? (
+        <Page size="A4" style={S.page}>
+          <PageChrome clientName={clientName} dateStr={dateStr} style={style} referenceNumber={referenceNumber} />
+
+          <Section num="11" title="Key Considerations">
+            <Text style={[S.body, { marginBottom: 12 }]}>
+              The following are important factors that must be addressed before groundworks begin.
+            </Text>
+            {safeArr(d.keyConsiderations).map((item: any, i: number) => (
+              <View key={i} style={{ marginBottom: 10 }} wrap={false}>
+                <Text style={[S.bold, { marginBottom: 2 }]}>{safe(item.heading)}</Text>
+                <Text style={S.body}>{safe(item.guidance)}</Text>
+              </View>
+            ))}
+          </Section>
+        </Page>
+      ) : null}
+
       {/* ── Page 6: Aerial Layout Plan ────────────────────────── */}
       {aerialImageUrl ? (
         <Page size="A4" style={S.page}>

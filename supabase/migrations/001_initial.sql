@@ -8,6 +8,7 @@ create table design_records (
   pdf_url text,
   plant_list jsonb,
   full_report jsonb,
+  reference_number text,
   created_at timestamptz default now()
 );
 

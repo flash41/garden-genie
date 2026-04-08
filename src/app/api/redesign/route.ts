@@ -181,7 +181,10 @@ const DESIGN_SCHEMA = `{
   },
   "visualPrompt": "PRESERVE EXACTLY: [list all walls, fences, buildings from photo]. Work WITHIN these structures. Only change planting, paving, and soft landscaping within the existing footprint.",
   "confidence": 0.85,
-  "caveats": ["any assumptions made or limitations of this proposal"]
+  "caveats": ["any assumptions made or limitations of this proposal"],
+  "keyConsiderations": [
+    { "heading": "heading text — use exact heading from the master list", "guidance": "guidance copy verbatim from the master list" }
+  ]
 }`;
 
 // ─── STEP 1 — Spatial Fingerprint ─────────────────────────────────────────────
@@ -834,6 +837,53 @@ Populate layoutDescription.elements with EVERY spatial area or feature you are p
 Nothing may appear in the Concept Base Plan image or the photorealistic render that is not declared in layoutDescription.elements first.
 The layoutNarrative must be a plain-language spatial walkthrough of the complete design.
 Minimum 8 elements in layoutDescription.elements.
+
+═══════════════════════════════════════════════════════════════
+CRITICAL RULE 9 — KEY CONSIDERATIONS
+═══════════════════════════════════════════════════════════════
+Populate keyConsiderations by evaluating EVERY heading in the master list below against the full design. Include a heading only if it has genuine bearing on this specific design. Omit any heading with no relevance. Always include "Measurements on Drawings" and "Maintenance Guidance" regardless of the design.
+
+Minimum 3 items. Maximum 12 items.
+
+Evaluation criteria — include the heading if:
+- Planning Permission: design includes walls above 1m, outbuildings, pergolas, or significant tree removal.
+- Protected Trees: design involves removal, pruning, or works near mature trees noted in the fingerprint.
+- Boundary & Neighbour Considerations: design involves works near boundaries, new structures adjacent to a boundary, excavation, or drainage near site edges.
+- Underground Services: design involves any excavation, new paving, drainage, irrigation trenching, or electrical ducting.
+- Soil Assessment: soil type is Unknown, drainage is poor, soil amendments are recommended, or plant selection is pH-sensitive.
+- Ground Stability: design involves terracing, retaining walls, steps, or significant level changes.
+- Structural Integrity: design involves raised beds with walls, steps, pergolas, or other load-bearing elements.
+- Aspect & Microclimate: sun/shade conditions are variable or uncertain, frost pockets are noted, or planting is microclimate-sensitive.
+- Wildlife & Ecology: design involves removal of hedgerows, mature trees, ponds, or established planting that may support protected species.
+- Materials Specification: hardscape materials have important finish, grade, or fixing requirements that affect performance.
+- Measurements on Drawings: ALWAYS include.
+- Drainage & Levels: design involves new hard surfaces, level changes, drainage works, or sites with noted drainage issues.
+- Lighting & Electrical Implementation: design includes any lighting, power points, or electrical features.
+- Irrigation Specification: design includes an irrigation system, or water management is a significant factor.
+- Phasing: design is large, complex, or involves multiple distinct phases of work.
+- Access for Plant & Machinery: site has noted access constraints, or design involves heavy materials or large specimen plants.
+- Contractor Coordination: design involves multiple trades (groundworks, electrical, irrigation, planting).
+- Maintenance Guidance: ALWAYS include.
+
+Use the EXACT heading text and EXACT guidance copy below — do not paraphrase:
+- Planning Permission: "Certain structures such as walls above a set height, outbuildings, or significant tree removal may require local authority approval. This should be confirmed before works commence."
+- Protected Trees: "Any existing trees on or adjacent to the site may be subject to Tree Preservation Orders or equivalent local protections. These must be identified and checked before any removal or pruning takes place."
+- Boundary & Neighbour Considerations: "Works near site boundaries may require neighbour notification or formal agreement, particularly where excavation, drainage, or new structures are involved."
+- Underground Services: "The presence of buried utilities including gas, water, electricity, and telecoms must be identified and confirmed before any excavation begins. A services search or on-site detection survey is strongly recommended."
+- Soil Assessment: "Soil type, pH, compaction, and drainage characteristics will directly affect plant selection viability and drainage performance. A basic soil assessment is recommended before planting or groundworks begin."
+- Ground Stability: "Where terracing, retaining walls, steps, or significant level changes are proposed, ground stability and load-bearing capacity should be assessed by a suitably qualified professional before construction begins."
+- Structural Integrity: "Where raised beds, retaining walls, steps, or other load-bearing ground elements are proposed, structural adequacy must be confirmed before construction begins."
+- Aspect & Microclimate: "Sun path, prevailing wind direction, frost pockets, and shade cast by adjacent structures or planting can significantly affect plant survival and design performance. These should be validated on site before finalising the planting scheme."
+- Wildlife & Ecology: "Existing habitats such as hedgerows, ponds, or areas of mature planting may support protected species. These should be assessed before any clearance or groundworks begin."
+- Materials Specification: "All hard and soft landscaping materials should be fully specified before procurement, including finishes, grades, fixing methods, and preferred sources where relevant."
+- Measurements on Drawings: "All dimensions shown in this plan are indicative and represent design intent only. A construction or implementation plan would require these to be replaced with real, surveyed measurements taken on site before works commence."
+- Drainage & Levels: "Surface water management, finished ground levels, falls to drain, and any significant changes in level across the site must be resolved during the design development stage."
+- Lighting & Electrical Implementation: "Where lighting or power points are proposed, underground ducting to all outlet points must be planned in advance and installed during groundworks, before any surfacing or planting is laid."
+- Irrigation Specification: "Where an irrigation system is proposed or recommended, full specification and routing should be confirmed prior to groundworks. This is particularly important in zen garden designs and in any scheme where drainage or dry soil conditions are a significant factor."
+- Phasing: "Larger or more complex schemes may benefit from being implemented in phases, prioritising groundworks and structural elements before soft landscaping and planting."
+- Access for Plant & Machinery: "Site access constraints may affect what equipment can be brought on site and how materials are delivered. This should be assessed before contractor engagement."
+- Contractor Coordination: "Where multiple trades are involved, including groundworks, electrical, irrigation, and planting contractors, sequencing and coordination between trades should be planned in advance to avoid abortive works."
+- Maintenance Guidance: "The ongoing maintenance requirements of this design should be clearly understood before implementation. This includes seasonal tasks, hard landscaping material care, and a plant management programme appropriate to the species specified."
 
 ═══════════════════════════════════════════════════════════════
 TONE
