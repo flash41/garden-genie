@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const subject = `Your Dedrab Garden Vision — ${planTitle || 'Garden Design Plan'}`;
+  const subject = `Your Dedrab Garden Vision - ${planTitle || 'Garden Design Plan'}`;
 
   const html = `
 <!DOCTYPE html>

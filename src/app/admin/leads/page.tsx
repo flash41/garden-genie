@@ -23,6 +23,7 @@ export default async function AdminLeadsPage() {
       postcode,
       quotes_requested,
       created_at,
+      submitted_at,
       actioned,
       actioned_at,
       latitude,

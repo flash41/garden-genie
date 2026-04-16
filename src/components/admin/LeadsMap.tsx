@@ -8,6 +8,7 @@ export interface LeadRow {
   postcode: string;
   quotes_requested: number;
   created_at: string;
+  submitted_at: string | null;
   actioned: boolean;
   actioned_at: string | null;
   latitude: number | null;
@@ -111,6 +112,19 @@ function LeadsMapView({ leads }: { leads: LeadRow[] }) {
   );
 }
 
+// ── Date / SLA helpers ────────────────────────────────────────────────────────
+
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleString('en-IE', {
+    day: '2-digit', month: 'short', year: 'numeric',
+    hour: '2-digit', minute: '2-digit', hour12: false,
+  });
+}
+
+function hoursElapsed(iso: string) {
+  return Math.floor((Date.now() - new Date(iso).getTime()) / 3_600_000);
+}
+
 // ── Table header style ────────────────────────────────────────────────────────
 
 const thStyle: React.CSSProperties = {
@@ -182,7 +196,7 @@ export default function AdminLeadsContent({ initialLeads }: { initialLeads: Lead
             Quote Requests
           </h1>
           <p style={{ fontSize: 14, color: '#8a7e6e', marginBottom: 32 }}>
-            {leads.length + ' total ' + (leads.length === 1 ? 'lead' : 'leads')}
+            {'Total requests: ' + leads.length + ' | Pending response: ' + leads.filter(l => l.actioned_at === null).length + ' | Responded: ' + leads.filter(l => l.actioned_at !== null).length}
           </p>
 
           {leads.length === 0 ? (
@@ -195,14 +209,14 @@ export default function AdminLeadsContent({ initialLeads }: { initialLeads: Lead
                 <thead>
                   <tr style={{ background: '#0a3d2b' }}>
                     <th style={{ ...thStyle, textAlign: 'center', width: 52 }}>Done</th>
-                    <th style={thStyle}>Reference</th>
-                    <th style={thStyle}>Date</th>
+                    <th style={thStyle}>Submitted</th>
                     <th style={thStyle}>Email</th>
                     <th style={thStyle}>Postcode</th>
-                    <th style={thStyle}>Country</th>
                     <th style={thStyle}>Quotes</th>
                     <th style={thStyle}>Design Style</th>
+                    <th style={thStyle}>Ref Number</th>
                     <th style={thStyle}>PDF</th>
+                    <th style={thStyle}>SLA</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -224,17 +238,16 @@ export default function AdminLeadsContent({ initialLeads }: { initialLeads: Lead
                           style={{ width: 16, height: 16, cursor: 'pointer', accentColor: '#0a3d2b' }}
                         />
                       </td>
-                      <td style={{ padding: '13px 16px', color: '#0a3d2b', fontFamily: 'monospace', fontWeight: 600, whiteSpace: 'nowrap' }}>
-                        {lead.design_records?.reference_number || '—'}
-                      </td>
-                      <td style={{ padding: '13px 16px', color: '#4a3f32', whiteSpace: 'nowrap' }}>
-                        {new Date(lead.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      <td style={{ padding: '13px 16px', color: '#4a3f32', whiteSpace: 'nowrap', fontSize: 13 }}>
+                        {formatDate(lead.submitted_at || lead.created_at)}
                       </td>
                       <td style={{ padding: '13px 16px', color: '#2d2520' }}>{lead.email}</td>
                       <td style={{ padding: '13px 16px', color: '#4a3f32' }}>{lead.postcode}</td>
-                      <td style={{ padding: '13px 16px', color: '#4a3f32' }}>{lead.country || '—'}</td>
                       <td style={{ padding: '13px 16px', color: '#4a3f32' }}>{lead.quotes_requested}</td>
                       <td style={{ padding: '13px 16px', color: '#4a3f32' }}>{lead.design_records?.design_style || '—'}</td>
+                      <td style={{ padding: '13px 16px', color: '#0a3d2b', fontFamily: 'monospace', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                        {lead.design_records?.reference_number || '—'}
+                      </td>
                       <td style={{ padding: '13px 16px' }}>
                         {lead.design_records?.pdf_url ? (
                           <a
@@ -248,6 +261,16 @@ export default function AdminLeadsContent({ initialLeads }: { initialLeads: Lead
                         ) : (
                           <span style={{ color: '#c4b8a8', fontSize: 13 }}>—</span>
                         )}
+                      </td>
+                      <td style={{ padding: '13px 16px', whiteSpace: 'nowrap', fontSize: 13 }}>
+                        {lead.actioned_at ? (
+                          <span style={{ color: '#2d5a2d', fontWeight: 600 }}>Responded</span>
+                        ) : (() => {
+                          const h = hoursElapsed(lead.submitted_at || lead.created_at);
+                          return h >= 48
+                            ? <span style={{ color: '#8a2a2a', fontWeight: 600 }}>{h}h ago — OVERDUE</span>
+                            : <span style={{ color: '#7a5f20' }}>{h}h ago</span>;
+                        })()}
                       </td>
                     </tr>
                   ))}

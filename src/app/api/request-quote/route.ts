@@ -38,6 +38,15 @@ export async function POST(req: NextRequest) {
     .eq('session_id', sessionId)
     .maybeSingle();
 
+  // SQL MIGRATION (run once in Supabase SQL Editor before deploying):
+  //
+  //   ALTER TABLE public.quote_requests
+  //   ADD COLUMN IF NOT EXISTS submitted_at TIMESTAMPTZ DEFAULT NOW();
+  //
+  //   UPDATE public.quote_requests
+  //   SET submitted_at = created_at
+  //   WHERE submitted_at IS NULL;
+
   // Insert quote request
   const { data: quoteData, error: insertError } = await supabase
     .from('quote_requests')
@@ -48,6 +57,7 @@ export async function POST(req: NextRequest) {
       postcode,
       quotes_requested: quotesRequested,
       confirmation_sent: false,
+      submitted_at: new Date().toISOString(),
     })
     .select('id')
     .single();
@@ -108,7 +118,7 @@ export async function POST(req: NextRequest) {
   const pdfUrl = designRecord?.pdf_url || null;
 
   const subject = refNum
-    ? 'Your garden plan [' + refNum + '] — quote request confirmed'
+    ? 'Your garden plan [' + refNum + '] - quote request confirmed'
     : 'Your Dedrab quote request is confirmed';
 
   const html = `
