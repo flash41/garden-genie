@@ -1867,6 +1867,12 @@ export default function GardigApp() {
       if (!result) return;
 
       setDocData(result.designJSON);
+      if (!result.designJSON) {
+        console.warn('[handleAnalyse] designJSON missing from pipeline response — plan data will be incomplete');
+        try { sessionStorage.setItem('garden_plan_data_status', 'missing'); } catch (_) {}
+      } else {
+        try { sessionStorage.setItem('garden_plan_data_status', 'complete'); } catch (_) {}
+      }
       setRenderUrl(result.imageBase64);
       console.log('RENDER RECEIVED - type:', result.imageBase64 ? (result.imageBase64.startsWith('data:') ? 'dataURL' : 'base64') : 'null', 'length:', result.imageBase64?.length ?? 0);
       setAerialImageUrl(result.aerialImageBase64);
@@ -2367,6 +2373,10 @@ export default function GardigApp() {
   async function handleSaveAndProceed() {
     console.log('Save and proceed clicked', { sessionId, userEmail, hasResults });
     if (isSaving) return;
+    if (!docData) {
+      setSaveError('Your Action Plan data is incomplete. Please try generating your design again before proceeding.');
+      return;
+    }
     setIsSaving(true);
     setSaveError(null);
     setSaveComplete(false);
@@ -2426,6 +2436,12 @@ export default function GardigApp() {
         }
       }
 
+      try {
+        sessionStorage.setItem('garden_plan_data', JSON.stringify(docData));
+      } catch (e) {
+        console.warn('[handleSaveAndProceed] sessionStorage write failed (garden_plan_data):', e);
+      }
+
       // PDF + render upload — fire and forget so navigation is not blocked
       if (refNum) {
         const capturedRefNum = refNum;
@@ -2433,6 +2449,12 @@ export default function GardigApp() {
         const capturedRenderUrl = renderUrl;
 
         const runPdfAndUpload = async () => {
+          const capturedDocData = docData;
+          if (!capturedDocData) {
+            console.error('[runPdfAndUpload] docData is null — cannot generate PDF. Writing failed status.');
+            try { sessionStorage.setItem('garden_pdf_status', 'failed'); } catch (_) {}
+            return;
+          }
           setPdfGenerating(true);
           setPdfError(null);
           let uploadedPdfUrl: string | null = null;
@@ -2454,11 +2476,11 @@ export default function GardigApp() {
               imageDataUrl ? resizeImageForPdf(imageDataUrl) : Promise.resolve(''),
             ]);
 
-            console.log('PDF GENERATION STARTING — docData:', !!docData, 'render size:', resizedRender.length, 'before size:', resizedBefore.length, 'aerial:', !!aerialBase64, 'logo:', !!logoBase64);
+            console.log('PDF GENERATION STARTING — docData:', !!capturedDocData, 'render size:', resizedRender.length, 'before size:', resizedBefore.length, 'aerial:', !!aerialBase64, 'logo:', !!logoBase64);
 
             const pdfDoc = (
               <GardenPlanPDF
-                doc={docData}
+                doc={capturedDocData}
                 logoBase64={logoBase64 || undefined}
                 imageBase64={resizedRender}
                 imageDataUrl={resizedBefore || undefined}

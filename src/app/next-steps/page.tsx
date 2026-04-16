@@ -119,6 +119,7 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
   // If generation fails, design/page.tsx writes 'failed' to garden_pdf_status.
   useEffect(() => {
     if (sessionStorage.getItem('garden_pdf_url')) return; // already present on mount
+    if (sessionStorage.getItem('garden_pdf_status') === 'failed') { setPdfStatus('failed'); return; }
     const interval = setInterval(() => {
       const url = sessionStorage.getItem('garden_pdf_url');
       const status = sessionStorage.getItem('garden_pdf_status');
@@ -126,9 +127,11 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
         setPdfUrl(url);
         setPdfStatus('ready');
         clearInterval(interval);
+        clearTimeout(timeout);
       } else if (status === 'failed') {
         setPdfStatus('failed');
         clearInterval(interval);
+        clearTimeout(timeout);
       }
     }, 2000);
     const timeout = setTimeout(() => {

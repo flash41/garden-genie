@@ -1597,7 +1597,24 @@ export async function POST(request: NextRequest) {
         .eq('code', inviteCode);
     }
 
-    return NextResponse.json({ designJSON, imageBase64, aerialImageBase64, validationResult, retried, fingerprint, perspectiveGridBase64, controlPoints, g2Grid });
+    const rawDesignJSON = Object.keys(designJSON).length > 0 ? designJSON : null;
+    console.log('[pipeline] designJSON present:', !!rawDesignJSON, 'keys:', rawDesignJSON ? Object.keys(rawDesignJSON) : 'none');
+
+    if (!rawDesignJSON) {
+      console.error('[Pipeline] designJSON is empty after step 2 — returning 500');
+      return NextResponse.json({ error: 'Garden design data was not generated. Please try again.' }, { status: 500 });
+    }
+
+    const finalDesignJSON = rawDesignJSON ?? {
+      overview: { tagline: 'Your garden design is ready.', objectives: [] },
+      plantingSpecification: { plants: [] },
+      colourPalette: [],
+      materialsGuide: { items: [] },
+      implementationPhases: { phases: [] },
+      costEstimate: { total: 'To be confirmed', breakdown: [] },
+    };
+
+    return NextResponse.json({ designJSON: finalDesignJSON, imageBase64, aerialImageBase64, validationResult, retried, fingerprint, perspectiveGridBase64, controlPoints, g2Grid });
 
   } catch (error: unknown) {
     if (jobId) {
