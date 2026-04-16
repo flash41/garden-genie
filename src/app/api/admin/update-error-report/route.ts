@@ -4,6 +4,8 @@ import { supabaseAdmin } from '@/lib/supabase-server';
 
 export const dynamic = 'force-dynamic';
 
+const validStatuses = ['new', 'under_review', 'resolved'];
+
 export async function PATCH(req: NextRequest) {
   const cookieStore = await cookies();
   const adminAuth = cookieStore.get('admin_auth');
@@ -24,24 +26,37 @@ export async function PATCH(req: NextRequest) {
     resolution_note?: string;
   };
 
+  console.log('[update-error-report] body received:', { id, status, resolution_note });
+
   if (!id || !status) {
     return NextResponse.json({ success: false, error: 'id and status are required' }, { status: 400 });
   }
 
-  const update: Record<string, unknown> = { status };
-  if (status === 'resolved') {
-    update.resolved_at = new Date().toISOString();
-    if (resolution_note) update.resolution_note = resolution_note;
+  if (!validStatuses.includes(status)) {
+    return NextResponse.json({ success: false, error: 'Invalid status value' }, { status: 400 });
   }
 
-  const { error } = await supabaseAdmin
+  const updates: Record<string, unknown> = { status };
+  if (status === 'resolved') {
+    updates.resolved_at = new Date().toISOString();
+    if (resolution_note) updates.resolution_note = resolution_note;
+  }
+  if (status === 'under_review') {
+    updates.resolved_at = null;
+  }
+
+  const { data, error } = await supabaseAdmin
     .from('error_reports')
-    .update(update)
-    .eq('id', id);
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single();
+
+  console.log('[update-error-report] supabase result:', { data, error });
 
   if (error) {
-    console.error('[update-error-report] Supabase error:', error);
-    return NextResponse.json({ success: false, error: 'Update failed' }, { status: 500 });
+    console.error('[update-error-report] failed:', error);
+    return NextResponse.json({ success: false, error: error.message ?? 'Update failed' }, { status: 500 });
   }
 
   return NextResponse.json({ success: true });

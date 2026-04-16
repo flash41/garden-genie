@@ -162,9 +162,9 @@ const ERROR_TYPE_LABELS: Record<string, string> = {
 };
 
 const STATUS_STYLE: Record<string, { background: string; color: string; label: string }> = {
-  new:      { background: '#fee2e2', color: '#991b1b', label: 'New' },
-  reviewed: { background: '#fef3cd', color: '#92400e', label: 'Reviewed' },
-  resolved: { background: '#dcfce7', color: '#166534', label: 'Resolved' },
+  new:          { background: '#fee2e2', color: '#991b1b', label: 'New' },
+  under_review: { background: '#fef3cd', color: '#92400e', label: 'Under review' },
+  resolved:     { background: '#dcfce7', color: '#166534', label: 'Resolved' },
 };
 
 const pillStyle = (bg: string, color: string): React.CSSProperties => ({
@@ -184,6 +184,13 @@ export default function AdminLeadsContent({
   const [activeTab, setActiveTab] = useState<'leads' | 'map' | 'support'>('leads');
   const [leads, setLeads] = useState<LeadRow[]>(initialLeads);
   const [errorReports, setErrorReports] = useState<ErrorReport[]>(initialErrorReports);
+
+  const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
+  const visibleReports = errorReports.filter(r => {
+    if (r.status !== 'resolved') return true;
+    if (!r.resolved_at) return true;
+    return Date.now() - new Date(r.resolved_at).getTime() < TWENTY_FOUR_HOURS_MS;
+  });
 
   async function handleActionToggle(id: string, newValue: boolean) {
     try {
@@ -350,11 +357,14 @@ export default function AdminLeadsContent({
           <p style={{ fontSize: 14, color: '#8a7e6e', marginBottom: 32 }}>
             {'Total: ' + errorReports.length +
               ' | New: ' + errorReports.filter(r => r.status === 'new').length +
-              ' | Reviewed: ' + errorReports.filter(r => r.status === 'reviewed').length +
-              ' | Resolved: ' + errorReports.filter(r => r.status === 'resolved').length}
+              ' | Under review: ' + errorReports.filter(r => r.status === 'under_review').length +
+              ' | Resolved: ' + errorReports.filter(r => r.status === 'resolved').length +
+              (errorReports.length - visibleReports.length > 0
+                ? ' (' + (errorReports.length - visibleReports.length) + ' hidden)'
+                : '')}
           </p>
 
-          {errorReports.length === 0 ? (
+          {visibleReports.length === 0 ? (
             <div style={{ background: '#fff', border: '1px solid #e5ddd0', borderRadius: 8, padding: '40px', textAlign: 'center', color: '#8a7e6e', fontSize: 15 }}>
               No support requests yet. Error reports submitted by users will appear here.
             </div>
@@ -374,7 +384,7 @@ export default function AdminLeadsContent({
                   </tr>
                 </thead>
                 <tbody>
-                  {errorReports.map((report, i) => {
+                  {visibleReports.map((report, i) => {
                     const st = STATUS_STYLE[report.status] ?? STATUS_STYLE.new;
                     const typeLabel = ERROR_TYPE_LABELS[report.error_type] ?? report.error_type;
                     return (
@@ -450,7 +460,7 @@ export default function AdminLeadsContent({
                             }}
                           >
                             <option value="new">New</option>
-                            <option value="reviewed">Reviewed</option>
+                            <option value="under_review">Under review</option>
                             <option value="resolved">Resolved</option>
                           </select>
                         </td>
