@@ -46,7 +46,7 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
   const [referenceNumber, setReferenceNumber] = useState('');
   const [pdfUrl, setPdfUrl] = useState('');
   const [pdfBase64Cached, setPdfBase64Cached] = useState('');
-  const [pdfStatus, setPdfStatus] = useState<'waiting' | 'ready' | 'timeout'>('waiting');
+  const [pdfStatus, setPdfStatus] = useState<'waiting' | 'ready' | 'timeout' | 'failed'>('waiting');
   const [copied, setCopied] = useState(false);
   const [downloadToast, setDownloadToast] = useState('');
 
@@ -94,13 +94,22 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
     return () => { cancelled = true; clearInterval(interval); clearTimeout(timeout); };
   }, [sessionId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Poll for garden_pdf_url — written by a fire-and-forget IIFE in design/page.tsx
-  // that may not complete before router.push fires. Retry every 2s for up to 30s.
+  // Poll for garden_pdf_url — written by runPdfAndUpload in design/page.tsx
+  // which may not complete before router.push fires. Retry every 2s for up to 60s.
+  // If generation fails, design/page.tsx writes 'failed' to garden_pdf_status.
   useEffect(() => {
     if (sessionStorage.getItem('garden_pdf_url')) return; // already present on mount
     const interval = setInterval(() => {
       const url = sessionStorage.getItem('garden_pdf_url');
-      if (url) { setPdfUrl(url); setPdfStatus('ready'); clearInterval(interval); }
+      const status = sessionStorage.getItem('garden_pdf_status');
+      if (url) {
+        setPdfUrl(url);
+        setPdfStatus('ready');
+        clearInterval(interval);
+      } else if (status === 'failed') {
+        setPdfStatus('failed');
+        clearInterval(interval);
+      }
     }, 2000);
     const timeout = setTimeout(() => {
       clearInterval(interval);
@@ -115,6 +124,27 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
     if (!pdfUrl || pdfBase64Cached) return;
     fetchPdfBase64().catch(e => console.warn('[mount] PDF pre-fetch failed:', e));
   }, [pdfUrl]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  function restartPdfPoll() {
+    sessionStorage.removeItem('garden_pdf_status');
+    setPdfStatus('waiting');
+    const interval = setInterval(() => {
+      const url = sessionStorage.getItem('garden_pdf_url');
+      const status = sessionStorage.getItem('garden_pdf_status');
+      if (url) {
+        setPdfUrl(url);
+        setPdfStatus('ready');
+        clearInterval(interval);
+      } else if (status === 'failed') {
+        setPdfStatus('failed');
+        clearInterval(interval);
+      }
+    }, 2000);
+    setTimeout(() => {
+      clearInterval(interval);
+      setPdfStatus(s => s === 'waiting' ? 'timeout' : s);
+    }, 60000);
+  }
 
   function handleCopyReference() {
     if (!referenceNumber) return;
@@ -444,9 +474,27 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
                 Your plan document is being prepared — we will have it ready for you in a moment.
               </div>
             )}
-            {pdfStatus === 'timeout' && (
-              <div style={{ fontSize: 13, color: '#8a4a2a', marginBottom: 12, padding: '10px 14px', background: '#fdf3ec', borderRadius: 8, border: '1px solid #f0cba8' }}>
-                Your plan is taking longer than expected. Please try again in a moment.
+            {(pdfStatus === 'timeout' || pdfStatus === 'failed') && (
+              <div style={{ fontSize: 13, color: '#8a4a2a', marginBottom: 12, padding: '12px 14px', background: '#fdf3ec', borderRadius: 8, border: '1px solid #f0cba8' }}>
+                <p style={{ margin: '0 0 8px' }}>
+                  {pdfStatus === 'failed'
+                    ? 'We were unable to prepare your plan document.'
+                    : 'Your plan is taking longer than expected.'}
+                </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+                  <button
+                    onClick={restartPdfPoll}
+                    style={{ background: 'none', border: 'none', padding: 0, color: '#8a4a2a', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', textDecoration: 'underline' }}
+                  >
+                    Try again
+                  </button>
+                  <a
+                    href="mailto:hello@dedrab.com"
+                    style={{ color: '#8a4a2a', fontSize: 13 }}
+                  >
+                    Contact support
+                  </a>
+                </div>
               </div>
             )}
 

@@ -1513,6 +1513,57 @@ function generateGridOverlay(
 }
 
 
+// ─── PDF HELPERS ──────────────────────────────────────────────────────────────
+
+// Fetch a remote asset via the server-side proxy to avoid CORS in react-pdf WASM renderer.
+// Returns a data: URL string or null on failure.
+async function fetchAssetSafe(url: string): Promise<string | null> {
+  try {
+    const res = await fetch('/api/fetch-asset?url=' + encodeURIComponent(url));
+    if (!res.ok) return null;
+    const { base64, mimeType } = await res.json();
+    return base64 ? 'data:' + mimeType + ';base64,' + base64 : null;
+  } catch {
+    return null;
+  }
+}
+
+// Fetch the site logo from the public directory (no CORS — served from own origin).
+async function fetchLogoAsBase64(): Promise<string | null> {
+  try {
+    const res = await fetch('/dd_logo.png');
+    if (!res.ok) return null;
+    const blob = await res.blob();
+    return new Promise(resolve => {
+      const fr = new FileReader();
+      fr.onload = () => resolve(fr.result as string);
+      fr.onerror = () => resolve(null);
+      fr.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+}
+
+// Resize an image data URL to at most maxPx on the longest side, JPEG 0.85.
+// Reduces WASM memory pressure for large renders passed into react-pdf.
+function resizeImageForPdf(dataUrl: string, maxPx = 1200): Promise<string> {
+  return new Promise(resolve => {
+    if (!dataUrl) { resolve(dataUrl); return; }
+    const img = new window.Image();
+    img.onload = () => {
+      const scale = Math.min(1, maxPx / Math.max(img.width, img.height));
+      const canvas = document.createElement('canvas');
+      canvas.width  = Math.round(img.width  * scale);
+      canvas.height = Math.round(img.height * scale);
+      canvas.getContext('2d')!.drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL('image/jpeg', 0.85));
+    };
+    img.onerror = () => resolve(dataUrl); // fall back to original on error
+    img.src = dataUrl;
+  });
+}
+
 // ─── THEME PRE-SELECTOR ───────────────────────────────────────────────────────
 // Isolated into its own component so useSearchParams() can be wrapped in Suspense,
 // satisfying Next.js static generation requirements.
@@ -1577,6 +1628,8 @@ export default function GardigApp() {
   const [maxRenders, setMaxRenders]           = useState<number | null>(null);
   const [renderBlocked, setRenderBlocked]     = useState(false);
   const [inviteRedirectNeeded, setInviteRedirectNeeded] = useState(false);
+  const [pdfGenerating, setPdfGenerating] = useState(false);
+  const [pdfError, setPdfError]           = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const intentionalNavRef = useRef(false);
   const router = useRouter();
@@ -2378,20 +2431,39 @@ export default function GardigApp() {
         const capturedRefNum = refNum;
         const capturedSessionId = newSessionId;
         const capturedRenderUrl = renderUrl;
-        (async () => {
+
+        const runPdfAndUpload = async () => {
+          setPdfGenerating(true);
+          setPdfError(null);
           let uploadedPdfUrl: string | null = null;
           let uploadedRenderUrl: string | null = null;
 
-          // ── PDF upload ────────────────────────────────────────────────
+          // ── PDF generation ────────────────────────────────────────────
           try {
-            console.log('PDF GENERATION STARTING - docData present:', !!docData, 'renderUrl length:', capturedRenderUrl?.length ?? 0, 'imageDataUrl present:', !!imageDataUrl, 'aerialImageUrl present:', !!(aerialGridImageUrl || aerialImageUrl));
+            // Pre-fetch images to avoid CORS failures inside react-pdf WASM renderer.
+            // Logo is served from our own origin; aerial image may be a Supabase URL.
+            const aerialSrc = aerialGridImageUrl || aerialImageUrl || null;
+            const [logoBase64, aerialBase64] = await Promise.all([
+              fetchLogoAsBase64(),
+              aerialSrc ? fetchAssetSafe(aerialSrc) : Promise.resolve(null),
+            ]);
+
+            // Resize heavy renders to reduce WASM memory pressure
+            const [resizedRender, resizedBefore] = await Promise.all([
+              capturedRenderUrl ? resizeImageForPdf(capturedRenderUrl) : Promise.resolve(''),
+              imageDataUrl ? resizeImageForPdf(imageDataUrl) : Promise.resolve(''),
+            ]);
+
+            console.log('PDF GENERATION STARTING — docData:', !!docData, 'render size:', resizedRender.length, 'before size:', resizedBefore.length, 'aerial:', !!aerialBase64, 'logo:', !!logoBase64);
+
             const pdfDoc = (
               <GardenPlanPDF
                 doc={docData}
-                imageBase64={capturedRenderUrl || ''}
-                imageDataUrl={imageDataUrl || undefined}
+                logoBase64={logoBase64 || undefined}
+                imageBase64={resizedRender}
+                imageDataUrl={resizedBefore || undefined}
                 gridImageUrl={gridImageUrl || undefined}
-                aerialImageUrl={aerialGridImageUrl || aerialImageUrl || undefined}
+                aerialImageUrl={aerialBase64 || undefined}
                 style={designLang}
                 clientName={clientName}
                 gardenOrientation={gardenOrientation}
@@ -2399,15 +2471,23 @@ export default function GardigApp() {
                 referenceNumber={capturedRefNum}
               />
             );
-            const blob = await pdf(pdfDoc).toBlob();
-            console.log('PDF GENERATION COMPLETE - size:', blob.size);
+
+            const blob = await Promise.race([
+              pdf(pdfDoc).toBlob(),
+              new Promise<never>((_, reject) =>
+                setTimeout(() => reject(new Error('PDF generation timed out (45s)')), 45_000)
+              ),
+            ]);
+            console.log('PDF GENERATION COMPLETE — size:', blob.size);
+
             const pdfBase64 = await new Promise<string>((resolve, reject) => {
               const reader = new FileReader();
               reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
               reader.onerror = reject;
               reader.readAsDataURL(blob);
             });
-            console.log('[handleSaveAndProceed] Uploading PDF — sessionId:', capturedSessionId, 'referenceNumber:', capturedRefNum);
+
+            console.log('[runPdfAndUpload] Uploading PDF — sessionId:', capturedSessionId, 'referenceNumber:', capturedRefNum);
             const uploadRes = await fetch('/api/upload-pdf', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -2415,27 +2495,32 @@ export default function GardigApp() {
             });
             if (uploadRes.ok) {
               const { pdfUrl } = await uploadRes.json();
-              console.log('[handleSaveAndProceed] PDF upload succeeded, pdfUrl:', pdfUrl);
+              console.log('[runPdfAndUpload] PDF upload succeeded, pdfUrl:', pdfUrl);
               uploadedPdfUrl = pdfUrl || null;
               if (pdfUrl) {
                 try {
                   sessionStorage.setItem('garden_pdf_url', pdfUrl);
                 } catch (e) {
-                  console.warn('[handleSaveAndProceed] sessionStorage write failed (garden_pdf_url):', e);
+                  console.warn('[runPdfAndUpload] sessionStorage write failed (garden_pdf_url):', e);
                 }
               }
             } else {
               const errText = await uploadRes.text();
-              console.error('[handleSaveAndProceed] PDF upload failed — status:', uploadRes.status, 'body:', errText);
+              console.error('[runPdfAndUpload] PDF upload failed — status:', uploadRes.status, 'body:', errText);
+              throw new Error('PDF upload failed: ' + uploadRes.status);
             }
           } catch (err) {
-            console.error('[handleSaveAndProceed] PDF generation/upload error:', err);
+            console.error('[runPdfAndUpload] PDF generation/upload error:', err);
+            setPdfError(String(err));
+            sessionStorage.setItem('garden_pdf_status', 'failed');
+          } finally {
+            setPdfGenerating(false);
           }
 
-          // ── Render image upload ───────────────────────────────────────
+          // ── Render image upload (runs regardless of PDF outcome) ──────
           if (capturedRenderUrl) {
             try {
-              console.log('[handleSaveAndProceed] Uploading render image — sessionId:', capturedSessionId);
+              console.log('[runPdfAndUpload] Uploading render image — sessionId:', capturedSessionId);
               const renderRes = await fetch('/api/upload-render', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -2443,21 +2528,21 @@ export default function GardigApp() {
               });
               if (renderRes.ok) {
                 const { renderUrl: hostedRenderUrl } = await renderRes.json();
-                console.log('[handleSaveAndProceed] Render upload succeeded, renderUrl:', hostedRenderUrl);
+                console.log('[runPdfAndUpload] Render upload succeeded, renderUrl:', hostedRenderUrl);
                 uploadedRenderUrl = hostedRenderUrl || null;
                 if (hostedRenderUrl) {
                   try {
                     sessionStorage.setItem('garden_render_url', hostedRenderUrl);
                   } catch (e) {
-                    console.warn('[handleSaveAndProceed] sessionStorage write failed (garden_render_url):', e);
+                    console.warn('[runPdfAndUpload] sessionStorage write failed (garden_render_url):', e);
                   }
                 }
               } else {
                 const errText = await renderRes.text();
-                console.error('[handleSaveAndProceed] Render upload failed — status:', renderRes.status, 'body:', errText);
+                console.error('[runPdfAndUpload] Render upload failed — status:', renderRes.status, 'body:', errText);
               }
             } catch (err) {
-              console.error('[handleSaveAndProceed] Render upload error:', err);
+              console.error('[runPdfAndUpload] Render upload error:', err);
             }
           }
 
@@ -2473,12 +2558,14 @@ export default function GardigApp() {
                   renderUrl: uploadedRenderUrl,
                 }),
               });
-              console.log('[handleSaveAndProceed] update-design PATCH complete');
+              console.log('[runPdfAndUpload] update-design PATCH complete');
             } catch (err) {
-              console.error('[handleSaveAndProceed] update-design PATCH error:', err);
+              console.error('[runPdfAndUpload] update-design PATCH error:', err);
             }
           }
-        })();
+        };
+
+        runPdfAndUpload();
       }
 
       // Show saved confirmation briefly, then navigate

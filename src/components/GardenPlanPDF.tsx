@@ -1,9 +1,7 @@
 import { Document, Page, Text, View, Image, StyleSheet } from '@react-pdf/renderer';
 
-// ─── LOGO URL ─────────────────────────────────────────────────────────────────
-const logoUrl = process.env.NODE_ENV === 'production'
-  ? 'https://dedrab.com/dd_logo.png'
-  : 'http://localhost:3000/dd_logo.png';
+// Logo is passed as a pre-fetched base64 data URL from the caller to avoid
+// CORS failures when react-pdf's WASM renderer tries to fetch remote URLs.
 
 // ─── TOKENS ───────────────────────────────────────────────────────────────────
 const T = {
@@ -167,14 +165,14 @@ const SubHead = ({ text }: { text: string }) => (
 );
 
 // Running header + footer (fixed, repeats every page)
-const PageChrome = ({ clientName, dateStr, style, referenceNumber }: any) => (
+const PageChrome = ({ clientName, dateStr, style, referenceNumber, logoBase64 }: any) => (
   <>
     <View style={S.runHdr} fixed>
       <Text style={S.runBrand}>dedrab.com · Action Plan</Text>
       <Text style={S.runRight}>{clientName ? clientName + ' · ' : ''}{style}</Text>
     </View>
     <View style={S.footer} fixed>
-      <Image src={logoUrl} style={{ width: 60, height: 'auto' }} />
+      {logoBase64 ? <Image src={logoBase64} style={{ width: 60, height: 'auto' }} /> : <Text style={S.footerBrand}>Dedrab</Text>}
       <Text style={S.footerMid}>{'Dedrab Design Reference: ' + (referenceNumber || 'Pending')}</Text>
       <Text style={S.footerPg} render={({ pageNumber, totalPages }: { pageNumber: number; totalPages: number }) => 'Page ' + pageNumber + ' / ' + totalPages} />
     </View>
@@ -186,6 +184,7 @@ const PageChrome = ({ clientName, dateStr, style, referenceNumber }: any) => (
 interface Props {
   doc?: any;
   plan?: string;
+  logoBase64?: string;
   imageBase64: string;
   imageDataUrl?: string;
   gridImageUrl?: string;
@@ -198,7 +197,7 @@ interface Props {
   referenceNumber?: string;
 }
 
-export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageUrl, aerialImageUrl, style, clientName, siteAddress, gardenOrientation, transformationLevel, referenceNumber }: Props) => {
+export const GardenPlanPDF = ({ doc, plan, logoBase64, imageBase64, imageDataUrl, gridImageUrl, aerialImageUrl, style, clientName, siteAddress, gardenOrientation, transformationLevel, referenceNumber }: Props) => {
   const d = doc || {};
   const hasBefore = !!imageDataUrl;
   const hasAfter  = !!imageBase64;
@@ -253,7 +252,9 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
         <View style={S.coverTopRule} />
         <View style={S.coverContent}>
           <View style={S.coverTopRow}>
-            <Image src={logoUrl} style={{ width: 150, height: 'auto' }} />
+            {logoBase64
+              ? <Image src={logoBase64} style={{ width: 150, height: 'auto' }} />
+              : <Text style={S.coverBrand}>Dedrab</Text>}
             <Text style={S.coverDate}>{dateStr}</Text>
           </View>
           <View style={S.coverMid}>
@@ -287,7 +288,7 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
           SECTION PAGES
       ══════════════════════════════════════════════════════════ */}
       <Page size="A4" style={S.page}>
-        <PageChrome clientName={clientName} dateStr={dateStr} style={style} referenceNumber={referenceNumber} />
+        <PageChrome clientName={clientName} dateStr={dateStr} style={style} referenceNumber={referenceNumber} logoBase64={logoBase64} />
 
         {/* ── 1. Project Overview ─────────────────────────────── */}
         <Section num="01" title="Project Overview">
@@ -399,7 +400,7 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
 
       {/* ── Page 3: Spatial Layout + Planting ─────────────────── */}
       <Page size="A4" style={S.page}>
-        <PageChrome clientName={clientName} dateStr={dateStr} style={style} referenceNumber={referenceNumber} />
+        <PageChrome clientName={clientName} dateStr={dateStr} style={style} referenceNumber={referenceNumber} logoBase64={logoBase64} />
 
         {/* ── 4. Spatial Layout ───────────────────────────────── */}
         <Section num="04" title="Spatial Layout &amp; Zoning">
@@ -462,7 +463,7 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
 
       {/* ── Page 3b: Planting Schedule ────────────────────────── */}
       <Page size="A4" style={S.page}>
-        <PageChrome clientName={clientName} dateStr={dateStr} style={style} referenceNumber={referenceNumber} />
+        <PageChrome clientName={clientName} dateStr={dateStr} style={style} referenceNumber={referenceNumber} logoBase64={logoBase64} />
 
         <Section num="05" title="Planting Specification">
           {d.plantingSpecification?.layeringStrategy
@@ -497,7 +498,7 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
 
       {/* ── Page 3c: Seasonal Matrix ──────────────────────────── */}
       <Page size="A4" style={S.page}>
-        <PageChrome clientName={clientName} dateStr={dateStr} style={style} referenceNumber={referenceNumber} />
+        <PageChrome clientName={clientName} dateStr={dateStr} style={style} referenceNumber={referenceNumber} logoBase64={logoBase64} />
 
         <Section num="05b" title="Seasonal Interest Matrix">
           {plants.length > 0 ? (
@@ -529,7 +530,7 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
 
       {/* ── Page 4: Hardscape + Soil/Irrigation ───────────────── */}
       <Page size="A4" style={S.page}>
-        <PageChrome clientName={clientName} dateStr={dateStr} style={style} referenceNumber={referenceNumber} />
+        <PageChrome clientName={clientName} dateStr={dateStr} style={style} referenceNumber={referenceNumber} logoBase64={logoBase64} />
 
         {/* ── 6. Hardscape ────────────────────────────────────── */}
         <Section num="06" title="Hardscape &amp; Materials Palette">
@@ -647,7 +648,7 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
 
       {/* ── Page 5: Implementation + Maintenance + Costs ──────── */}
       <Page size="A4" style={S.page}>
-        <PageChrome clientName={clientName} dateStr={dateStr} style={style} referenceNumber={referenceNumber} />
+        <PageChrome clientName={clientName} dateStr={dateStr} style={style} referenceNumber={referenceNumber} logoBase64={logoBase64} />
 
         {/* ── 8. Implementation Plan ──────────────────────────── */}
         <Section num="08" title="How to Do It — Your Phased Plan">
@@ -777,7 +778,7 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
       {/* ── Key Considerations ────────────────────────────────── */}
       {safeArr(d.keyConsiderations).length > 0 ? (
         <Page size="A4" style={S.page}>
-          <PageChrome clientName={clientName} dateStr={dateStr} style={style} referenceNumber={referenceNumber} />
+          <PageChrome clientName={clientName} dateStr={dateStr} style={style} referenceNumber={referenceNumber} logoBase64={logoBase64} />
 
           <Section num="11" title="Key Considerations">
             <Text style={[S.body, { marginBottom: 12 }]}>
@@ -796,7 +797,7 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
       {/* ── Page 6: Aerial Layout Plan ────────────────────────── */}
       {aerialImageUrl ? (
         <Page size="A4" style={S.page}>
-          <PageChrome clientName={clientName} dateStr={dateStr} style={style} referenceNumber={referenceNumber} />
+          <PageChrome clientName={clientName} dateStr={dateStr} style={style} referenceNumber={referenceNumber} logoBase64={logoBase64} />
 
           <Section num="App A" title="Garden Layout Plan">
             <Text style={[S.small, { marginBottom: 8 }]}>
@@ -830,7 +831,7 @@ export const GardenPlanPDF = ({ doc, plan, imageBase64, imageDataUrl, gridImageU
 
       {/* ── Page 7: Appendices ────────────────────────────────── */}
       <Page size="A4" style={S.page}>
-        <PageChrome clientName={clientName} dateStr={dateStr} style={style} referenceNumber={referenceNumber} />
+        <PageChrome clientName={clientName} dateStr={dateStr} style={style} referenceNumber={referenceNumber} logoBase64={logoBase64} />
 
         <Section num="App B" title="Appendices">
 
