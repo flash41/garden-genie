@@ -45,14 +45,11 @@ export async function PATCH(req: NextRequest) {
     updates.resolved_at = null;
   }
 
-  const { data, error } = await supabaseAdmin
+  // resolved_at column confirmed present after migration
+  const { error } = await supabaseAdmin
     .from('error_reports')
     .update(updates)
-    .eq('id', id)
-    .select()
-    .single();
-
-  console.log('[update-error-report] supabase result:', { data, error });
+    .eq('id', id);
 
   if (error) {
     console.error('[update-error-report] failed:', error);
