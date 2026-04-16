@@ -894,7 +894,7 @@ function GridOverlayImage({ src, plants, label, showMarkers = true, perspectiveD
 
 // ─── LAYOUT PLAN IMAGE — clean display with optional scale grid toggle ─────────
 
-function LayoutPlanImage({ src }: { src: string }) {
+function LayoutPlanImage({ src, boundaryPolygon }: { src: string; boundaryPolygon?: Array<{x: number; y: number}> | null }) {
   const [showGrid, setShowGrid] = useState(false);
   const imgRef    = useRef<HTMLImageElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -913,8 +913,23 @@ function LayoutPlanImage({ src }: { src: string }) {
 
     const COLS = 6, ROWS = 6;
     const LABELS = ['A','B','C','D','E','F'];
-    const pad = Math.round(W * 0.04);
-    const gL = pad, gR = W - pad, gT = pad, gB = H - pad;
+
+    // Compute grid bounds: use bounding box of boundary polygon if available,
+    // otherwise fall back to a 5% inset from the image edges.
+    let gL: number, gR: number, gT: number, gB: number;
+    if (boundaryPolygon && boundaryPolygon.length >= 3) {
+      const minX = Math.min(...boundaryPolygon.map(p => p.x)) * W;
+      const maxX = Math.max(...boundaryPolygon.map(p => p.x)) * W;
+      const minY = Math.min(...boundaryPolygon.map(p => p.y)) * H;
+      const maxY = Math.max(...boundaryPolygon.map(p => p.y)) * H;
+      gL = Math.max(0, minX);
+      gR = Math.min(W, maxX);
+      gT = Math.max(0, minY);
+      gB = Math.min(H, maxY);
+    } else {
+      const pad = Math.round(W * 0.05);
+      gL = pad; gR = W - pad; gT = pad; gB = H - pad;
+    }
     const gW = gR - gL, gH = gB - gT;
     const colW = gW / COLS, rowH = gH / ROWS;
 
@@ -1774,6 +1789,7 @@ export default function GardigApp() {
 
       setDocData(result.designJSON);
       setRenderUrl(result.imageBase64);
+      console.log('RENDER RECEIVED - type:', result.imageBase64 ? (result.imageBase64.startsWith('data:') ? 'dataURL' : 'base64') : 'null', 'length:', result.imageBase64?.length ?? 0);
       setAerialImageUrl(result.aerialImageBase64);
       setFingerprint(result.fingerprint);
       setControlPoints(result.controlPoints || {});
@@ -2866,7 +2882,7 @@ export default function GardigApp() {
 
           {(aerialImageUrl || aerialGridImageUrl) ? (
             <>
-              <LayoutPlanImage src={aerialImageUrl || aerialGridImageUrl!} />
+              <LayoutPlanImage src={aerialImageUrl || aerialGridImageUrl!} boundaryPolygon={null} />
 
               {plants.length > 0 && (
                 <div style={{ marginTop: 22 }}>

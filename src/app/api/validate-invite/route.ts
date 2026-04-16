@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase-server';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,11 +18,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: false, error: 'not_found' }, { status: 400 });
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('invite_codes')
     .select('id, code, label, email, renders_used, max_renders')
     .eq('code', code)
     .maybeSingle();
+
+  console.log('INVITE DEBUG - code received:', code);
+  console.log('INVITE DEBUG - data returned:', JSON.stringify(data));
+  console.log('INVITE DEBUG - error returned:', JSON.stringify(error));
 
   if (error) {
     console.error('[validate-invite] Supabase error:', error);

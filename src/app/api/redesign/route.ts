@@ -113,7 +113,7 @@ const DESIGN_SCHEMA = `{
   },
   "implementationPlan": {
     "tasks": [
-      { "id": "T1", "phase": "Phase 1 — Hardscape|Phase 2 — Planting|Phase 3 — Finishing", "task": "specific task", "estimatedDays": 2, "notes": "sequencing notes" }
+      { "id": "T1", "phase": "Phase 1 — Hardscape|Phase 2 — Planting|Phase 3 — Finishing", "task": "specific task", "estimatedDays": 2, "notes": "exactly 2 sentences: the first sentence describes what to do and how; the second sentence explains the key practical consideration or technique that ensures it is done correctly. Example: 'Excavate the central bed to a depth of 300mm, removing all existing turf and roots. Backfill with a 50/50 mix of sharp sand and topsoil to improve drainage before planting.'" }
     ],
     "totalWeeks": 12,
     "criticalPathNotes": "key sequencing dependencies"
@@ -1542,6 +1542,7 @@ export async function POST(request: NextRequest) {
     try {
       imageBase64 = await step5_generateRender(visualPrompt, originalImageBase64, effectiveMimeType, aerialImageBase64);
       console.log('[Pipeline] Step 5 complete, size:', imageBase64?.length ?? 0);
+      console.log('RENDER COMPLETE - length:', imageBase64?.length ?? 0);
     } catch (err) {
       console.error('[Pipeline] Step 5 failed:', err);
     }

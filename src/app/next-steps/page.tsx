@@ -1,7 +1,6 @@
 'use client';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState, Suspense } from 'react';
-import { detectCountryFromPostcode, COUNTRY_OPTIONS, CountryOption } from '@/lib/detectPostcodeCountry';
 
 function NextStepsContent() {
   const params = useSearchParams();
@@ -11,8 +10,7 @@ function NextStepsContent() {
   const [designStyle, setDesignStyle] = useState('');
   const [renderUrl, setRenderUrl] = useState('');
   const [postcode, setPostcode] = useState('');
-  const [detectedCountry, setDetectedCountry] = useState<CountryOption>(COUNTRY_OPTIONS[0]);
-  const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
+const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
   const [quoteStatus, setQuoteStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [quoteError, setQuoteError] = useState('');
 
@@ -89,6 +87,13 @@ function NextStepsContent() {
     return () => { clearInterval(interval); clearTimeout(timeout); };
   }, []);
 
+  // Pre-fetch and cache the PDF base64 as soon as pdfUrl is available,
+  // so it is ready immediately when either send button is pressed.
+  useEffect(() => {
+    if (!pdfUrl || pdfBase64Cached) return;
+    fetchPdfBase64().catch(e => console.warn('[mount] PDF pre-fetch failed:', e));
+  }, [pdfUrl]); // eslint-disable-line react-hooks/exhaustive-deps
+
   function handleCopyReference() {
     if (!referenceNumber) return;
     navigator.clipboard.writeText(referenceNumber).then(() => {
@@ -99,9 +104,6 @@ function NextStepsContent() {
 
   function handlePostcodeChange(value: string) {
     setPostcode(value);
-    if (value.length >= 3) {
-      setDetectedCountry(detectCountryFromPostcode(value));
-    }
   }
 
   async function handleRequestQuote(e: React.FormEvent) {
@@ -112,7 +114,7 @@ function NextStepsContent() {
       const res = await fetch('/api/request-quote', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId, email: userEmail, postcode, quotesRequested, country: detectedCountry.name, countryCode: detectedCountry.code }),
+        body: JSON.stringify({ sessionId, email: userEmail, postcode, quotesRequested }),
       });
       const data = await res.json();
       if (data.success) {
@@ -175,10 +177,12 @@ function NextStepsContent() {
       if (res.ok && data.success) {
         setSendSelfStatus('sent');
       } else {
+        console.error('[handleSendToSelf] Send failed, response body:', data);
         setSendSelfError('Could not send. Please try again.');
         setSendSelfStatus('idle');
       }
-    } catch {
+    } catch (e) {
+      console.error('[handleSendToSelf] Send error:', e);
       setSendSelfError('Could not send. Please try again.');
       setSendSelfStatus('idle');
     }
@@ -214,10 +218,12 @@ function NextStepsContent() {
       if (res.ok && data.success) {
         setShareStatus('sent');
       } else {
+        console.error('[handleShareWithFriend] Send failed, response body:', data);
         setShareError('Could not send. Please try again.');
         setShareStatus('idle');
       }
-    } catch {
+    } catch (e) {
+      console.error('[handleShareWithFriend] Send error:', e);
       setShareError('Could not send. Please try again.');
       setShareStatus('idle');
     }
@@ -226,12 +232,7 @@ function NextStepsContent() {
   async function handleDownloadPlan(): Promise<boolean> {
     const url = pdfUrl || sessionStorage.getItem('garden_pdf_url') || '';
     if (url) {
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = (referenceNumber || 'garden-plan') + '.pdf';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      window.open(url, '_blank', 'noopener,noreferrer');
       return true;
     }
     // PDF not yet available — poll sessionStorage for up to 5 seconds
@@ -242,12 +243,7 @@ function NextStepsContent() {
         if (polled) {
           setPdfUrl(polled);
           clearInterval(interval);
-          const a = document.createElement('a');
-          a.href = polled;
-          a.download = (referenceNumber || 'garden-plan') + '.pdf';
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
+          window.open(polled, '_blank', 'noopener,noreferrer');
           resolve(true);
         } else if (Date.now() - start > 5000) {
           clearInterval(interval);
@@ -610,29 +606,6 @@ function NextStepsContent() {
                     color: '#1a1a1a', WebkitTextFillColor: '#1a1a1a', opacity: 1, backgroundColor: '#ffffff',
                   }}
                 />
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#4a3f32', marginBottom: 6, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-                  Country
-                </label>
-                <select
-                  value={detectedCountry.code}
-                  onChange={e => {
-                    const selected = COUNTRY_OPTIONS.find(c => c.code === e.target.value) || COUNTRY_OPTIONS[0];
-                    setDetectedCountry(selected);
-                  }}
-                  style={{
-                    width: '100%', padding: '10px 12px', border: '1px solid #d4c9b8', borderRadius: 4,
-                    fontSize: 14, fontFamily: 'inherit', marginBottom: 6, boxSizing: 'border-box',
-                    color: '#1a1a1a', WebkitTextFillColor: '#1a1a1a', opacity: 1, backgroundColor: '#ffffff',
-                    appearance: 'auto',
-                  }}
-                >
-                  {COUNTRY_OPTIONS.map(opt => (
-                    <option key={opt.code} value={opt.code}>{opt.name}</option>
-                  ))}
-                </select>
-                <p style={{ fontSize: 11, color: '#9a9a9a', margin: '0 0 18px', lineHeight: 1.4 }}>
-                  Detected from your postcode — change if incorrect
-                </p>
                 <div style={{ marginBottom: 20 }}>
                   <div style={{ fontSize: 12, fontWeight: 600, color: '#4a3f32', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10 }}>Number of quotes</div>
                   {([1, 3] as const).map(n => (

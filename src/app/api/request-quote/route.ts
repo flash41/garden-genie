@@ -15,12 +15,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: false, error: 'Invalid request body' }, { status: 400 });
   }
 
-  const { sessionId, email, postcode, quotesRequested, country, countryCode } = body as {
+  const { sessionId, email, postcode, quotesRequested, countryCode } = body as {
     sessionId?: string;
     email?: string;
     postcode?: string;
     quotesRequested?: number;
-    country?: string;
     countryCode?: string;
   };
 
@@ -49,8 +48,6 @@ export async function POST(req: NextRequest) {
       postcode,
       quotes_requested: quotesRequested,
       confirmation_sent: false,
-      country: country || null,
-      country_code: countryCode || null,
     })
     .select('id')
     .single();

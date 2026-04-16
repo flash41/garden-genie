@@ -126,7 +126,7 @@ export async function POST(req: NextRequest) {
 
     if (error) {
       console.error('Resend error:', JSON.stringify(error));
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: 'send_failed', detail: error.message }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, id: data?.id });
