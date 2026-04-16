@@ -33,6 +33,19 @@ const DESIGN_LANGUAGES = [
 
 const GEMINI_MODEL = "gemini-2.5-flash";
 
+const COLOUR_HEX_MAP: Record<string, string> = {
+  'terracotta': '#C0613A',
+  'warm grey': '#9E9E8E',
+  'rich earth brown': '#6B4226',
+  'vibrant green': '#4A7C3F',
+  'herbal silver': '#A8B5A2',
+  'seasonal pink': '#D4748A',
+  'seasonal purple': '#7B5EA7',
+  'seasonal yellow': '#D4A847',
+  'lavender': '#9C8DC3',
+  'sage': '#9CAF88',
+};
+
 function getTransformationDisplay(level: number): string {
   const map: Record<number, string> = {
     1: '1 — Subtle: Light touch changes that refresh without altering the character',
@@ -2785,12 +2798,15 @@ export default function GardigApp() {
             <Card>
               <Label>Colour Palette</Label>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginTop: 4 }}>
-                {doc.designConcept.colourPalette.map((col: string, i: number) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: px(BASE - 1) }}>
-                    <div style={{ width: 26, height: 26, borderRadius: C.r, background: col, border: `1px solid ${C.rule}` }} />
-                    <span style={{ color: C.inkMid }}>{col}</span>
-                  </div>
-                ))}
+                {doc.designConcept.colourPalette.map((col: string, i: number) => {
+                  const swatchHex = col.startsWith('#') ? col : (COLOUR_HEX_MAP[col.toLowerCase()] ?? '#B8962E');
+                  return (
+                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: px(BASE - 1) }}>
+                      <div style={{ width: 26, height: 26, borderRadius: C.r, background: swatchHex, border: `1px solid ${C.rule}` }} />
+                      <span style={{ color: C.inkMid }}>{col}</span>
+                    </div>
+                  );
+                })}
               </div>
             </Card>
           )}

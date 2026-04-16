@@ -2,6 +2,28 @@
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState, Suspense } from 'react';
 
+// ─── DEV TESTING: Inject mock session data ────────────────────────────────
+// To test this page without a real Gemini call, open the browser console
+// (type 'allow pasting' first in Chrome) and run:
+//
+// sessionStorage.setItem('dedrab_last_results', JSON.stringify({
+//   renderUrl: 'https://[existing-supabase-storage-url-from-previous-run]',
+//   sessionId: '[existing-session-id-from-design_records-table]',
+//   referenceNumber: 'DED-202604-TEST',
+//   planData: { overview: { tagline: 'Test plan' }, plantingSpecification: { plants: [] } },
+//   designStyle: 'English Cottage',
+//   hardinessZone: 'H4',
+//   orientation: 'South',
+//   transformationLevel: 3,
+//   clientName: 'Test User',
+//   userEmail: 'test@test.com',
+//   savedAt: Date.now()
+// }))
+//
+// Then refresh the page. Replace the renderUrl and sessionId with real values
+// from your Supabase dashboard to test PDF generation and email sending.
+// ─────────────────────────────────────────────────────────────────────────
+
 function NextStepsContent() {
   const params = useSearchParams();
   const router = useRouter();
@@ -419,7 +441,7 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
             {pdfStatus === 'waiting' && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: '#6b5e50', marginBottom: 12, padding: '10px 14px', background: '#faf8f4', borderRadius: 8, border: '1px solid #e5ddd0' }}>
                 <span style={{ display: 'inline-block', width: 14, height: 14, border: '2px solid #b8962e', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite', flexShrink: 0 }} />
-                Your plan is being prepared — this takes about 15 seconds.
+                Your plan document is being prepared — we will have it ready for you in a moment.
               </div>
             )}
             {pdfStatus === 'timeout' && (
