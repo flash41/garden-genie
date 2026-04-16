@@ -5,7 +5,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase-server';
 import AdminLeadsContent from '@/components/admin/LeadsMap';
-import type { LeadRow } from '@/components/admin/LeadsMap';
+import type { LeadRow, ErrorReport } from '@/components/admin/LeadsMap';
 
 export default async function AdminLeadsPage() {
   const cookieStore = await cookies();
@@ -44,6 +44,14 @@ export default async function AdminLeadsPage() {
 
   const leads = (rows as LeadRow[] | null) || [];
 
+  const { data: errorReportRows } = await supabaseAdmin
+    .from('error_reports')
+    .select('*')
+    .order('submitted_at', { ascending: false });
+
+  const errorReports = (errorReportRows as ErrorReport[] | null) ?? [];
+  const newReportCount = errorReports.filter(r => r.status === 'new').length;
+
   return (
     <div style={{ minHeight: '100vh', background: '#f4efe4', fontFamily: "'DM Sans', sans-serif" }}>
       {/* Header */}
@@ -55,7 +63,7 @@ export default async function AdminLeadsPage() {
         <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13 }}>Quote Leads</span>
       </div>
 
-      <AdminLeadsContent initialLeads={leads} />
+      <AdminLeadsContent initialLeads={leads} initialErrorReports={errorReports} newReportCount={newReportCount} />
     </div>
   );
 }

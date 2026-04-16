@@ -2,6 +2,20 @@
 import { useState, useEffect, useRef } from 'react';
 import InviteManager from '@/app/admin/InviteManager';
 
+export interface ErrorReport {
+  id: string;
+  reference_number: string | null;
+  email: string | null;
+  error_type: string;
+  user_description: string;
+  log_snippet: string | null;
+  session_id: string | null;
+  submitted_at: string;
+  status: string;
+  resolved_at: string | null;
+  resolution_note: string | null;
+}
+
 export interface LeadRow {
   id: string;
   email: string;
@@ -139,9 +153,37 @@ const thStyle: React.CSSProperties = {
 
 // ── Main export ───────────────────────────────────────────────────────────────
 
-export default function AdminLeadsContent({ initialLeads }: { initialLeads: LeadRow[] }) {
-  const [activeTab, setActiveTab] = useState<'leads' | 'map'>('leads');
+const ERROR_TYPE_LABELS: Record<string, string> = {
+  pdf_failure:      'Action Plan failed',
+  download_failure: 'Download failed',
+  email_failure:    'Email failed',
+  render_failure:   'Render failed',
+  unknown:          'Unknown',
+};
+
+const STATUS_STYLE: Record<string, { background: string; color: string; label: string }> = {
+  new:      { background: '#fee2e2', color: '#991b1b', label: 'New' },
+  reviewed: { background: '#fef3cd', color: '#92400e', label: 'Reviewed' },
+  resolved: { background: '#dcfce7', color: '#166534', label: 'Resolved' },
+};
+
+const pillStyle = (bg: string, color: string): React.CSSProperties => ({
+  background: bg, color, borderRadius: 12, padding: '2px 8px', fontSize: 11,
+  fontWeight: 600, display: 'inline-block', whiteSpace: 'nowrap',
+});
+
+export default function AdminLeadsContent({
+  initialLeads,
+  initialErrorReports,
+  newReportCount,
+}: {
+  initialLeads: LeadRow[];
+  initialErrorReports: ErrorReport[];
+  newReportCount: number;
+}) {
+  const [activeTab, setActiveTab] = useState<'leads' | 'map' | 'support'>('leads');
   const [leads, setLeads] = useState<LeadRow[]>(initialLeads);
+  const [errorReports, setErrorReports] = useState<ErrorReport[]>(initialErrorReports);
 
   async function handleActionToggle(id: string, newValue: boolean) {
     try {
@@ -165,7 +207,7 @@ export default function AdminLeadsContent({ initialLeads }: { initialLeads: Lead
 
       {/* Tab bar */}
       <div style={{ display: 'flex', borderBottom: '2px solid #e5ddd0', marginBottom: 32 }}>
-        {(['leads', 'map'] as const).map(tab => (
+        {(['leads', 'map', 'support'] as const).map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -180,9 +222,17 @@ export default function AdminLeadsContent({ initialLeads }: { initialLeads: Lead
               color: activeTab === tab ? '#0a3d2b' : '#8a7e6e',
               borderBottom: activeTab === tab ? '2px solid #b8962e' : '2px solid transparent',
               marginBottom: -2,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 7,
             }}
           >
-            {tab === 'leads' ? 'Leads' : 'Map'}
+            {tab === 'leads' ? 'Leads' : tab === 'map' ? 'Map' : 'Support'}
+            {tab === 'support' && newReportCount > 0 && (
+              <span style={{ background: '#dc2626', color: '#fff', borderRadius: 10, padding: '1px 6px', fontSize: 10, fontWeight: 700, lineHeight: 1.4 }}>
+                {newReportCount}
+              </span>
+            )}
           </button>
         ))}
       </div>
@@ -288,6 +338,129 @@ export default function AdminLeadsContent({ initialLeads }: { initialLeads: Lead
             Lead Locations
           </h1>
           <LeadsMapView leads={leads} />
+        </div>
+      )}
+
+      {/* ── Support tab ───────────────────────────────────────────────────── */}
+      {activeTab === 'support' && (
+        <div>
+          <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 28, fontWeight: 400, color: '#0a3d2b', marginBottom: 8, marginTop: 0 }}>
+            Support Requests
+          </h1>
+          <p style={{ fontSize: 14, color: '#8a7e6e', marginBottom: 32 }}>
+            {'Total: ' + errorReports.length +
+              ' | New: ' + errorReports.filter(r => r.status === 'new').length +
+              ' | Reviewed: ' + errorReports.filter(r => r.status === 'reviewed').length +
+              ' | Resolved: ' + errorReports.filter(r => r.status === 'resolved').length}
+          </p>
+
+          {errorReports.length === 0 ? (
+            <div style={{ background: '#fff', border: '1px solid #e5ddd0', borderRadius: 8, padding: '40px', textAlign: 'center', color: '#8a7e6e', fontSize: 15 }}>
+              No support requests yet. Error reports submitted by users will appear here.
+            </div>
+          ) : (
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', border: '1px solid #e5ddd0', borderRadius: 8, overflow: 'hidden', fontSize: 14 }}>
+                <thead>
+                  <tr style={{ background: '#0a3d2b' }}>
+                    <th style={thStyle}>Submitted</th>
+                    <th style={thStyle}>Reference</th>
+                    <th style={thStyle}>Email</th>
+                    <th style={thStyle}>Issue type</th>
+                    <th style={thStyle}>Description</th>
+                    <th style={thStyle}>Log</th>
+                    <th style={thStyle}>Status</th>
+                    <th style={thStyle}>Update</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {errorReports.map((report, i) => {
+                    const st = STATUS_STYLE[report.status] ?? STATUS_STYLE.new;
+                    const typeLabel = ERROR_TYPE_LABELS[report.error_type] ?? report.error_type;
+                    return (
+                      <tr
+                        key={report.id}
+                        style={{ borderTop: '1px solid #e5ddd0', background: i % 2 === 0 ? '#fff' : '#faf8f4' }}
+                      >
+                        <td style={{ padding: '12px 16px', color: '#4a3f32', whiteSpace: 'nowrap', fontSize: 13 }}>
+                          {formatDate(report.submitted_at)}
+                        </td>
+                        <td style={{ padding: '12px 16px', color: '#0a3d2b', fontFamily: 'monospace', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                          {report.reference_number || '—'}
+                        </td>
+                        <td style={{ padding: '12px 16px', color: '#2d2520', fontSize: 13 }}>
+                          {report.email || <span style={{ color: '#b8aea4' }}>Not provided</span>}
+                        </td>
+                        <td style={{ padding: '12px 16px' }}>
+                          <span style={pillStyle('#fef3cd', '#92400e')}>{typeLabel}</span>
+                        </td>
+                        <td style={{ padding: '12px 16px', color: '#4a3f32', maxWidth: 280 }}>
+                          <details>
+                            <summary style={{ cursor: 'pointer', fontSize: 13, listStyle: 'none' }}>
+                              {report.user_description.length > 100
+                                ? report.user_description.slice(0, 100) + '…'
+                                : report.user_description}
+                            </summary>
+                            {report.user_description.length > 100 && (
+                              <span style={{ fontSize: 13, display: 'block', marginTop: 6, color: '#2d2520' }}>{report.user_description}</span>
+                            )}
+                          </details>
+                        </td>
+                        <td style={{ padding: '12px 16px', color: '#4a3f32', maxWidth: 200 }}>
+                          {report.log_snippet ? (
+                            <details>
+                              <summary style={{ cursor: 'pointer', fontSize: 12, fontFamily: 'monospace', listStyle: 'none' }}>
+                                {report.log_snippet.length > 60
+                                  ? report.log_snippet.slice(0, 60) + '…'
+                                  : report.log_snippet}
+                              </summary>
+                              {report.log_snippet.length > 60 && (
+                                <span style={{ fontSize: 12, fontFamily: 'monospace', display: 'block', marginTop: 6, color: '#2d2520', wordBreak: 'break-all' }}>{report.log_snippet}</span>
+                              )}
+                            </details>
+                          ) : '—'}
+                        </td>
+                        <td style={{ padding: '12px 16px' }}>
+                          <span style={pillStyle(st.background, st.color)}>{st.label}</span>
+                        </td>
+                        <td style={{ padding: '12px 16px' }}>
+                          <select
+                            value={report.status}
+                            onChange={async e => {
+                              const newStatus = e.target.value;
+                              try {
+                                const res = await fetch('/api/admin/update-error-report', {
+                                  method: 'PATCH',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  credentials: 'include',
+                                  body: JSON.stringify({ id: report.id, status: newStatus }),
+                                });
+                                const data = await res.json();
+                                if (data.success) {
+                                  setErrorReports(prev => prev.map(r => r.id === report.id ? { ...r, status: newStatus } : r));
+                                }
+                              } catch {
+                                // silent — status reverts on next page load
+                              }
+                            }}
+                            style={{
+                              fontSize: 13, fontFamily: 'inherit', padding: '4px 8px',
+                              border: '1px solid #d4c9b8', borderRadius: 6, background: '#fff',
+                              color: '#2d2520', cursor: 'pointer',
+                            }}
+                          >
+                            <option value="new">New</option>
+                            <option value="reviewed">Reviewed</option>
+                            <option value="resolved">Resolved</option>
+                          </select>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
 

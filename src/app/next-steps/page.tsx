@@ -24,6 +24,23 @@ import { useEffect, useState, Suspense } from 'react';
 // from your Supabase dashboard to test PDF generation and email sending.
 // ─────────────────────────────────────────────────────────────────────────
 
+function buildSupportUrl(params: {
+  ref?: string;
+  email?: string;
+  errorType: 'pdf_failure' | 'download_failure' | 'email_failure' | 'render_failure' | 'unknown';
+  logSnippet?: string;
+  sessionId?: string;
+}): string {
+  const base = '/support/report';
+  const p = new URLSearchParams();
+  if (params.ref) p.set('ref', params.ref);
+  if (params.email) p.set('email', params.email);
+  p.set('type', params.errorType);
+  if (params.logSnippet) p.set('log', params.logSnippet.slice(0, 500));
+  if (params.sessionId) p.set('sid', params.sessionId);
+  return `${base}?${p.toString()}`;
+}
+
 function NextStepsContent() {
   const params = useSearchParams();
   const router = useRouter();
@@ -43,6 +60,9 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
 
   const [sendSelfStatus, setSendSelfStatus] = useState<'idle' | 'preparing' | 'sending' | 'sent' | 'error'>('idle');
   const [sendSelfError, setSendSelfError] = useState('');
+  const [emailError, setEmailError] = useState<'failed' | null>(null);
+  const [emailErrorDetail, setEmailErrorDetail] = useState('');
+  const [downloadError, setDownloadError] = useState<'failed' | null>(null);
   const [referenceNumber, setReferenceNumber] = useState('');
   const [pdfUrl, setPdfUrl] = useState('');
   const [pdfBase64Cached, setPdfBase64Cached] = useState('');
@@ -203,6 +223,7 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
   async function handleSendToSelf() {
     if (!userEmail || sendSelfStatus === 'preparing' || sendSelfStatus === 'sending' || sendSelfStatus === 'sent') return;
     setSendSelfError('');
+    setEmailError(null);
     setSendSelfStatus('preparing');
     let base64: string;
     try {
@@ -210,6 +231,8 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
     } catch (e) {
       console.error('[handleSendToSelf] PDF fetch failed:', e);
       setSendSelfError('We could not prepare your plan. Please try downloading it directly.');
+      setEmailError('failed');
+      setEmailErrorDetail(e instanceof Error ? e.message : 'PDF fetch failed before send');
       setSendSelfStatus('idle');
       return;
     }
@@ -231,11 +254,15 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
       } else {
         console.error('[handleSendToSelf] Send failed, response body:', data);
         setSendSelfError('Could not send. Please try again.');
+        setEmailError('failed');
+        setEmailErrorDetail(data.error || 'Email send failed (send-to-self)');
         setSendSelfStatus('idle');
       }
     } catch (e) {
       console.error('[handleSendToSelf] Send error:', e);
       setSendSelfError('Could not send. Please try again.');
+      setEmailError('failed');
+      setEmailErrorDetail(e instanceof Error ? e.message : 'Email send failed (send-to-self)');
       setSendSelfStatus('idle');
     }
   }
@@ -244,6 +271,7 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
     e.preventDefault();
     if (!friendEmail || shareStatus === 'preparing' || shareStatus === 'sending') return;
     setShareError('');
+    setEmailError(null);
     setShareStatus('preparing');
     let base64: string;
     try {
@@ -251,6 +279,8 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
     } catch (e) {
       console.error('[handleShareWithFriend] PDF fetch failed:', e);
       setShareError('We could not prepare your plan. Please try downloading it directly.');
+      setEmailError('failed');
+      setEmailErrorDetail(e instanceof Error ? e.message : 'PDF fetch failed before share');
       setShareStatus('idle');
       return;
     }
@@ -272,11 +302,15 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
       } else {
         console.error('[handleShareWithFriend] Send failed, response body:', data);
         setShareError('Could not send. Please try again.');
+        setEmailError('failed');
+        setEmailErrorDetail(data.error || 'Email send failed (share-with-friend)');
         setShareStatus('idle');
       }
     } catch (e) {
       console.error('[handleShareWithFriend] Send error:', e);
       setShareError('Could not send. Please try again.');
+      setEmailError('failed');
+      setEmailErrorDetail(e instanceof Error ? e.message : 'Email send failed (share-with-friend)');
       setShareStatus('idle');
     }
   }
@@ -474,25 +508,45 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
                 Your plan document is being prepared — we will have it ready for you in a moment.
               </div>
             )}
-            {(pdfStatus === 'timeout' || pdfStatus === 'failed') && (
+            {pdfStatus === 'timeout' && (
               <div style={{ fontSize: 13, color: '#8a4a2a', marginBottom: 12, padding: '12px 14px', background: '#fdf3ec', borderRadius: 8, border: '1px solid #f0cba8' }}>
-                <p style={{ margin: '0 0 8px' }}>
-                  {pdfStatus === 'failed'
-                    ? 'We were unable to prepare your plan document.'
-                    : 'Your plan is taking longer than expected.'}
-                </p>
+                <p style={{ margin: '0 0 10px' }}>Your plan is taking longer than expected.</p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
                   <button
                     onClick={restartPdfPoll}
-                    style={{ background: 'none', border: 'none', padding: 0, color: '#8a4a2a', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', textDecoration: 'underline' }}
+                    style={{ background: '#0a3d2b', color: '#fff', border: 'none', borderRadius: '8px', padding: '10px 18px', fontSize: '13px', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}
                   >
                     Try again
                   </button>
                   <a
-                    href="mailto:hello@dedrab.com"
-                    style={{ color: '#8a4a2a', fontSize: 13 }}
+                    href={buildSupportUrl({ ref: referenceNumber, email: userEmail, errorType: 'pdf_failure', logSnippet: 'PDF generation timed out on next-steps page', sessionId: sessionId || undefined })}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ fontSize: '13px', color: '#0a3d2b', textDecoration: 'underline' }}
                   >
-                    Contact support
+                    Report this issue
+                  </a>
+                </div>
+              </div>
+            )}
+            {pdfStatus === 'failed' && (
+              <div style={{ fontSize: 13, color: '#8a4a2a', marginBottom: 12, padding: '12px 14px', background: '#fdf3ec', borderRadius: 8, border: '1px solid #f0cba8' }}>
+                <p style={{ margin: '0 0 4px' }}>We were unable to prepare your Action Plan document.</p>
+                <p style={{ margin: '0 0 12px', fontSize: '12px', color: '#6b5e50' }}>This can happen due to a temporary connection issue.</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+                  <button
+                    onClick={restartPdfPoll}
+                    style={{ background: '#0a3d2b', color: '#fff', border: 'none', borderRadius: '8px', padding: '10px 18px', fontSize: '13px', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}
+                  >
+                    Try again
+                  </button>
+                  <a
+                    href={buildSupportUrl({ ref: referenceNumber, email: userEmail, errorType: 'pdf_failure', logSnippet: 'PDF generation failed on next-steps page', sessionId: sessionId || undefined })}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ fontSize: '13px', color: '#0a3d2b', textDecoration: 'underline' }}
+                  >
+                    Report this issue
                   </a>
                 </div>
               </div>
@@ -501,12 +555,25 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
             {/* Action buttons */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
               <button
-                onClick={handleDownloadPlan}
+                onClick={async () => { setDownloadError(null); const ok = await handleDownloadPlan(); if (!ok) setDownloadError('failed'); }}
                 disabled={pdfStatus === 'waiting'}
                 style={{ ...btnPrimary, ...(pdfStatus === 'waiting' ? { opacity: 0.4, cursor: 'not-allowed' } : {}) }}
               >
                 Download my plan
               </button>
+              {downloadError === 'failed' && (
+                <div style={{ fontSize: 13, color: '#8a4a2a', padding: '10px 14px', background: '#fdf3ec', borderRadius: 8, border: '1px solid #f0cba8' }}>
+                  <p style={{ margin: '0 0 8px' }}>The download did not complete.</p>
+                  <a
+                    href={buildSupportUrl({ ref: referenceNumber, email: userEmail, errorType: 'download_failure', logSnippet: 'PDF URL not available when download button clicked', sessionId: sessionId || undefined })}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ fontSize: '13px', color: '#0a3d2b', textDecoration: 'underline' }}
+                  >
+                    Report this issue
+                  </a>
+                </div>
+              )}
 
               <button
                 onClick={handleSendToSelf}
@@ -525,8 +592,26 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
                   ? 'Sending\u2026'
                   : 'Send it to my email'}
               </button>
-              {sendSelfError && (
-                <p style={{ margin: '0', fontSize: 12, color: '#8a4a2a' }}>{sendSelfError}</p>
+              {emailError === 'failed' && (
+                <div style={{ fontSize: 13, color: '#8a4a2a', padding: '10px 14px', background: '#fdf3ec', borderRadius: 8, border: '1px solid #f0cba8' }}>
+                  <p style={{ margin: '0 0 8px' }}>We could not send your Action Plan by email.</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                    <button
+                      onClick={() => setEmailError(null)}
+                      style={{ background: 'transparent', color: '#0a3d2b', border: '1px solid #0a3d2b', borderRadius: '8px', padding: '8px 14px', fontSize: '12px', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}
+                    >
+                      Try again
+                    </button>
+                    <a
+                      href={buildSupportUrl({ ref: referenceNumber, email: userEmail, errorType: 'email_failure', logSnippet: emailErrorDetail, sessionId: sessionId || undefined })}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ fontSize: '13px', color: '#0a3d2b', textDecoration: 'underline', alignSelf: 'center' }}
+                    >
+                      Report this issue
+                    </a>
+                  </div>
+                </div>
               )}
 
               <button
@@ -559,7 +644,7 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
                           color: '#1a1a1a', WebkitTextFillColor: '#1a1a1a', opacity: 1, backgroundColor: '#fff',
                         }}
                       />
-                      {shareError && (
+                      {shareError && !emailError && (
                         <p style={{ margin: '0 0 8px', fontSize: 12, color: '#c0392b' }}>{shareError}</p>
                       )}
                       <button
