@@ -83,7 +83,7 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
     const timeout = setTimeout(() => {
       clearInterval(interval);
       setPdfStatus(s => s === 'waiting' ? 'timeout' : s);
-    }, 30000);
+    }, 60000);
     return () => { clearInterval(interval); clearTimeout(timeout); };
   }, []);
 

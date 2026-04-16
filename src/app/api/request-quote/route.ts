@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin as supabase } from '@/lib/supabase-server';
 import { Resend } from 'resend';
 import { buildGeocodingQuery, COUNTRY_OPTIONS } from '@/lib/detectPostcodeCountry';
 
@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
 
   if (insertError) {
     console.error('Quote request insert error:', insertError);
-    return NextResponse.json({ success: false, error: insertError.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'We could not submit your request. Please try again.' }, { status: 500 });
   }
 
   // Geocode postcode — non-blocking, coordinates are optional enrichment

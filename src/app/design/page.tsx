@@ -903,32 +903,44 @@ function LayoutPlanImage({ src, boundaryPolygon }: { src: string; boundaryPolygo
     const img    = imgRef.current;
     const canvas = canvasRef.current;
     if (!img || !canvas) return;
-    const W = img.clientWidth;
-    const H = img.clientHeight;
-    canvas.width  = W;
-    canvas.height = H;
+
+    // Use the image's actual rendered position and size within the container
+    const iL = img.offsetLeft;
+    const iT = img.offsetTop;
+    const iW = img.offsetWidth;
+    const iH = img.offsetHeight;
+    if (iW === 0 || iH === 0) return;
+
+    // Size the canvas buffer to cover the full container so the absolute overlay matches
+    const container = canvas.parentElement;
+    const cW = container ? container.clientWidth : iW;
+    const cH = container ? container.clientHeight : iH;
+    canvas.width  = cW;
+    canvas.height = cH;
+
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    ctx.clearRect(0, 0, W, H);
+    ctx.clearRect(0, 0, cW, cH);
 
     const COLS = 6, ROWS = 6;
     const LABELS = ['A','B','C','D','E','F'];
 
-    // Compute grid bounds: use bounding box of boundary polygon if available,
-    // otherwise fall back to a 5% inset from the image edges.
+    // Grid bounds: constrained to the exact pixel bounds of the rendered <img>
     let gL: number, gR: number, gT: number, gB: number;
     if (boundaryPolygon && boundaryPolygon.length >= 3) {
-      const minX = Math.min(...boundaryPolygon.map(p => p.x)) * W;
-      const maxX = Math.max(...boundaryPolygon.map(p => p.x)) * W;
-      const minY = Math.min(...boundaryPolygon.map(p => p.y)) * H;
-      const maxY = Math.max(...boundaryPolygon.map(p => p.y)) * H;
-      gL = Math.max(0, minX);
-      gR = Math.min(W, maxX);
-      gT = Math.max(0, minY);
-      gB = Math.min(H, maxY);
+      const minX = Math.min(...boundaryPolygon.map(p => p.x)) * iW;
+      const maxX = Math.max(...boundaryPolygon.map(p => p.x)) * iW;
+      const minY = Math.min(...boundaryPolygon.map(p => p.y)) * iH;
+      const maxY = Math.max(...boundaryPolygon.map(p => p.y)) * iH;
+      gL = iL + Math.max(0, minX);
+      gR = iL + Math.min(iW, maxX);
+      gT = iT + Math.max(0, minY);
+      gB = iT + Math.min(iH, maxY);
     } else {
-      const pad = Math.round(W * 0.05);
-      gL = pad; gR = W - pad; gT = pad; gB = H - pad;
+      gL = iL;
+      gR = iL + iW;
+      gT = iT;
+      gB = iT + iH;
     }
     const gW = gR - gL, gH = gB - gT;
     const colW = gW / COLS, rowH = gH / ROWS;
@@ -947,7 +959,7 @@ function LayoutPlanImage({ src, boundaryPolygon }: { src: string; boundaryPolygo
     }
 
     // Labels
-    const labelSize = Math.max(10, Math.round(W / 60));
+    const labelSize = Math.max(10, Math.round(iW / 60));
     ctx.font = `600 ${labelSize}px 'DM Sans', Arial, sans-serif`;
     ctx.fillStyle = '#D4AF37';
 
@@ -998,6 +1010,7 @@ function LayoutPlanImage({ src, boundaryPolygon }: { src: string; boundaryPolygo
           ref={imgRef}
           src={src}
           alt="Garden Layout Plan"
+          onLoad={() => { if (showGrid) paintGrid(); }}
           style={{ width: '100%', height: 'auto', display: 'block', borderRadius: C.rLg, border: `1px solid ${C.rule}` }}
         />
         <canvas
@@ -2358,6 +2371,7 @@ export default function GardigApp() {
 
           // ── PDF upload ────────────────────────────────────────────────
           try {
+            console.log('PDF GENERATION STARTING - docData present:', !!docData, 'renderUrl length:', capturedRenderUrl?.length ?? 0, 'imageDataUrl present:', !!imageDataUrl, 'aerialImageUrl present:', !!(aerialGridImageUrl || aerialImageUrl));
             const pdfDoc = (
               <GardenPlanPDF
                 doc={docData}
@@ -2373,6 +2387,7 @@ export default function GardigApp() {
               />
             );
             const blob = await pdf(pdfDoc).toBlob();
+            console.log('PDF GENERATION COMPLETE - size:', blob.size);
             const pdfBase64 = await new Promise<string>((resolve, reject) => {
               const reader = new FileReader();
               reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
