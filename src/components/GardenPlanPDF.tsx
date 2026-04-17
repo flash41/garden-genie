@@ -63,7 +63,7 @@ const S = StyleSheet.create({
   // Section chrome
   sectionWrap:  { marginBottom: 18 },
   sectionHdr:   { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
-  sectionNum:   { fontSize: 7, color: T.white, fontFamily: 'Helvetica-Bold', backgroundColor: T.brand, paddingLeft: 5, paddingRight: 5, paddingTop: 2, paddingBottom: 2, borderTopLeftRadius: 2, borderTopRightRadius: 2, borderBottomLeftRadius: 2, borderBottomRightRadius: 2, marginRight: 7, letterSpacing: 0.5 },
+  sectionNum:   { fontSize: 7, color: T.white, fontFamily: 'Helvetica-Bold', backgroundColor: T.brand, paddingLeft: 5, paddingRight: 5, paddingTop: 2, paddingBottom: 2, marginRight: 7, letterSpacing: 0.5 },
   sectionTitle: { fontSize: 10, color: T.brand, fontFamily: 'Helvetica-Bold', letterSpacing: 0.8, textTransform: 'uppercase', flex: 1 },
   sectionRule:  { borderBottomWidth: 0.5, borderBottomColor: T.ruleDk, marginBottom: 8 },
 
@@ -92,8 +92,8 @@ const S = StyleSheet.create({
   imgRow:     { flexDirection: 'row', gap: 10, marginBottom: 14 },
   imgCol:     { flex: 1 },
   imgCap:     { fontSize: 7.5, color: T.inkLight, fontFamily: 'Helvetica-Bold', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 4 },
-  imgPhoto:   { width: '100%', height: 160, objectFit: 'cover', borderTopLeftRadius: 3, borderTopRightRadius: 3, borderBottomLeftRadius: 3, borderBottomRightRadius: 3, borderWidth: 1, borderColor: T.rule },
-  imgSingle:  { width: '100%', height: 200, objectFit: 'cover', borderTopLeftRadius: 3, borderTopRightRadius: 3, borderBottomLeftRadius: 3, borderBottomRightRadius: 3, borderWidth: 1, borderColor: T.rule, marginBottom: 12 },
+  imgPhoto:   { width: '100%', height: 160, objectFit: 'cover', borderWidth: 1, borderColor: T.rule },
+  imgSingle:  { width: '100%', height: 200, objectFit: 'cover', borderWidth: 1, borderColor: T.rule, marginBottom: 12 },
 
   // Table
   table:     { marginBottom: 8 },
@@ -110,7 +110,7 @@ const S = StyleSheet.create({
   costTotalV:{ fontSize: 8.5, color: T.accentLt, fontFamily: 'Helvetica-Bold' },
 
   // Badge
-  badge:      { paddingLeft: 5, paddingRight: 5, paddingTop: 1, paddingBottom: 1, borderTopLeftRadius: 2, borderTopRightRadius: 2, borderBottomLeftRadius: 2, borderBottomRightRadius: 2, marginRight: 4 },
+  badge:      { paddingLeft: 5, paddingRight: 5, paddingTop: 1, paddingBottom: 1, marginRight: 4 },
   badgeGreen: { backgroundColor: '#dcfce7' },
   badgeAmber: { backgroundColor: '#fef9c3' },
   badgeRed:   { backgroundColor: '#fee2e2' },
@@ -868,7 +868,7 @@ export const GardenPlanPDF = ({ doc, plan, logoBase64, imageBase64, imageDataUrl
           {imageBase64 ? (
             <>
               <SubHead text="C — Your Finished Garden" />
-              <Image src={imageBase64} style={[S.imgSingle, { height: 220, marginBottom: 0, borderRadius: 0, borderTopLeftRadius: 0, borderTopRightRadius: 0, borderBottomLeftRadius: 0, borderBottomRightRadius: 0 }]} />
+              <Image src={imageBase64} style={[S.imgSingle, { height: 220, marginBottom: 0 }]} />
               <View style={{ backgroundColor: '#0a3d2b', flexDirection: 'row', paddingTop: 8, paddingBottom: 8, paddingLeft: 16, paddingRight: 16, marginBottom: 12 }}>
                 {[
                   { label: 'THEME', value: style || '—', flex: 1, valueSize: 9 },
