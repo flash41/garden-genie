@@ -114,7 +114,6 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
   const [downloadError, setDownloadError] = useState<'failed' | null>(null);
   const [referenceNumber, setReferenceNumber] = useState('');
   const [pdfUrl, setPdfUrl] = useState('');
-  const [pdfBase64Cached, setPdfBase64Cached] = useState('');
   const [pdfStatus, setPdfStatus] = useState<'waiting' | 'ready' | 'timeout' | 'failed'>('waiting');
   const [pdfPartial, setPdfPartial] = useState(false);
   const fallbackRunning = useRef(false);
@@ -194,12 +193,6 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
     return () => { clearInterval(interval); clearTimeout(timeout); };
   }, []);
 
-  // Pre-fetch and cache the PDF base64 as soon as pdfUrl is available,
-  // so it is ready immediately when either send button is pressed.
-  useEffect(() => {
-    if (!pdfUrl || pdfBase64Cached) return;
-    fetchPdfBase64().catch(e => console.warn('[mount] PDF pre-fetch failed:', e));
-  }, [pdfUrl]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function restartPdfPoll() {
     sessionStorage.removeItem('garden_pdf_status');
@@ -378,39 +371,16 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
     }
   }
 
-  async function fetchPdfBase64(): Promise<string> {
-    if (pdfBase64Cached) return pdfBase64Cached;
-    const url = pdfUrl || sessionStorage.getItem('garden_pdf_url') || '';
-    if (!url) throw new Error('No PDF URL available');
-    const res = await fetch(url);
-    if (!res.ok) throw new Error('Fetch failed: ' + res.status);
-    const blob = await res.blob();
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const result = reader.result as string;
-        setPdfBase64Cached(result);
-        resolve(result);
-      };
-      reader.onerror = () => reject(new Error('FileReader failed'));
-      reader.readAsDataURL(blob);
-    });
-  }
 
   async function handleSendToSelf() {
     if (!userEmail || sendSelfStatus === 'preparing' || sendSelfStatus === 'sending' || sendSelfStatus === 'sent') return;
     setSendSelfError('');
     setEmailError(null);
-    setSendSelfStatus('preparing');
-    let base64: string;
-    try {
-      base64 = await fetchPdfBase64();
-    } catch (e) {
-      console.error('[handleSendToSelf] PDF fetch failed:', e);
+    const sendPdfUrl = pdfUrl || sessionStorage.getItem('garden_pdf_url') || '';
+    if (!sendPdfUrl) {
       setSendSelfError('We could not prepare your plan. Please try downloading it directly.');
       setEmailError('failed');
-      setEmailErrorDetail(e instanceof Error ? e.message : 'PDF fetch failed before send');
-      setSendSelfStatus('idle');
+      setEmailErrorDetail('No PDF URL available at send time');
       return;
     }
     setSendSelfStatus('sending');
@@ -420,7 +390,7 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           recipientEmail: userEmail,
-          pdfBase64: base64,
+          pdfUrl: sendPdfUrl,
           planTitle: designStyle ? designStyle + ' Garden Plan' : 'Garden Design Plan',
           designStyle: designStyle || '',
         }),
@@ -450,14 +420,11 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
     setShareError('');
     setEmailError(null);
     setShareStatus('preparing');
-    let base64: string;
-    try {
-      base64 = await fetchPdfBase64();
-    } catch (e) {
-      console.error('[handleShareWithFriend] PDF fetch failed:', e);
+    const sharePdfUrl = pdfUrl || sessionStorage.getItem('garden_pdf_url') || '';
+    if (!sharePdfUrl) {
       setShareError('We could not prepare your plan. Please try downloading it directly.');
       setEmailError('failed');
-      setEmailErrorDetail(e instanceof Error ? e.message : 'PDF fetch failed before share');
+      setEmailErrorDetail('No PDF URL available at share time');
       setShareStatus('idle');
       return;
     }
@@ -468,7 +435,7 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           recipientEmail: friendEmail,
-          pdfBase64: base64,
+          pdfUrl: sharePdfUrl,
           planTitle: designStyle ? designStyle + ' Garden Plan' : 'Garden Design Plan',
           designStyle: designStyle || '',
         }),

@@ -4,25 +4,15 @@ import { Resend } from 'resend';
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: NextRequest) {
-  let recipientEmail: string, pdfBase64: string, planTitle: string, designStyle: string;
+  let recipientEmail: string, pdfUrl: string, planTitle: string, designStyle: string;
   try {
-    ({ recipientEmail, pdfBase64, planTitle, designStyle } = await req.json());
+    ({ recipientEmail, pdfUrl, planTitle, designStyle } = await req.json());
   } catch {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
   }
 
-  if (!recipientEmail || !pdfBase64) {
+  if (!recipientEmail || !pdfUrl) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
-  }
-
-  const payloadSize = pdfBase64 ? Buffer.byteLength(pdfBase64, 'utf8') : 0;
-  console.log('[send-plan] PDF payload size (bytes):', payloadSize);
-
-  if (payloadSize > 3 * 1024 * 1024) {
-    return NextResponse.json(
-      { error: 'PDF is too large to send by email. Please download it directly instead.' },
-      { status: 413 }
-    );
   }
 
   const subject = `Your Dedrab Garden Vision - ${planTitle || 'Garden Design Plan'}`;
@@ -107,8 +97,18 @@ export async function POST(req: NextRequest) {
 </html>
 `;
 
-  // Strip data URL prefix if present
-  const base64Data = pdfBase64.includes(',') ? pdfBase64.split(',')[1] : pdfBase64;
+  // Fetch PDF server-side from Supabase storage — avoids sending the binary
+  // through the client and exceeding Vercel's 4.5MB request body limit.
+  let pdfBuffer: Buffer;
+  try {
+    const pdfRes = await fetch(pdfUrl);
+    if (!pdfRes.ok) throw new Error('PDF fetch failed: ' + pdfRes.status);
+    pdfBuffer = Buffer.from(await pdfRes.arrayBuffer());
+    console.log('[send-plan] PDF fetched server-side, size (bytes):', pdfBuffer.byteLength);
+  } catch (err) {
+    console.error('[send-plan] Failed to fetch PDF from URL:', err);
+    return NextResponse.json({ error: 'Could not retrieve PDF for attachment' }, { status: 502 });
+  }
 
   try {
     const { data, error } = await resend.emails.send({
@@ -119,7 +119,7 @@ export async function POST(req: NextRequest) {
       attachments: [
         {
           filename: 'dedrabed-garden-plan.pdf',
-          content: base64Data,
+          content: pdfBuffer,
         },
       ],
     });
