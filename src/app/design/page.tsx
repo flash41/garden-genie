@@ -1866,6 +1866,8 @@ export default function GardigApp() {
       const result = await callUnifiedPipeline(base64, mimeType);
       if (!result) return;
 
+      console.log('[pipeline] response received — imageBase64:', result.imageBase64 ? result.imageBase64.length : 'NULL', '| imageError:', (result as any).imageError ?? 'none', '| aerialImageBase64:', result.aerialImageBase64 ? result.aerialImageBase64.length : 'NULL');
+
       setDocData(result.designJSON);
       if (!result.designJSON) {
         console.warn('[handleAnalyse] designJSON missing from pipeline response — plan data will be incomplete');
@@ -2506,7 +2508,7 @@ export default function GardigApp() {
             // Aerial image: if it's a data: URI (from the pipeline), use it directly —
             // fetchAssetSafe only accepts https:// Supabase URLs and would return null.
             const aerialSrc = aerialGridImageUrl || aerialImageUrl || null;
-            const [logoBase64, aerialBase64] = await Promise.all([
+            const [logoBase64, aerialRaw] = await Promise.all([
               fetchLogoAsBase64(),
               aerialSrc
                 ? (aerialSrc.startsWith('data:') ? Promise.resolve(aerialSrc) : fetchAssetSafe(aerialSrc))
@@ -2515,9 +2517,12 @@ export default function GardigApp() {
 
             // Resize heavy renders to reduce WASM memory pressure.
             // pdfRenderSrc is the Supabase-fetched base64 if upload succeeded, else the original data: URI.
-            const [resizedRender, resizedBefore] = await Promise.all([
+            // Aerial and grid overlay are compressed to max 800px / JPEG 0.75 to avoid 413 on upload.
+            const [resizedRender, resizedBefore, aerialBase64, resizedGrid] = await Promise.all([
               pdfRenderSrc ? resizeImageForPdf(pdfRenderSrc) : Promise.resolve(''),
               imageDataUrl ? resizeImageForPdf(imageDataUrl) : Promise.resolve(''),
+              aerialRaw ? resizeImageForPdf(aerialRaw, 800) : Promise.resolve(''),
+              gridImageUrl ? resizeImageForPdf(gridImageUrl, 800) : Promise.resolve(''),
             ]);
 
             console.log('PDF GENERATION STARTING — docData:', !!capturedDocData, 'render size:', resizedRender.length, 'before size:', resizedBefore.length, 'aerial:', !!aerialBase64, 'logo:', !!logoBase64);
@@ -2528,7 +2533,7 @@ export default function GardigApp() {
                 logoBase64={logoBase64 || undefined}
                 imageBase64={resizedRender}
                 imageDataUrl={resizedBefore || undefined}
-                gridImageUrl={gridImageUrl || undefined}
+                gridImageUrl={resizedGrid || undefined}
                 aerialImageUrl={aerialBase64 || undefined}
                 style={designLang}
                 clientName={clientName}
@@ -3037,7 +3042,7 @@ export default function GardigApp() {
 
           {(aerialImageUrl || aerialGridImageUrl) ? (
             <>
-              <LayoutPlanImage src={aerialImageUrl || aerialGridImageUrl!} boundaryPolygon={null} />
+              <LayoutPlanImage src={aerialGridImageUrl || aerialImageUrl!} boundaryPolygon={null} />
 
               {plants.length > 0 && (
                 <div style={{ marginTop: 22 }}>
