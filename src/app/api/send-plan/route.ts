@@ -4,12 +4,19 @@ import { Resend } from 'resend';
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: NextRequest) {
-  let recipientEmail: string, pdfUrl: string, planTitle: string, designStyle: string;
+  let body: Record<string, unknown>;
   try {
-    ({ recipientEmail, pdfUrl, planTitle, designStyle } = await req.json());
+    body = await req.json();
   } catch {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
   }
+
+  console.log('[send-plan] body keys:', Object.keys(body));
+  console.log('[send-plan] body size estimate (chars):', JSON.stringify(body).length);
+
+  const { recipientEmail, pdfUrl, planTitle, designStyle } = body as {
+    recipientEmail: string; pdfUrl: string; planTitle: string; designStyle: string;
+  };
 
   if (!recipientEmail || !pdfUrl) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
