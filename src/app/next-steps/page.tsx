@@ -213,12 +213,10 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
   }
 
   async function generatePdfFallback() {
-    console.log('[generatePdfFallback] called — fallbackRunning:', fallbackRunning.current);
     if (fallbackRunning.current) return;
     fallbackRunning.current = true;
     setPdfPartial(false);
     setPdfStatus('waiting');
-    console.log('[generatePdfFallback] Starting fallback PDF generation');
 
     try {
       // ── 1. Fetch design record for render_url and reference_number ──
@@ -267,7 +265,6 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
       const logoBase64 = await fetchLogoAsBase64();
 
       // ── 6. Render PDF ──
-      console.log('[generatePdfFallback] Rendering PDF — partial:', isPartial, 'imageBase64:', !!imageBase64, 'doc:', !!doc);
       const pdfDoc = (
         <GardenPlanPDF
           doc={doc}
@@ -284,8 +281,6 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
           setTimeout(() => reject(new Error('PDF generation timed out (45s)')), 45_000)
         ),
       ]);
-      console.log('[generatePdfFallback] PDF blob size:', blob.size);
-
       const pdfBase64Str = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
         reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
@@ -307,7 +302,6 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
       if (!uploadedUrl) throw new Error('Upload succeeded but no pdfUrl returned');
 
       // ── 8. Commit ──
-      console.log('[generatePdfFallback] PDF ready:', uploadedUrl);
       try { sessionStorage.setItem('garden_pdf_url', uploadedUrl); } catch (_) {}
       setPdfUrl(uploadedUrl);
       setPdfStatus('ready');
