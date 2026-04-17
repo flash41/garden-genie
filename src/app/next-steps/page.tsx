@@ -90,7 +90,6 @@ function buildSupportUrl(params: {
 }
 
 function NextStepsContent() {
-  console.log('NextStepsContent mounted, sessionId:', typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('sessionId') : 'SSR');
   const params = useSearchParams();
   const router = useRouter();
   const sessionId = params.get('sessionId');
@@ -119,8 +118,6 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
   const fallbackRunning = useRef(false);
   const [copied, setCopied] = useState(false);
   const [downloadToast, setDownloadToast] = useState('');
-
-  useEffect(() => { console.log('bare mount effect fired'); }, []);
 
   // Redirect to /design if sessionId is missing (direct navigation without a valid session)
   useEffect(() => {
@@ -325,10 +322,8 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
 
   // Trigger fallback automatically after 5s if the primary pipeline hasn't delivered the PDF
   useEffect(() => {
-    console.log('[fallback mount effect] running — garden_pdf_url:', sessionStorage.getItem('garden_pdf_url'));
     if (sessionStorage.getItem('garden_pdf_url')) return;
     const timer = setTimeout(() => {
-      console.log('[fallback mount effect] 5s elapsed — garden_pdf_url:', sessionStorage.getItem('garden_pdf_url'));
       if (!sessionStorage.getItem('garden_pdf_url')) {
         generatePdfFallback();
       }
