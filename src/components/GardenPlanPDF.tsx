@@ -47,7 +47,7 @@ const S = StyleSheet.create({
   coverPg:      { fontSize: 7, color: '#5a8a6a' },
 
   // ── Content pages ──────────────────────────────────────────────────────────
-  page: { paddingTop: 44, paddingBottom: 60, paddingHorizontal: 44, backgroundColor: T.white, fontFamily: 'Helvetica' },
+  page: { paddingTop: 44, paddingBottom: 60, paddingLeft: 44, paddingRight: 44, backgroundColor: T.white, fontFamily: 'Helvetica' },
 
   // Running header
   runHdr:   { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18, paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: T.brand },
@@ -63,7 +63,7 @@ const S = StyleSheet.create({
   // Section chrome
   sectionWrap:  { marginBottom: 18 },
   sectionHdr:   { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
-  sectionNum:   { fontSize: 7, color: T.white, fontFamily: 'Helvetica-Bold', backgroundColor: T.brand, paddingHorizontal: 5, paddingVertical: 2, borderRadius: 2, marginRight: 7, letterSpacing: 0.5 },
+  sectionNum:   { fontSize: 7, color: T.white, fontFamily: 'Helvetica-Bold', backgroundColor: T.brand, paddingLeft: 5, paddingRight: 5, paddingTop: 2, paddingBottom: 2, borderTopLeftRadius: 2, borderTopRightRadius: 2, borderBottomLeftRadius: 2, borderBottomRightRadius: 2, marginRight: 7, letterSpacing: 0.5 },
   sectionTitle: { fontSize: 10, color: T.brand, fontFamily: 'Helvetica-Bold', letterSpacing: 0.8, textTransform: 'uppercase', flex: 1 },
   sectionRule:  { borderBottomWidth: 0.5, borderBottomColor: T.ruleDk, marginBottom: 8 },
 
@@ -86,31 +86,31 @@ const S = StyleSheet.create({
   kvValue: { fontSize: 8.5, color: T.ink, flex: 1 },
 
   // Divider
-  divider: { borderBottomWidth: 1, borderBottomColor: T.ruleDk, marginVertical: 10 },
+  divider: { borderBottomWidth: 1, borderBottomColor: T.ruleDk, marginTop: 10, marginBottom: 10 },
 
   // Images
   imgRow:     { flexDirection: 'row', gap: 10, marginBottom: 14 },
   imgCol:     { flex: 1 },
   imgCap:     { fontSize: 7.5, color: T.inkLight, fontFamily: 'Helvetica-Bold', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 4 },
-  imgPhoto:   { width: '100%', height: 160, objectFit: 'cover', borderRadius: 3, borderWidth: 1, borderColor: T.rule },
-  imgSingle:  { width: '100%', height: 200, objectFit: 'cover', borderRadius: 3, borderWidth: 1, borderColor: T.rule, marginBottom: 12 },
+  imgPhoto:   { width: '100%', height: 160, objectFit: 'cover', borderTopLeftRadius: 3, borderTopRightRadius: 3, borderBottomLeftRadius: 3, borderBottomRightRadius: 3, borderWidth: 1, borderColor: T.rule },
+  imgSingle:  { width: '100%', height: 200, objectFit: 'cover', borderTopLeftRadius: 3, borderTopRightRadius: 3, borderBottomLeftRadius: 3, borderBottomRightRadius: 3, borderWidth: 1, borderColor: T.rule, marginBottom: 12 },
 
   // Table
   table:     { marginBottom: 8 },
-  tableHdr:  { flexDirection: 'row', backgroundColor: T.brand, paddingVertical: 4, paddingHorizontal: 6 },
+  tableHdr:  { flexDirection: 'row', backgroundColor: T.brand, paddingTop: 4, paddingBottom: 4, paddingLeft: 6, paddingRight: 6 },
   tableHdrT: { fontSize: 7.5, color: T.white, fontFamily: 'Helvetica-Bold', flex: 1 },
-  tableRow:  { flexDirection: 'row', paddingVertical: 4, paddingHorizontal: 6, borderBottomWidth: 0.5, borderBottomColor: T.rule },
-  tableRowAlt:{ flexDirection: 'row', paddingVertical: 4, paddingHorizontal: 6, borderBottomWidth: 0.5, borderBottomColor: T.rule, backgroundColor: T.surface },
+  tableRow:  { flexDirection: 'row', paddingTop: 4, paddingBottom: 4, paddingLeft: 6, paddingRight: 6, borderBottomWidth: 0.5, borderBottomColor: T.rule },
+  tableRowAlt:{ flexDirection: 'row', paddingTop: 4, paddingBottom: 4, paddingLeft: 6, paddingRight: 6, borderBottomWidth: 0.5, borderBottomColor: T.rule, backgroundColor: T.surface },
   tableCell: { fontSize: 8, color: T.inkMid, flex: 1, lineHeight: 1.4 },
   tableCellB:{ fontSize: 8, color: T.ink, fontFamily: 'Helvetica-Bold', flex: 1 },
 
   // Cost row
-  costTotal: { flexDirection: 'row', paddingVertical: 5, paddingHorizontal: 6, backgroundColor: T.brand, marginTop: 2 },
+  costTotal: { flexDirection: 'row', paddingTop: 5, paddingBottom: 5, paddingLeft: 6, paddingRight: 6, backgroundColor: T.brand, marginTop: 2 },
   costTotalT:{ fontSize: 8.5, color: T.white, fontFamily: 'Helvetica-Bold', flex: 1 },
   costTotalV:{ fontSize: 8.5, color: T.accentLt, fontFamily: 'Helvetica-Bold' },
 
   // Badge
-  badge:      { paddingHorizontal: 5, paddingVertical: 1, borderRadius: 2, marginRight: 4 },
+  badge:      { paddingLeft: 5, paddingRight: 5, paddingTop: 1, paddingBottom: 1, borderTopLeftRadius: 2, borderTopRightRadius: 2, borderBottomLeftRadius: 2, borderBottomRightRadius: 2, marginRight: 4 },
   badgeGreen: { backgroundColor: '#dcfce7' },
   badgeAmber: { backgroundColor: '#fef9c3' },
   badgeRed:   { backgroundColor: '#fee2e2' },
