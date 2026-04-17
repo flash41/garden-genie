@@ -90,6 +90,7 @@ function buildSupportUrl(params: {
 }
 
 function NextStepsContent() {
+  console.log('NextStepsContent mounted, sessionId:', new URLSearchParams(window.location.search).get('sessionId'));
   const params = useSearchParams();
   const router = useRouter();
   const sessionId = params.get('sessionId');
@@ -119,6 +120,8 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
   const fallbackRunning = useRef(false);
   const [copied, setCopied] = useState(false);
   const [downloadToast, setDownloadToast] = useState('');
+
+  useEffect(() => { console.log('bare mount effect fired'); }, []);
 
   // Redirect to /design if sessionId is missing (direct navigation without a valid session)
   useEffect(() => {
