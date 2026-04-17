@@ -2460,19 +2460,63 @@ export default function GardigApp() {
           let uploadedPdfUrl: string | null = null;
           let uploadedRenderUrl: string | null = null;
 
+          // ── Render image upload (runs first so Supabase URL is available for PDF) ──
+          // pdfRenderSrc starts as the data: URI and is upgraded to the hosted URL if
+          // the upload succeeds, then fetched back via fetch-asset to avoid canvas CORS taint.
+          let pdfRenderSrc: string | null = capturedRenderUrl;
+          if (capturedRenderUrl) {
+            try {
+              console.log('[runPdfAndUpload] Uploading render image — sessionId:', capturedSessionId);
+              const renderRes = await fetch('/api/upload-render', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ renderBase64: capturedRenderUrl, sessionId: capturedSessionId }),
+              });
+              if (renderRes.ok) {
+                const { renderUrl: hostedRenderUrl } = await renderRes.json();
+                console.log('[runPdfAndUpload] Render upload succeeded, renderUrl:', hostedRenderUrl);
+                uploadedRenderUrl = hostedRenderUrl || null;
+                if (hostedRenderUrl) {
+                  try {
+                    sessionStorage.setItem('garden_render_url', hostedRenderUrl);
+                  } catch (e) {
+                    console.warn('[runPdfAndUpload] sessionStorage write failed (garden_render_url):', e);
+                  }
+                  // Fetch back as base64 via the server proxy so resizeImageForPdf
+                  // receives a data: URI (avoids canvas cross-origin taint).
+                  const fetchedRender = await fetchAssetSafe(hostedRenderUrl);
+                  if (fetchedRender) {
+                    pdfRenderSrc = fetchedRender;
+                    console.log('[runPdfAndUpload] Render fetched back as base64, using for PDF');
+                  }
+                }
+              } else {
+                const errText = await renderRes.text();
+                console.error('[runPdfAndUpload] Render upload failed — status:', renderRes.status, 'body:', errText);
+              }
+            } catch (err) {
+              console.error('[runPdfAndUpload] Render upload error:', err);
+            }
+          }
+
           // ── PDF generation ────────────────────────────────────────────
           try {
             // Pre-fetch images to avoid CORS failures inside react-pdf WASM renderer.
-            // Logo is served from our own origin; aerial image may be a Supabase URL.
+            // Logo is served from our own origin.
+            // Aerial image: if it's a data: URI (from the pipeline), use it directly —
+            // fetchAssetSafe only accepts https:// Supabase URLs and would return null.
             const aerialSrc = aerialGridImageUrl || aerialImageUrl || null;
             const [logoBase64, aerialBase64] = await Promise.all([
               fetchLogoAsBase64(),
-              aerialSrc ? fetchAssetSafe(aerialSrc) : Promise.resolve(null),
+              aerialSrc
+                ? (aerialSrc.startsWith('data:') ? Promise.resolve(aerialSrc) : fetchAssetSafe(aerialSrc))
+                : Promise.resolve(null),
             ]);
 
-            // Resize heavy renders to reduce WASM memory pressure
+            // Resize heavy renders to reduce WASM memory pressure.
+            // pdfRenderSrc is the Supabase-fetched base64 if upload succeeded, else the original data: URI.
             const [resizedRender, resizedBefore] = await Promise.all([
-              capturedRenderUrl ? resizeImageForPdf(capturedRenderUrl) : Promise.resolve(''),
+              pdfRenderSrc ? resizeImageForPdf(pdfRenderSrc) : Promise.resolve(''),
               imageDataUrl ? resizeImageForPdf(imageDataUrl) : Promise.resolve(''),
             ]);
 
@@ -2537,35 +2581,6 @@ export default function GardigApp() {
             sessionStorage.setItem('garden_pdf_status', 'failed');
           } finally {
             setPdfGenerating(false);
-          }
-
-          // ── Render image upload (runs regardless of PDF outcome) ──────
-          if (capturedRenderUrl) {
-            try {
-              console.log('[runPdfAndUpload] Uploading render image — sessionId:', capturedSessionId);
-              const renderRes = await fetch('/api/upload-render', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ renderBase64: capturedRenderUrl, sessionId: capturedSessionId }),
-              });
-              if (renderRes.ok) {
-                const { renderUrl: hostedRenderUrl } = await renderRes.json();
-                console.log('[runPdfAndUpload] Render upload succeeded, renderUrl:', hostedRenderUrl);
-                uploadedRenderUrl = hostedRenderUrl || null;
-                if (hostedRenderUrl) {
-                  try {
-                    sessionStorage.setItem('garden_render_url', hostedRenderUrl);
-                  } catch (e) {
-                    console.warn('[runPdfAndUpload] sessionStorage write failed (garden_render_url):', e);
-                  }
-                }
-              } else {
-                const errText = await renderRes.text();
-                console.error('[runPdfAndUpload] Render upload failed — status:', renderRes.status, 'body:', errText);
-              }
-            } catch (err) {
-              console.error('[runPdfAndUpload] Render upload error:', err);
-            }
           }
 
           // ── Update design_records with both URLs ──────────────────────
