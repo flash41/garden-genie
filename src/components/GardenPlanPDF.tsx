@@ -652,7 +652,7 @@ export const GardenPlanPDF = ({ doc, plan, logoBase64, imageBase64, imageDataUrl
 
         {/* ── 8. Implementation Plan ──────────────────────────── */}
         <Section num="08" title="How to Do It — Your Phased Plan">
-          <View style={{ borderLeftWidth: 3, borderLeftColor: T.accent, borderLeftStyle: 'solid', paddingLeft: 10, marginBottom: 14, backgroundColor: '#f9f7f3', padding: 10 }}>
+          <View style={{ borderLeftWidth: 3, borderLeftColor: T.accent, paddingLeft: 10, paddingRight: 10, paddingTop: 10, paddingBottom: 10, marginBottom: 14, backgroundColor: '#f9f7f3' }}>
             <Text style={{ fontSize: 7, color: T.accent, fontFamily: 'Helvetica-Bold', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 4 }}>Getting started</Text>
             <Text style={S.body}>The phases below break your project into manageable steps. Start with Phase 1 — most of it can be done in a single weekend. Work at your own pace and return to this plan whenever you're ready for the next stage.</Text>
           </View>
@@ -660,7 +660,7 @@ export const GardenPlanPDF = ({ doc, plan, logoBase64, imageBase64, imageDataUrl
             <>
               <SubHead text="Recommendations" />
               {safeArr(d.recommendations).map((r: any, i: number) => (
-                <View key={i} wrap={false} style={{ borderLeftWidth: 3, borderLeftColor: T.accent, borderLeftStyle: 'solid', paddingLeft: 10, marginBottom: 12, backgroundColor: '#f9f7f3' }}>
+                <View key={i} wrap={false} style={{ borderLeftWidth: 3, borderLeftColor: T.accent, paddingLeft: 10, marginBottom: 12, backgroundColor: '#f9f7f3' }}>
                   <Text style={{ fontSize: 7, color: T.accent, fontFamily: 'Helvetica-Bold', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 4 }}>Recommendation</Text>
                   <Text style={[S.body, { fontFamily: 'Helvetica-Bold', marginBottom: 3 }]}>{safe(r.title)}</Text>
                   <Text style={[S.body, { marginBottom: 3 }]}>{safe(r.description)}</Text>
@@ -869,7 +869,7 @@ export const GardenPlanPDF = ({ doc, plan, logoBase64, imageBase64, imageDataUrl
             <>
               <SubHead text="C — Your Finished Garden" />
               <Image src={imageBase64} style={[S.imgSingle, { height: 220, marginBottom: 0, borderRadius: 0, borderTopLeftRadius: 0, borderTopRightRadius: 0, borderBottomLeftRadius: 0, borderBottomRightRadius: 0 }]} />
-              <View style={{ backgroundColor: '#0a3d2b', flexDirection: 'row', padding: '8pt 16pt', marginBottom: 12 }}>
+              <View style={{ backgroundColor: '#0a3d2b', flexDirection: 'row', paddingTop: 8, paddingBottom: 8, paddingLeft: 16, paddingRight: 16, marginBottom: 12 }}>
                 {[
                   { label: 'THEME', value: style || '—', flex: 1, valueSize: 9 },
                   { label: 'TRANSFORMATION', value: transformationLabel, flex: 2, valueSize: 8 },
