@@ -1,6 +1,54 @@
 'use client';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, useRef, Suspense } from 'react';
+import { pdf } from '@react-pdf/renderer';
+import { GardenPlanPDF } from '@/components/GardenPlanPDF';
+
+// ─── PDF HELPERS (mirrored from design/page.tsx) ──────────────────────────────
+
+async function fetchAssetSafe(url: string): Promise<string | null> {
+  try {
+    const res = await fetch('/api/fetch-asset?url=' + encodeURIComponent(url));
+    if (!res.ok) return null;
+    const { base64, mimeType } = await res.json();
+    return base64 ? 'data:' + mimeType + ';base64,' + base64 : null;
+  } catch {
+    return null;
+  }
+}
+
+async function fetchLogoAsBase64(): Promise<string | null> {
+  try {
+    const res = await fetch('/dd_logo.png');
+    if (!res.ok) return null;
+    const blob = await res.blob();
+    return new Promise(resolve => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+}
+
+function resizeImageForPdf(dataUrl: string, maxPx = 1200): Promise<string> {
+  return new Promise(resolve => {
+    if (!dataUrl) { resolve(dataUrl); return; }
+    const img = new window.Image();
+    img.onload = () => {
+      const scale = Math.min(1, maxPx / Math.max(img.width, img.height));
+      const canvas = document.createElement('canvas');
+      canvas.width  = Math.round(img.width  * scale);
+      canvas.height = Math.round(img.height * scale);
+      canvas.getContext('2d')!.drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL('image/jpeg', 0.85));
+    };
+    img.onerror = () => resolve(dataUrl);
+    img.src = dataUrl;
+  });
+}
 
 // ─── DEV TESTING: Inject mock session data ────────────────────────────────
 // To test this page without a real Gemini call, open the browser console
@@ -67,6 +115,8 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
   const [pdfUrl, setPdfUrl] = useState('');
   const [pdfBase64Cached, setPdfBase64Cached] = useState('');
   const [pdfStatus, setPdfStatus] = useState<'waiting' | 'ready' | 'timeout' | 'failed'>('waiting');
+  const [pdfPartial, setPdfPartial] = useState(false);
+  const fallbackRunning = useRef(false);
   const [copied, setCopied] = useState(false);
   const [downloadToast, setDownloadToast] = useState('');
 
@@ -168,6 +218,124 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
       setPdfStatus(s => s === 'waiting' ? 'timeout' : s);
     }, 60000);
   }
+
+  async function generatePdfFallback() {
+    if (fallbackRunning.current) return;
+    fallbackRunning.current = true;
+    setPdfPartial(false);
+    setPdfStatus('waiting');
+    console.log('[generatePdfFallback] Starting fallback PDF generation');
+
+    try {
+      // ── 1. Fetch design record for render_url and reference_number ──
+      const sid = sessionId;
+      if (!sid) {
+        console.error('[generatePdfFallback] No sessionId — cannot generate PDF');
+        fallbackRunning.current = false;
+        return;
+      }
+      const recRes = await fetch('/api/design-record?sessionId=' + sid);
+      const rec = recRes.ok ? await recRes.json() : {};
+      const dbRenderUrl: string | null = rec.render_url || null;
+      const dbRefNum: string = rec.reference_number || referenceNumber || '';
+      const dbStyle: string = rec.design_style || designStyle || '';
+
+      // ── 2. Load plan data from sessionStorage ──
+      let doc: any = null;
+      const rawPlan = sessionStorage.getItem('garden_plan_data');
+      if (rawPlan) {
+        try { doc = JSON.parse(rawPlan); } catch { doc = null; }
+      }
+
+      // ── 3. Abort only if nothing useful is available ──
+      if (!doc && !dbRenderUrl) {
+        console.error('[generatePdfFallback] No plan data and no render image — aborting silently');
+        fallbackRunning.current = false;
+        return;
+      }
+
+      const isPartial = !doc;
+      if (isPartial) {
+        console.warn('[generatePdfFallback] No plan data in sessionStorage — generating partial PDF with render image only');
+        setPdfPartial(true);
+      }
+
+      // ── 4. Fetch render image as base64 via proxy (avoids CORS in WASM) ──
+      let imageBase64 = '';
+      if (dbRenderUrl) {
+        const fetched = await fetchAssetSafe(dbRenderUrl);
+        if (fetched) {
+          imageBase64 = await resizeImageForPdf(fetched);
+        }
+      }
+
+      // ── 5. Fetch logo ──
+      const logoBase64 = await fetchLogoAsBase64();
+
+      // ── 6. Render PDF ──
+      console.log('[generatePdfFallback] Rendering PDF — partial:', isPartial, 'imageBase64:', !!imageBase64, 'doc:', !!doc);
+      const pdfDoc = (
+        <GardenPlanPDF
+          doc={doc}
+          logoBase64={logoBase64 || undefined}
+          imageBase64={imageBase64}
+          style={dbStyle}
+          referenceNumber={dbRefNum}
+        />
+      );
+
+      const blob = await Promise.race([
+        pdf(pdfDoc).toBlob(),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('PDF generation timed out (45s)')), 45_000)
+        ),
+      ]);
+      console.log('[generatePdfFallback] PDF blob size:', blob.size);
+
+      const pdfBase64Str = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+
+      // ── 7. Upload ──
+      const uploadRes = await fetch('/api/upload-pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pdfBase64: pdfBase64Str, referenceNumber: dbRefNum, sessionId: sid }),
+      });
+      if (!uploadRes.ok) {
+        const errText = await uploadRes.text();
+        throw new Error('PDF upload failed: ' + uploadRes.status + ' ' + errText);
+      }
+      const { pdfUrl: uploadedUrl } = await uploadRes.json();
+      if (!uploadedUrl) throw new Error('Upload succeeded but no pdfUrl returned');
+
+      // ── 8. Commit ──
+      console.log('[generatePdfFallback] PDF ready:', uploadedUrl);
+      try { sessionStorage.setItem('garden_pdf_url', uploadedUrl); } catch (_) {}
+      setPdfUrl(uploadedUrl);
+      setPdfStatus('ready');
+    } catch (err) {
+      console.error('[generatePdfFallback] Failed:', err);
+      setPdfStatus('failed');
+      setPdfPartial(false);
+    } finally {
+      fallbackRunning.current = false;
+    }
+  }
+
+  // Trigger fallback automatically after 5s if the primary pipeline hasn't delivered the PDF
+  useEffect(() => {
+    if (sessionStorage.getItem('garden_pdf_url')) return;
+    const timer = setTimeout(() => {
+      if (!sessionStorage.getItem('garden_pdf_url')) {
+        generatePdfFallback();
+      }
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleCopyReference() {
     if (!referenceNumber) return;
@@ -516,7 +684,7 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
                 <p style={{ margin: '0 0 10px' }}>Your plan is taking longer than expected.</p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
                   <button
-                    onClick={restartPdfPoll}
+                    onClick={generatePdfFallback}
                     style={{ background: '#0a3d2b', color: '#fff', border: 'none', borderRadius: '8px', padding: '10px 18px', fontSize: '13px', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}
                   >
                     Try again
@@ -532,13 +700,18 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
                 </div>
               </div>
             )}
+            {pdfStatus === 'ready' && pdfPartial && (
+              <div style={{ fontSize: 13, color: '#5a6b3a', marginBottom: 12, padding: '12px 14px', background: '#f4f8ed', borderRadius: 8, border: '1px solid #c8dba0' }}>
+                Your plan is partially available — the full text sections could not be included, but your garden render and reference details are ready to download.
+              </div>
+            )}
             {pdfStatus === 'failed' && (
               <div style={{ fontSize: 13, color: '#8a4a2a', marginBottom: 12, padding: '12px 14px', background: '#fdf3ec', borderRadius: 8, border: '1px solid #f0cba8' }}>
                 <p style={{ margin: '0 0 4px' }}>We were unable to prepare your Action Plan document.</p>
                 <p style={{ margin: '0 0 12px', fontSize: '12px', color: '#6b5e50' }}>This can happen due to a temporary connection issue.</p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
                   <button
-                    onClick={restartPdfPoll}
+                    onClick={generatePdfFallback}
                     style={{ background: '#0a3d2b', color: '#fff', border: 'none', borderRadius: '8px', padding: '10px 18px', fontSize: '13px', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}
                   >
                     Try again

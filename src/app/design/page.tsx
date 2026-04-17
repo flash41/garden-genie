@@ -907,146 +907,14 @@ function GridOverlayImage({ src, plants, label, showMarkers = true, perspectiveD
 
 // ─── LAYOUT PLAN IMAGE — clean display with optional scale grid toggle ─────────
 
-function LayoutPlanImage({ src, boundaryPolygon }: { src: string; boundaryPolygon?: Array<{x: number; y: number}> | null }) {
-  const [showGrid, setShowGrid] = useState(false);
-  const imgRef    = useRef<HTMLImageElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  function paintGrid() {
-    const img    = imgRef.current;
-    const canvas = canvasRef.current;
-    if (!img || !canvas) return;
-
-    // Use the image's actual rendered position and size within the container
-    const iL = img.offsetLeft;
-    const iT = img.offsetTop;
-    const iW = img.offsetWidth;
-    const iH = img.offsetHeight;
-    if (iW === 0 || iH === 0) return;
-
-    // Size the canvas buffer to cover the full container so the absolute overlay matches
-    const container = canvas.parentElement;
-    const cW = container ? container.clientWidth : iW;
-    const cH = container ? container.clientHeight : iH;
-    canvas.width  = cW;
-    canvas.height = cH;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    ctx.clearRect(0, 0, cW, cH);
-
-    const COLS = 6, ROWS = 6;
-    const LABELS = ['A','B','C','D','E','F'];
-
-    // Grid bounds: constrained to the exact pixel bounds of the rendered <img>
-    let gL: number, gR: number, gT: number, gB: number;
-    if (boundaryPolygon && boundaryPolygon.length >= 3) {
-      const minX = Math.min(...boundaryPolygon.map(p => p.x)) * iW;
-      const maxX = Math.max(...boundaryPolygon.map(p => p.x)) * iW;
-      const minY = Math.min(...boundaryPolygon.map(p => p.y)) * iH;
-      const maxY = Math.max(...boundaryPolygon.map(p => p.y)) * iH;
-      gL = iL + Math.max(0, minX);
-      gR = iL + Math.min(iW, maxX);
-      gT = iT + Math.max(0, minY);
-      gB = iT + Math.min(iH, maxY);
-    } else {
-      gL = iL;
-      gR = iL + iW;
-      gT = iT;
-      gB = iT + iH;
-    }
-    const gW = gR - gL, gH = gB - gT;
-    const colW = gW / COLS, rowH = gH / ROWS;
-
-    // Grid lines
-    ctx.strokeStyle = 'rgba(10,61,43,0.2)';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(gL, gT, gW, gH);
-    for (let i = 1; i < COLS; i++) {
-      const x = gL + i * colW;
-      ctx.beginPath(); ctx.moveTo(x, gT); ctx.lineTo(x, gB); ctx.stroke();
-    }
-    for (let i = 1; i < ROWS; i++) {
-      const y = gT + i * rowH;
-      ctx.beginPath(); ctx.moveTo(gL, y); ctx.lineTo(gR, y); ctx.stroke();
-    }
-
-    // Labels
-    const labelSize = Math.max(10, Math.round(iW / 60));
-    ctx.font = `600 ${labelSize}px 'DM Sans', Arial, sans-serif`;
-    ctx.fillStyle = '#D4AF37';
-
-    // Column labels A–F (top)
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'bottom';
-    for (let i = 0; i < COLS; i++) {
-      ctx.fillText(LABELS[i], gL + (i + 0.5) * colW, gT - 3);
-    }
-
-    // Row labels 1–6 (left)
-    ctx.textAlign = 'right';
-    ctx.textBaseline = 'middle';
-    for (let i = 0; i < ROWS; i++) {
-      ctx.fillText(String(i + 1), gL - 5, gT + (i + 0.5) * rowH);
-    }
-  }
-
-  function clearGrid() {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
-  }
-
-  // Repaint when toggled on
-  useEffect(() => {
-    if (showGrid) paintGrid(); else clearGrid();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showGrid]);
-
-  // Resize observer — keep canvas in sync with image layout size
-  useEffect(() => {
-    const img = imgRef.current;
-    if (!img) return;
-    const ro = new ResizeObserver(() => {
-      if (showGrid) paintGrid();
-    });
-    ro.observe(img);
-    return () => ro.disconnect();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showGrid]);
-
+function LayoutPlanImage({ src }: { src: string; boundaryPolygon?: Array<{x: number; y: number}> | null }) {
   return (
-    <div>
-      <div style={{ position: 'relative' }}>
-        <img
-          ref={imgRef}
-          src={src}
-          alt="Garden Layout Plan"
-          onLoad={() => { if (showGrid) paintGrid(); }}
-          style={{ width: '100%', height: 'auto', display: 'block', borderRadius: C.rLg, border: `1px solid ${C.rule}` }}
-        />
-        <canvas
-          ref={canvasRef}
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', borderRadius: C.rLg }}
-        />
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 10 }}>
-        <label style={{ display: 'flex', alignItems: 'center', gap: 7, cursor: 'pointer', userSelect: 'none' }}>
-          <input
-            type="checkbox"
-            checked={showGrid}
-            onChange={e => setShowGrid(e.target.checked)}
-            style={{ width: 14, height: 14, accentColor: C.brand, cursor: 'pointer' }}
-          />
-          <span style={{ fontSize: px(12), color: C.inkLight, fontFamily: C.font }}>Show scale grid</span>
-        </label>
-        {showGrid && (
-          <span style={{ fontSize: px(11), color: C.inkLight, fontFamily: C.font, fontStyle: 'italic' }}>
-            For reference only — not to scale
-          </span>
-        )}
-      </div>
+    <div style={{ position: 'relative' }}>
+      <img
+        src={src}
+        alt="Garden Layout Plan"
+        style={{ width: '100%', height: 'auto', display: 'block', borderRadius: C.rLg, border: `1px solid ${C.rule}` }}
+      />
     </div>
   );
 }
@@ -1915,11 +1783,8 @@ export default function GardigApp() {
         const overlay = await generateGridOverlay(imageDataUrl, plants, true, perspData, bPoly, false, false, undefined, 'N', freshG2Grid);
         setGridImageUrl(overlay || null);
       }
-      if (result.aerialImageBase64 && plants.length > 0) {
-        // Aerial sketch: programmatic grid overlay via drawAerialGridOverlay
-        console.log('[Aerial overlay] plants gridLocations:', plants.map((p: any) => `${p.commonName}: ${p.gridLocation}`));
-        const aerialOverlay = await generateGridOverlay(result.aerialImageBase64, [], true, null, bPoly, true, true, fp, gardenOrientation || 'N', g2Grid);
-        setAerialGridImageUrl(aerialOverlay || null);
+      if (result.aerialImageBase64) {
+        setAerialGridImageUrl(result.aerialImageBase64);
       }
 
       setLoadingMsg("Building proposal...");

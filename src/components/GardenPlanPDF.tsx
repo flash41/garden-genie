@@ -868,7 +868,7 @@ export const GardenPlanPDF = ({ doc, plan, logoBase64, imageBase64, imageDataUrl
           {imageBase64 ? (
             <>
               <SubHead text="C — Your Finished Garden" />
-              <Image src={imageBase64} style={[S.imgSingle, { height: 220, marginBottom: 0, borderRadius: 0, borderBottomLeftRadius: 0, borderBottomRightRadius: 0 }]} />
+              <Image src={imageBase64} style={[S.imgSingle, { height: 220, marginBottom: 0, borderRadius: 0, borderTopLeftRadius: 0, borderTopRightRadius: 0, borderBottomLeftRadius: 0, borderBottomRightRadius: 0 }]} />
               <View style={{ backgroundColor: '#0a3d2b', flexDirection: 'row', padding: '8pt 16pt', marginBottom: 12 }}>
                 {[
                   { label: 'THEME', value: style || '—', flex: 1, valueSize: 9 },
@@ -877,7 +877,7 @@ export const GardenPlanPDF = ({ doc, plan, logoBase64, imageBase64, imageDataUrl
                 ].map((item) => (
                   <View key={item.label} style={{ flex: item.flex }}>
                     <Text style={{ fontSize: 7, color: 'rgba(255,255,255,0.6)', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 2 }}>{item.label}</Text>
-                    <Text style={{ fontSize: item.valueSize, color: '#ffffff', fontFamily: 'Helvetica-Bold' }}>{item.value}</Text>
+                    <Text style={{ fontSize: item.valueSize ?? 9, color: '#ffffff', fontFamily: 'Helvetica-Bold' }}>{item.value}</Text>
                   </View>
                 ))}
               </View>
