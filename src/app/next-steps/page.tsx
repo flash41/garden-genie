@@ -90,7 +90,7 @@ function buildSupportUrl(params: {
 }
 
 function NextStepsContent() {
-  console.log('NextStepsContent mounted, sessionId:', new URLSearchParams(window.location.search).get('sessionId'));
+  console.log('NextStepsContent mounted, sessionId:', typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('sessionId') : 'SSR');
   const params = useSearchParams();
   const router = useRouter();
   const sessionId = params.get('sessionId');
