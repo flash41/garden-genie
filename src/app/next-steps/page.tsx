@@ -269,6 +269,10 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
       } else {
         console.warn('[generatePdfFallback] No render URL available — imageBase64 will be empty');
       }
+      console.log('[PDF] Cover will use:',
+        imageBase64 ? 'render image (imageBase64)' :
+        beforeImageBase64 ? 'before photo (beforeImageBase64) — render fetch failed' :
+        'no image');
 
       // ── 5. Fetch logo ──
       const logoBase64 = await fetchLogoAsBase64();

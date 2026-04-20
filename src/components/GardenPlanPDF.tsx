@@ -213,9 +213,9 @@ const SubHead = ({ text }: { text: string }) => (
 function getPlantCareStars(p: any): string {
   const text = [p.growthRate, p.waterRequirement, p.hardinessRating, p.commonName, p.botanicalName, p.layer]
     .filter(Boolean).join(' ').toLowerCase();
-  if (/hardy|low.?maintenance|drought.?tolerant|evergreen/.test(text)) return '\u2605\u2605\u2605';
-  if (/specialist|tender|annual|exotic/.test(text)) return '\u2605\u2606\u2606';
-  return '\u2605\u2605\u2606';
+  if (/hardy|low.?maintenance|drought.?tolerant|evergreen/.test(text)) return '***';
+  if (/specialist|tender|annual|exotic/.test(text)) return '*--';
+  return '**-';
 }
 
 function getDurationLabel(days: number): string {
@@ -227,8 +227,15 @@ function getDurationLabel(days: number): string {
 
 // formatCost is currency-aware; populated from postcode prop inside the component
 let _activeCurrency: CurrencyConfig = { code: 'EUR', symbol: '\u20ac', locale: 'en-IE' };
-function formatCost(val: string | undefined): string {
-  return formatCurrency(val, _activeCurrency);
+function formatCost(val: string | number | undefined): string {
+  if (val === undefined || val === null) return '';
+  if (typeof val === 'number') {
+    return currency(val, _activeCurrency.code);
+  }
+  const str = String(val);
+  // Replace $ (and optional trailing space) with currency symbol, preserving surrounding whitespace
+  return str.replace(/\$\s*/g, _activeCurrency.symbol)
+            .replace(/USD/g, _activeCurrency.code);
 }
 
 const KEY_CONSIDERATION_PREPEND: Record<string, string> = {
@@ -279,7 +286,7 @@ export const GardenPlanPDF = ({ doc, plan, logoBase64, imageBase64, imageDataUrl
   const hasAfter  = !!imageBase64;
   _activeCurrency = getCurrencyFromPostcode(postcode || d.siteAddress);
   const cur = _activeCurrency.code;
-  const coverImg = imageBase64 || imageDataUrl || null;
+  const coverImg = imageBase64 || null;
 
   const dateStr = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 
@@ -373,6 +380,23 @@ export const GardenPlanPDF = ({ doc, plan, logoBase64, imageBase64, imageDataUrl
           </View>
           <View style={{ paddingTop: 20, paddingLeft: 40, paddingRight: 40 }}>
             <Text style={{ fontSize: 11, color: '#444444', lineHeight: 1.6 }}>This is what your garden could look like. The pages that follow explain exactly how to get there — step by step, at your own pace.</Text>
+          </View>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 24, paddingLeft: 40, paddingRight: 40 }}>
+            {[
+              { label: 'Design style', value: style },
+              { label: 'Estimated area', value: d.overview?.estimatedAreaSqm ? d.overview.estimatedAreaSqm + ' m\u00b2' : '\u2014' },
+              { label: 'Garden orientation', value: d.siteAnalysis?.sunProfile?.primaryOrientation || '\u2014' },
+              { label: 'Plan reference', value: referenceNumber || '\u2014' },
+            ].map((item, i) => (
+              <View key={i} style={{ width: '50%', marginBottom: 16, paddingRight: 20 }}>
+                <Text style={{ fontSize: 9, color: '#888888', marginBottom: 2 }}>
+                  {item.label.toUpperCase()}
+                </Text>
+                <Text style={{ fontSize: 12, color: '#1a1a1a', fontFamily: 'Helvetica-Bold' }}>
+                  {item.value}
+                </Text>
+              </View>
+            ))}
           </View>
           <View style={S.footer} fixed>
             {logoBase64 ? <Image src={logoBase64} style={{ width: 60, height: 'auto' }} /> : <Text style={S.footerBrand}>Dedrab</Text>}
@@ -619,14 +643,14 @@ export const GardenPlanPDF = ({ doc, plan, logoBase64, imageBase64, imageDataUrl
                 ))}
               </View>
               <View style={{ flexDirection: 'row', marginTop: 8, marginBottom: 4 }}>
-                <Text style={{ fontSize: 9, color: '#0a3d2b', marginRight: 12 }}>
-                  {'\u2605\u2605\u2605'} easy
+                <Text style={{ fontSize: 9, color: '#0a3d2b', marginRight: 16 }}>
+                  *** easy
                 </Text>
-                <Text style={{ fontSize: 9, color: '#0a3d2b', marginRight: 12 }}>
-                  {'\u2605\u2605\u2606'} moderate
+                <Text style={{ fontSize: 9, color: '#0a3d2b', marginRight: 16 }}>
+                  **- moderate
                 </Text>
                 <Text style={{ fontSize: 9, color: '#0a3d2b' }}>
-                  {'\u2605\u2606\u2606'} needs attention
+                  *-- needs attention
                 </Text>
               </View>
             </>
