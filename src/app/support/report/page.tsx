@@ -1,6 +1,6 @@
 'use client';
-import { useState, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 const ERROR_TYPE_LABELS: Record<string, string> = {
   pdf_failure:      'Action Plan document could not be generated',
@@ -12,6 +12,7 @@ const ERROR_TYPE_LABELS: Record<string, string> = {
 
 function ReportForm() {
   const params = useSearchParams();
+  const router = useRouter();
   const ref   = params.get('ref')   || '';
   const email = params.get('email') || '';
   const type  = params.get('type')  || 'unknown';
@@ -21,6 +22,12 @@ function ReportForm() {
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
+
+  useEffect(() => {
+    if (status !== 'success') return;
+    const timer = setTimeout(() => { router.push('/'); }, 12000);
+    return () => clearTimeout(timer);
+  }, [status]);
 
   const typeLabel = ERROR_TYPE_LABELS[type] || ERROR_TYPE_LABELS.unknown;
   const hasInfo = ref || email || type;

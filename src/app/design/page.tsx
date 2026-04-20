@@ -2792,12 +2792,13 @@ export default function GardigApp() {
             <Card>
               <Label>Colour Palette</Label>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginTop: 4 }}>
-                {doc.designConcept.colourPalette.map((col: string, i: number) => {
-                  const swatchHex = col.startsWith('#') ? col : (COLOUR_HEX_MAP[col.toLowerCase()] ?? '#B8962E');
+                {doc.designConcept.colourPalette.map((col: any, i: number) => {
+                  const colStr = typeof col === 'string' ? col : (col?.hex || col?.colour || col?.color || String(col ?? ''));
+                  const swatchHex = colStr.startsWith('#') ? colStr : (COLOUR_HEX_MAP[colStr.toLowerCase()] ?? '#B8962E');
                   return (
                     <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: px(BASE - 1) }}>
-                      <div style={{ width: 26, height: 26, borderRadius: C.r, background: swatchHex, border: `1px solid ${C.rule}` }} />
-                      <span style={{ color: C.inkMid }}>{col}</span>
+                      <div style={{ width: 26, height: 26, borderRadius: C.r, backgroundColor: swatchHex, border: `1px solid ${C.rule}` }} />
+                      <span style={{ color: C.inkMid }}>{colStr}</span>
                     </div>
                   );
                 })}

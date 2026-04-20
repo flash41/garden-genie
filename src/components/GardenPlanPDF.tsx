@@ -61,17 +61,17 @@ const S = StyleSheet.create({
   footerPg:    { fontSize: 7.5, color: T.inkLight, textAlign: 'right' },
 
   // Section chrome
-  sectionWrap:  { marginBottom: 18 },
+  sectionWrap:  { marginBottom: 24 },
   sectionHdr:   { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
   sectionNum:   { fontSize: 7, color: T.white, fontFamily: 'Helvetica-Bold', backgroundColor: T.brand, paddingLeft: 5, paddingRight: 5, paddingTop: 2, paddingBottom: 2, marginRight: 7, letterSpacing: 0.5 },
-  sectionTitle: { fontSize: 10, color: T.brand, fontFamily: 'Helvetica-Bold', letterSpacing: 0.8, textTransform: 'uppercase', flex: 1 },
-  sectionRule:  { borderBottomWidth: 0.5, borderBottomColor: T.ruleDk, marginBottom: 8 },
+  sectionTitle: { fontSize: 18, color: '#0a3d2b', fontFamily: 'Helvetica-Bold', letterSpacing: 0.8, textTransform: 'uppercase', flex: 1 },
+  sectionRule:  { height: 2, backgroundColor: T.accent, marginBottom: 12 },
 
   // Text atoms
-  body:      { fontSize: 9.5, color: T.inkMid, lineHeight: 1.6, marginBottom: 3 },
+  body:      { fontSize: 10, color: '#1a1a1a', lineHeight: 1.6, marginBottom: 3 },
   bold:      { fontSize: 9.5, color: T.ink, fontFamily: 'Helvetica-Bold', lineHeight: 1.5 },
   label:     { fontSize: 7.5, color: T.inkLight, fontFamily: 'Helvetica-Bold', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 2 },
-  subHead:   { fontSize: 9, color: T.brand, fontFamily: 'Helvetica-Bold', marginBottom: 4, marginTop: 6 },
+  subHead:   { fontSize: 13, color: '#0a3d2b', fontFamily: 'Helvetica-Bold', marginBottom: 4, marginTop: 6 },
   italic:    { fontSize: 9, color: T.inkMid, lineHeight: 1.55 },
   small:     { fontSize: 8, color: T.inkLight, lineHeight: 1.4 },
 
@@ -163,6 +163,14 @@ const Bullet = ({ text }: { text: string }) => (
 const SubHead = ({ text }: { text: string }) => (
   <Text style={S.subHead}>{text}</Text>
 );
+
+function getPlantCareStars(p: any): string {
+  const text = [p.growthRate, p.waterRequirement, p.hardinessRating, p.commonName, p.botanicalName, p.layer]
+    .filter(Boolean).join(' ').toLowerCase();
+  if (/hardy|low.?maintenance|drought.?tolerant|evergreen/.test(text)) return '\u2605\u2605\u2605';
+  if (/specialist|tender|annual|exotic/.test(text)) return '\u2605\u2606\u2606';
+  return '\u2605\u2605\u2606';
+}
 
 // Running header + footer (fixed, repeats every page)
 const PageChrome = ({ clientName, dateStr, style, referenceNumber, logoBase64 }: any) => (
@@ -392,6 +400,21 @@ export const GardenPlanPDF = ({ doc, plan, logoBase64, imageBase64, imageDataUrl
                   ))}
                 </>
               ) : null}
+              {safeArr(d.designConcept.colourPalette).length > 0 ? (
+                <>
+                  <SubHead text="Colour Palette" />
+                  {safeArr(d.designConcept.colourPalette).map((col: any, i: number) => {
+                    const colStr = typeof col === 'string' ? col : (col?.hex || col?.colour || col?.color || String(col));
+                    const hexVal = typeof colStr === 'string' && colStr.startsWith('#') ? colStr : T.accent;
+                    return (
+                      <View key={i} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 5 }}>
+                        <View style={{ width: 16, height: 16, backgroundColor: hexVal, marginRight: 8, borderWidth: 0.5, borderColor: T.rule }} />
+                        <Text style={S.body}>{colStr}</Text>
+                      </View>
+                    );
+                  })}
+                </>
+              ) : null}
             </>
           ) : null}
         </Section>
@@ -480,6 +503,7 @@ export const GardenPlanPDF = ({ doc, plan, logoBase64, imageBase64, imageDataUrl
                   <Text style={[S.tableHdrT, { flex: 1 }]}>Qty</Text>
                   <Text style={[S.tableHdrT, { flex: 2 }]}>Mature Size</Text>
                   <Text style={[S.tableHdrT, { flex: 1.5 }]}>Layer</Text>
+                  <Text style={[S.tableHdrT, { flex: 1 }]}>Care</Text>
                 </View>
                 {plants.map((p: any, i: number) => (
                   <View key={i} wrap={false} style={i % 2 === 0 ? S.tableRow : S.tableRowAlt}>
@@ -488,9 +512,11 @@ export const GardenPlanPDF = ({ doc, plan, logoBase64, imageBase64, imageDataUrl
                     <Text style={[S.tableCell, { flex: 1 }]}>{safe(p.quantity)}</Text>
                     <Text style={[S.tableCell, { flex: 2 }]}>{safe(p.matureSize)}</Text>
                     <Text style={[S.tableCell, { flex: 1.5 }]}>{safe(p.layer)}</Text>
+                    <Text style={[S.tableCell, { flex: 1, fontSize: 10 }]}>{getPlantCareStars(p)}</Text>
                   </View>
                 ))}
               </View>
+              <Text style={[S.small, { color: T.inkLight, marginTop: 4 }]}>{'\u2605\u2605\u2605'} easy{'  '}{'\u2605\u2605\u2606'} moderate{'  '}{'\u2605\u2606\u2606'} needs attention</Text>
             </>
           ) : null}
         </Section>
@@ -656,6 +682,23 @@ export const GardenPlanPDF = ({ doc, plan, logoBase64, imageBase64, imageDataUrl
             <Text style={{ fontSize: 7, color: T.accent, fontFamily: 'Helvetica-Bold', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 4 }}>Getting started</Text>
             <Text style={S.body}>The phases below break your project into manageable steps. Start with Phase 1 — most of it can be done in a single weekend. Work at your own pace and return to this plan whenever you're ready for the next stage.</Text>
           </View>
+          {(() => {
+            const allTasks = safeArr(d.implementationPlan?.tasks);
+            const ph1 = allTasks.filter((t: any) => {
+              const ph = String(t.phase || '');
+              return ph === '1' || ph.toLowerCase().startsWith('phase 1') || (ph.startsWith('1') && ph.length <= 2);
+            });
+            const quickWins = (ph1.length > 0 ? ph1 : allTasks).slice(0, 3);
+            if (quickWins.length === 0) return null;
+            return (
+              <View style={{ borderLeftWidth: 4, borderLeftColor: '#0a3d2b', backgroundColor: '#f0f7f0', paddingTop: 12, paddingBottom: 12, paddingLeft: 16, paddingRight: 16, marginBottom: 20 }}>
+                <Text style={{ fontSize: 13, fontFamily: 'Helvetica-Bold', color: '#0a3d2b', marginBottom: 8 }}>This weekend</Text>
+                {quickWins.map((t: any, i: number) => (
+                  <Text key={i} style={{ fontSize: 10, color: '#1a1a1a', lineHeight: 1.5, marginBottom: 4 }}>{'\u2192 '}{safe(t.task)}</Text>
+                ))}
+              </View>
+            );
+          })()}
           {safeArr(d.recommendations).length > 0 ? (
             <>
               <SubHead text="Recommendations" />
@@ -927,6 +970,49 @@ export const GardenPlanPDF = ({ doc, plan, logoBase64, imageBase64, imageDataUrl
           ) : null}
 
         </Section>
+      </Page>
+
+      {/* ── Shopping List Appendix ────────────────────────────── */}
+      <Page size="A4" style={{ paddingTop: 48, paddingBottom: 48, paddingLeft: 48, paddingRight: 48 }}>
+        <Text style={{ fontSize: 22, fontFamily: 'Helvetica-Bold', color: '#0a3d2b', marginBottom: 2 }}>Dedrab</Text>
+        <Text style={{ fontSize: 14, color: '#b8962e', marginBottom: 4 }}>Your Garden Shopping List</Text>
+        <Text style={{ fontSize: 10, color: '#888888', marginBottom: 24 }}>dedrab.com</Text>
+        <View style={{ height: 1, backgroundColor: '#b8962e', marginBottom: 24 }} />
+
+        <Text style={{ fontSize: 13, fontFamily: 'Helvetica-Bold', color: '#0a3d2b', marginBottom: 8 }}>Plants</Text>
+        {plants.map((p: any, i: number) => (
+          <View key={i} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
+            <View style={{ width: 10, height: 10, borderWidth: 1, borderColor: '#0a3d2b', marginRight: 8 }} />
+            <Text style={{ fontSize: 10, color: '#1a1a1a' }}>{p.quantity ? `${p.quantity} \u00d7 ` : '1 \u00d7 '}{safe(p.commonName || p.botanicalName)}</Text>
+          </View>
+        ))}
+        <View style={{ marginBottom: 16 }} />
+
+        <Text style={{ fontSize: 13, fontFamily: 'Helvetica-Bold', color: '#0a3d2b', marginBottom: 8 }}>Materials & Hardscape</Text>
+        {safeArr(d.hardscapeSpecification?.materials).map((m: any, i: number) => (
+          <View key={i} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
+            <View style={{ width: 10, height: 10, borderWidth: 1, borderColor: '#0a3d2b', marginRight: 8 }} />
+            <Text style={{ fontSize: 10, color: '#1a1a1a' }}>{safe(m.element)}{m.material ? ` \u2014 ${m.material}` : ''}</Text>
+          </View>
+        ))}
+        <View style={{ marginBottom: 16 }} />
+
+        <Text style={{ fontSize: 13, fontFamily: 'Helvetica-Bold', color: '#0a3d2b', marginBottom: 8 }}>Tools & Sundries</Text>
+        {(() => {
+          const defaultTools = ['Garden fork or spade', 'Trowel', 'Compost (as required)', 'Mulch (as required)', 'Plant labels', 'Watering can or hose'];
+          const tools: any[] = safeArr(d.tools).length > 0 ? safeArr(d.tools) : defaultTools;
+          return tools.map((tool: any, i: number) => (
+            <View key={i} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
+              <View style={{ width: 10, height: 10, borderWidth: 1, borderColor: '#0a3d2b', marginRight: 8 }} />
+              <Text style={{ fontSize: 10, color: '#1a1a1a' }}>{typeof tool === 'string' ? tool : safe(tool.name || String(tool))}</Text>
+            </View>
+          ));
+        })()}
+        <View style={{ marginBottom: 16 }} />
+
+        <View style={{ position: 'absolute', bottom: 48, left: 48, right: 48 }}>
+          <Text style={{ fontSize: 9, color: '#aaaaaa', textAlign: 'center' }}>Generated by Dedrab · dedrab.com</Text>
+        </View>
       </Page>
 
     </Document>
