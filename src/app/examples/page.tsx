@@ -23,16 +23,28 @@ export default function ExamplesPage() {
           fontFamily: "'Playfair Display', serif", fontSize: 'clamp(28px, 5vw, 44px)',
           fontWeight: 700, color: '#0a3d2b', marginBottom: 16, lineHeight: 1.2,
         }}>
-          See what&apos;s possible
+          From Drab to Delight
         </h1>
-        <p style={{
-          fontSize: 16, color: '#6b7280', lineHeight: 1.75,
-          maxWidth: 680, margin: '0 auto 64px',
-        }}>
-          Every garden is different. Here are seven real transformations — each one showing a before photo,
-          the redesigned render, and the design style behind it. Your Action Plan goes even further, with a
-          full planting specification, materials list, phased plan and shopping list.
+        <p className="text-gray-600 max-w-2xl mx-auto mb-6 text-center text-lg">
+          This isn&apos;t just a pretty picture. Every Dedrab Action Plan is a
+          complete, personalised garden design document — ready to take
+          outside and use.
         </p>
+        <ul className="text-left max-w-md mx-auto mb-12 space-y-3">
+          {[
+            'A photorealistic render of your redesigned garden',
+            'A full planting specification with care ratings for every plant',
+            'A phased action plan broken into manageable weekends',
+            'A materials and hardscape guide with cost estimates',
+            'A shopping list to take straight to the garden centre',
+            'Yours within minutes of uploading your photo',
+          ].map((item, i) => (
+            <li key={i} className="flex items-start gap-3 text-gray-700">
+              <span className="text-[#b8962e] font-bold mt-0.5">✓</span>
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
       </div>
 
       {/* Grid */}
@@ -128,10 +140,11 @@ export default function ExamplesPage() {
           fontFamily: "'Playfair Display', serif", fontSize: 28,
           fontWeight: 700, color: '#0a3d2b', marginBottom: 12,
         }}>
-          Ready to see your garden?
+          Begin the process today
         </h2>
         <p style={{ fontSize: 16, color: '#6b7280', marginBottom: 28 }}>
-          Upload a photo and get your personalised Action Plan in minutes.
+          Upload a photo of your garden and receive your personalised
+          Action Plan in minutes. Delight in your garden sooner rather than later.
         </p>
         <ExamplesCTA />
       </div>
