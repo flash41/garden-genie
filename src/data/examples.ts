@@ -1,4 +1,13 @@
-export const EXAMPLES = [
+export interface Example {
+  style: string;
+  slug: string;
+  description: string;
+  before: string;
+  after: string;
+  samplePdfUrl?: string;
+}
+
+export const EXAMPLES: Example[] = [
   {
     style: 'English Cottage',
     slug: 'cottage',
@@ -26,6 +35,7 @@ export const EXAMPLES = [
     description: 'Clean lines, architectural planting and a restrained material palette.',
     before: '/examples/modern-before.jpg',
     after: '/examples/modern-after.png',
+    samplePdfUrl: 'https://gtsnbzfadmhjtubhzcov.supabase.co/storage/v1/object/public/pdfs/DED-202604-UF2R.pdf',
   },
   {
     style: 'Zen Garden',
@@ -33,6 +43,7 @@ export const EXAMPLES = [
     description: 'Calm, considered spaces with clipped shrubs, stone and flowing grasses.',
     before: '/examples/zen-before.jpg',
     after: '/examples/zen-after.png',
+    samplePdfUrl: 'https://gtsnbzfadmhjtubhzcov.supabase.co/storage/v1/object/public/pdfs/DED-202604-EWWH.pdf',
   },
   {
     style: 'Kitchen & Herb',

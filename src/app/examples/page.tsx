@@ -95,7 +95,7 @@ export default function ExamplesPage() {
             </div>
 
             {/* Card content */}
-            <div style={{ padding: '16px 20px 20px' }}>
+            <div style={{ padding: '16px 20px 20px', display: 'flex', flexDirection: 'column' }}>
               <div style={{
                 fontSize: 15, fontWeight: 600, color: '#0a3d2b', marginBottom: 6,
               }}>
@@ -104,6 +104,16 @@ export default function ExamplesPage() {
               <div style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.6 }}>
                 {ex.description}
               </div>
+              {ex.samplePdfUrl ? (
+                <a
+                  href={ex.samplePdfUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-sm font-medium text-[#0a3d2b] border border-[#0a3d2b] px-4 py-2 rounded-lg hover:bg-[#0a3d2b] hover:text-white transition-colors mt-3 self-start"
+                >
+                  View sample Action Plan →
+                </a>
+              ) : null}
             </div>
           </div>
         ))}
