@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
     quotesRequested?: number;
     countryCode?: string;
   };
-  const postcode = normalisePostcode(body.postcode ?? '');
+  const postcode = normalisePostcode(typeof body.postcode === 'string' ? body.postcode : '');
 
   if (!email || !postcode || !sessionId) {
     return NextResponse.json({ success: false, error: 'email, postcode and sessionId are required' }, { status: 400 });

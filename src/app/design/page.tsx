@@ -34,7 +34,8 @@ const DESIGN_LANGUAGES = [
 const GEMINI_MODEL = "gemini-2.5-flash";
 
 const COLOUR_HEX_MAP: Record<string, string> = {
-  'terracotta': '#C0613A',
+  'terracotta': '#C1440E',
+  'warm terracotta': '#C1440E',
   'warm grey': '#9E9E8E',
   'rich earth brown': '#6B4226',
   'vibrant green': '#4A7C3F',
@@ -42,9 +43,39 @@ const COLOUR_HEX_MAP: Record<string, string> = {
   'seasonal pink': '#D4748A',
   'seasonal purple': '#7B5EA7',
   'seasonal yellow': '#D4A847',
-  'lavender': '#9C8DC3',
+  'lavender': '#967BB6',
   'sage': '#9CAF88',
+  'sage green': '#87AE73',
+  'slate': '#708090',
+  'slate grey': '#708090',
+  'slate gray': '#708090',
+  'cream': '#FFFDD0',
+  'stone': '#B0A090',
+  'olive': '#808000',
+  'olive green': '#808000',
+  'charcoal': '#36454F',
+  'rust': '#B7410E',
+  'moss': '#8A9A5B',
+  'moss green': '#8A9A5B',
+  'bark': '#7B3F00',
+  'flint': '#6E6E6E',
+  'bronze': '#CD7F32',
+  'forest green': '#228B22',
+  'blush': '#DE5D83',
+  'dusk': '#4E5B6E',
+  'clay': '#B66A50',
 };
+
+function getSwatchHex(colStr: string, map: Record<string, string>, fallback: string): string {
+  if (colStr.startsWith('#')) return colStr;
+  const lower = colStr.toLowerCase();
+  if (map[lower]) return map[lower];
+  const found = Object.keys(map).find(key => {
+    const pattern = new RegExp('\\b' + key + '\\b', 'i');
+    return pattern.test(lower);
+  });
+  return found ? map[found] : fallback;
+}
 
 function getTransformationDisplay(level: number): string {
   const map: Record<number, string> = {
@@ -2794,7 +2825,7 @@ export default function GardigApp() {
               <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginTop: 4 }}>
                 {doc.designConcept.colourPalette.map((col: any, i: number) => {
                   const colStr = typeof col === 'string' ? col : (col?.hex || col?.colour || col?.color || String(col ?? ''));
-                  const swatchHex = colStr.startsWith('#') ? colStr : (COLOUR_HEX_MAP[colStr.toLowerCase()] ?? '#B8962E');
+                  const swatchHex = getSwatchHex(colStr, COLOUR_HEX_MAP, C.accent);
                   return (
                     <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: px(BASE - 1) }}>
                       <div style={{ width: 26, height: 26, borderRadius: C.r, backgroundColor: swatchHex, border: `1px solid ${C.rule}` }} />

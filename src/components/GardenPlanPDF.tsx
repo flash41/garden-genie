@@ -21,6 +21,40 @@ const T = {
   green:    '#16a34a',
 };
 
+// ─── COLOUR MAP ───────────────────────────────────────────────────────────────
+const COLOUR_HEX_MAP: Record<string, string> = {
+  'terracotta': '#C1440E',
+  'warm terracotta': '#C1440E',
+  'warm grey': '#9E9E8E',
+  'rich earth brown': '#6B4226',
+  'vibrant green': '#4A7C3F',
+  'herbal silver': '#A8B5A2',
+  'seasonal pink': '#D4748A',
+  'seasonal purple': '#7B5EA7',
+  'seasonal yellow': '#D4A847',
+  'lavender': '#967BB6',
+  'sage': '#9CAF88',
+  'sage green': '#87AE73',
+  'slate': '#708090',
+  'slate grey': '#708090',
+  'slate gray': '#708090',
+  'cream': '#FFFDD0',
+  'stone': '#B0A090',
+  'olive': '#808000',
+  'olive green': '#808000',
+  'charcoal': '#36454F',
+  'rust': '#B7410E',
+  'moss': '#8A9A5B',
+  'moss green': '#8A9A5B',
+  'bark': '#7B3F00',
+  'flint': '#6E6E6E',
+  'bronze': '#CD7F32',
+  'forest green': '#228B22',
+  'blush': '#DE5D83',
+  'dusk': '#4E5B6E',
+  'clay': '#B66A50',
+};
+
 // ─── STYLES ───────────────────────────────────────────────────────────────────
 const S = StyleSheet.create({
 
@@ -133,6 +167,17 @@ const currency = (n: number, cur = 'USD') => {
     return `${sym[cur] || cur}${Math.round(Number(n)).toLocaleString()}`;
   }
 };
+
+function getSwatchHex(colStr: string, map: Record<string, string>, fallback: string): string {
+  if (colStr.startsWith('#')) return colStr;
+  const lower = colStr.toLowerCase();
+  if (map[lower]) return map[lower];
+  const found = Object.keys(map).find(key => {
+    const pattern = new RegExp('\\b' + key + '\\b', 'i');
+    return pattern.test(lower);
+  });
+  return found ? map[found] : fallback;
+}
 
 // Section wrapper component
 const Section = ({ num, title, children }: { num: string; title: string; children: any }) => (
@@ -405,7 +450,7 @@ export const GardenPlanPDF = ({ doc, plan, logoBase64, imageBase64, imageDataUrl
                   <SubHead text="Colour Palette" />
                   {safeArr(d.designConcept.colourPalette).map((col: any, i: number) => {
                     const colStr = typeof col === 'string' ? col : (col?.hex || col?.colour || col?.color || String(col));
-                    const hexVal = typeof colStr === 'string' && colStr.startsWith('#') ? colStr : T.accent;
+                    const hexVal = getSwatchHex(colStr, COLOUR_HEX_MAP, T.accent);
                     return (
                       <View key={i} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 5 }}>
                         <View style={{ width: 16, height: 16, backgroundColor: hexVal, marginRight: 8, borderWidth: 0.5, borderColor: T.rule }} />
