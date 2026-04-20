@@ -665,7 +665,7 @@ CRITICAL — DO NOT DRAW ANY OF THE FOLLOWING:
 - No text labels of any kind except zone names if they help clarify the layout
 - No annotations
 
-The sketch must have clean empty margins on all four sides — at least 8% of the image width on each side — so that grid labels can be added programmatically after generation.
+The sketch must have clean empty margins on all four sides — no more than 3% of the image width on each side — so that grid labels can be added programmatically after generation.
 
 Geometric accuracy of the garden boundary shape is the top priority. The boundary outline must match the actual garden shape from the photo.`;
 
