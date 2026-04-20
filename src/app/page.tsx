@@ -4,17 +4,6 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import ExamplesCarousel from '@/components/ExamplesCarousel';
 
-const exampleGardens = [
-  { slug: 'japanese-zen',         badge: 'Japanese Zen',           title: 'The Tranquil Courtyard',    descriptor: 'Calm. Considered. Timeless.',    image: '/examples/zen-after.jpg' },
-  { slug: 'english-cottage',      badge: 'English Cottage',        title: 'The Heritage Walled Garden', descriptor: 'Abundant. Romantic. Structured.', image: '/examples/cottage-after.jpg' },
-  { slug: 'city-garden',          badge: 'City Garden',            title: 'The Urban Retreat',          descriptor: 'Smart. Compact. Considered.',     image: '/examples/city-garden.jpg' },
-  { slug: 'mediterranean',        badge: 'Mediterranean',          title: 'The Sun-Drenched Terrace',   descriptor: 'Warm. Fragrant. Effortless.',     image: '/examples/mediterranean.jpg' },
-  { slug: 'modern-minimalist',    badge: 'Modern Minimalist',      title: 'The Clean Slate Garden',     descriptor: 'Precise. Calm. Architectural.',   image: '/examples/city-garden.jpg' },
-  { slug: 'wildlife-garden',      badge: 'Wildlife & Pollinator',  title: 'The Living Garden',          descriptor: 'Wild. Purposeful. Alive.',        image: '/examples/Wildlife.jpg' },
-  { slug: 'kitchen-garden',       badge: 'Kitchen & Herb Garden',  title: 'The Productive Garden',      descriptor: 'Useful. Beautiful. Rewarding.',   image: '/examples/kitchen-herb-garden.jpg' },
-  { slug: 'tropical-lush',        badge: 'Tropical & Lush',        title: 'The Jungle Escape',          descriptor: 'Bold. Layered. Immersive.',       image: '/examples/zen-after.jpg' },
-  { slug: 'urban-party-garden',   badge: 'Urban Party Garden',     title: 'The Social Garden',          descriptor: 'Lush. Lit. Made for people.',     image: '/examples/urban-party.jpg' },
-];
 
 export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false);
@@ -466,25 +455,6 @@ export default function LandingPage() {
               <svg width="20" height="8" viewBox="0 0 20 8" fill="none"><line x1="0" y1="4" x2="18" y2="4" stroke="currentColor" strokeWidth="1"/><polyline points="14,1 18,4 14,7" stroke="currentColor" strokeWidth="1" fill="none"/></svg>
             </Link>
           </div>
-        </div>
-
-        {/* Carousel */}
-        <div className="carousel-track" style={{ display: 'flex', overflowX: 'auto', scrollBehavior: 'smooth', gap: 2, paddingLeft: 60, position: 'relative', zIndex: 2 }}>
-          {exampleGardens.map((ex) => (
-            <div key={ex.slug} className="carousel-card" style={{ flexShrink: 0, width: 480, height: 320, position: 'relative', overflow: 'hidden', cursor: 'pointer' }}>
-              <img className="carousel-img" src={ex.image} alt={ex.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-              {/* Badge */}
-              <div style={{ position: 'absolute', top: 20, left: 20, background: '#D4AF37', color: 'var(--forest)', fontSize: 9, letterSpacing: 2.5, textTransform: 'uppercase', padding: '6px 14px', fontFamily: "'DM Sans', sans-serif", fontWeight: 600 }}>{ex.badge}</div>
-              {/* Bottom overlay */}
-              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 55%)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '24px 24px 22px' }}>
-                <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 400, color: 'white', margin: '0 0 6px', lineHeight: 1.2 }}>{ex.title}</h3>
-                <p style={{ fontSize: 10, letterSpacing: 1.5, color: 'rgba(212,175,55,0.8)', margin: 0, textTransform: 'uppercase' }}>{ex.descriptor}</p>
-                <Link href={`/design?theme=${ex.slug}`} className="try-btn" style={{ marginTop: 12, fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: 'var(--gold-light)', textDecoration: 'none', display: 'inline-block' }}>
-                  Try this style →
-                </Link>
-              </div>
-            </div>
-          ))}
         </div>
 
         {/* Before/After Carousel */}
