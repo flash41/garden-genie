@@ -238,6 +238,8 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
       if (rawPlan) {
         try { doc = JSON.parse(rawPlan); } catch { doc = null; }
       }
+      const aerialImageBase64: string | null = doc?._aerialImageBase64 || null;
+      const beforeImageBase64: string | null = doc?._beforeImageBase64 || null;
 
       // ── 3. Abort only if nothing useful is available ──
       if (!doc && !dbRenderUrl) {
@@ -270,6 +272,8 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
           doc={doc}
           logoBase64={logoBase64 || undefined}
           imageBase64={imageBase64}
+          aerialImageUrl={aerialImageBase64 || undefined}
+          imageDataUrl={beforeImageBase64 || undefined}
           style={dbStyle}
           referenceNumber={dbRefNum}
         />

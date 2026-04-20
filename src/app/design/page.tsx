@@ -2335,7 +2335,12 @@ export default function GardigApp() {
       }
 
       try {
-        sessionStorage.setItem('garden_plan_data', JSON.stringify(docData));
+        const aerialSrc = aerialGridImageUrl || aerialImageUrl || null;
+        sessionStorage.setItem('garden_plan_data', JSON.stringify({
+          ...docData,
+          _aerialImageBase64: aerialSrc,
+          _beforeImageBase64: imageDataUrl || null,
+        }));
       } catch (e) {
         console.warn('[handleSaveAndProceed] sessionStorage write failed (garden_plan_data):', e);
       }

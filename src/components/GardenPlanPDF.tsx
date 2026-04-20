@@ -217,6 +217,26 @@ function getPlantCareStars(p: any): string {
   return '\u2605\u2605\u2606';
 }
 
+function getDurationLabel(days: number): string {
+  if (days <= 2) return 'A weekend';
+  if (days <= 5) return '2\u20133 weekends';
+  if (days <= 8) return '3\u20134 weekends';
+  return 'A few weeks';
+}
+
+function formatCost(val: string | undefined): string {
+  if (!val) return '';
+  return val.replace(/\$/g, '\u20ac');
+}
+
+const KEY_CONSIDERATION_PREPEND: Record<string, string> = {
+  'Underground Services': "Before you dig anything, know what\u2019s under your garden.",
+  'Soil Assessment': 'Your soil is the foundation of everything.',
+  'Measurements on Drawings': "The measurements here are a guide \u2014 always measure your actual space before ordering materials.",
+  'Ground Stability': "Worth a professional check if you\u2019re building retaining walls or steps.",
+  'Structural Integrity': 'Any load-bearing element should be signed off before you build it.',
+};
+
 // Running header + footer (fixed, repeats every page)
 const PageChrome = ({ clientName, dateStr, style, referenceNumber, logoBase64 }: any) => (
   <>
@@ -254,7 +274,7 @@ export const GardenPlanPDF = ({ doc, plan, logoBase64, imageBase64, imageDataUrl
   const d = doc || {};
   const hasBefore = !!imageDataUrl;
   const hasAfter  = !!imageBase64;
-  const cur = d.costEstimate?.currency || 'USD';
+  const cur = d.costEstimate?.currency || 'EUR';
   const coverImg = imageBase64 || imageDataUrl || null;
 
   const dateStr = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -331,11 +351,32 @@ export const GardenPlanPDF = ({ doc, plan, logoBase64, imageBase64, imageDataUrl
             </View>
           </View>
           <View style={S.coverBottom}>
-            <Text style={S.coverConf}>Private &amp; Confidential — For Client Use Only</Text>
+            <Text style={S.coverConf}>Your personal garden plan — made just for you</Text>
             <Text style={S.coverPg}>Page 1</Text>
           </View>
         </View>
       </Page>
+
+      {/* ══════════════════════════════════════════════════════════
+          RENDER HERO PAGE
+      ══════════════════════════════════════════════════════════ */}
+      {imageBase64 ? (
+        <Page size="A4" style={{ paddingTop: 0, paddingBottom: 0, paddingLeft: 0, paddingRight: 0 }}>
+          <Image src={imageBase64} style={{ width: '100%', height: 380, objectFit: 'cover' }} />
+          <View style={{ paddingTop: 16, paddingBottom: 16, paddingLeft: 40, paddingRight: 40, backgroundColor: '#0a3d2b' }}>
+            <Text style={{ fontSize: 18, color: '#ffffff', fontFamily: 'Helvetica-Bold' }}>Your redesigned garden</Text>
+            <Text style={{ fontSize: 11, color: '#b8962e', marginTop: 4 }}>{style} design</Text>
+          </View>
+          <View style={{ paddingTop: 20, paddingLeft: 40, paddingRight: 40 }}>
+            <Text style={{ fontSize: 11, color: '#444444', lineHeight: 1.6 }}>This is what your garden could look like. The pages that follow explain exactly how to get there — step by step, at your own pace.</Text>
+          </View>
+          <View style={S.footer} fixed>
+            {logoBase64 ? <Image src={logoBase64} style={{ width: 60, height: 'auto' }} /> : <Text style={S.footerBrand}>Dedrab</Text>}
+            <Text style={S.footerMid}>{'Dedrab Design Reference: ' + (referenceNumber || 'Pending')}</Text>
+            <Text style={S.footerPg} render={({ pageNumber, totalPages }: { pageNumber: number; totalPages: number }) => 'Page ' + pageNumber + ' / ' + totalPages} />
+          </View>
+        </Page>
+      ) : null}
 
       {/* ══════════════════════════════════════════════════════════
           SECTION PAGES
@@ -448,16 +489,22 @@ export const GardenPlanPDF = ({ doc, plan, logoBase64, imageBase64, imageDataUrl
               {safeArr(d.designConcept.colourPalette).length > 0 ? (
                 <>
                   <SubHead text="Colour Palette" />
-                  {safeArr(d.designConcept.colourPalette).map((col: any, i: number) => {
-                    const colStr = typeof col === 'string' ? col : (col?.hex || col?.colour || col?.color || String(col));
-                    const hexVal = getSwatchHex(colStr, COLOUR_HEX_MAP, T.accent);
-                    return (
-                      <View key={i} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 5 }}>
-                        <View style={{ width: 16, height: 16, backgroundColor: hexVal, marginRight: 8, borderWidth: 0.5, borderColor: T.rule }} />
-                        <Text style={S.body}>{colStr}</Text>
-                      </View>
-                    );
-                  })}
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 8 }}>
+                    {safeArr(d.designConcept.colourPalette).map((col: any, i: number) => {
+                      const colStr = typeof col === 'string' ? col : (col?.name || col?.hex || col?.colour || col?.color || String(col));
+                      const hexStr = typeof col === 'string' ? col : (col?.hex || col?.colour || col?.color || colStr);
+                      const hexVal = getSwatchHex(hexStr, COLOUR_HEX_MAP, T.accent);
+                      return (
+                        <View key={i} style={{ width: '50%', flexDirection: 'row', alignItems: 'center', paddingBottom: 10, paddingRight: 16 }}>
+                          <View style={{ width: 14, height: 14, backgroundColor: hexVal, marginRight: 8, borderWidth: 0.5, borderColor: '#cccccc' }} />
+                          <View style={{ flex: 1 }}>
+                            <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: '#1a1a1a' }}>{colStr}</Text>
+                            <Text style={{ fontSize: 8, color: '#666666' }}>{col.role || ''}</Text>
+                          </View>
+                        </View>
+                      );
+                    })}
+                  </View>
                 </>
               ) : null}
             </>
@@ -479,7 +526,13 @@ export const GardenPlanPDF = ({ doc, plan, logoBase64, imageBase64, imageDataUrl
                 Garden Layout Plan — print this and take it outside.
               </Text>
             </>
-          ) : null}
+          ) : (
+            <View style={{ paddingTop: 16, paddingBottom: 16, paddingLeft: 20, paddingRight: 20, backgroundColor: '#f5f5f0', marginBottom: 16 }}>
+              <Text style={{ fontSize: 10, color: '#888888', fontStyle: 'italic' }}>
+                Garden layout plan not available for this session.
+              </Text>
+            </View>
+          )}
           {d.spatialLayout ? (
             <>
               {d.spatialLayout.compositionNotes
@@ -543,25 +596,35 @@ export const GardenPlanPDF = ({ doc, plan, logoBase64, imageBase64, imageDataUrl
               <SubHead text="Plant Schedule" />
               <View style={S.table}>
                 <View style={[S.tableHdr, { flexDirection: 'row' }]}>
-                  <Text style={[S.tableHdrT, { flex: 3 }]}>Botanical Name</Text>
-                  <Text style={[S.tableHdrT, { flex: 2 }]}>Common Name</Text>
-                  <Text style={[S.tableHdrT, { flex: 1 }]}>Qty</Text>
-                  <Text style={[S.tableHdrT, { flex: 2 }]}>Mature Size</Text>
-                  <Text style={[S.tableHdrT, { flex: 1.5 }]}>Layer</Text>
-                  <Text style={[S.tableHdrT, { flex: 1 }]}>Care</Text>
+                  <Text style={[S.tableHdrT, { width: '30%' }]}>Botanical Name</Text>
+                  <Text style={[S.tableHdrT, { width: '22%' }]}>Common Name</Text>
+                  <Text style={[S.tableHdrT, { width: '8%' }]}>Qty</Text>
+                  <Text style={[S.tableHdrT, { width: '20%' }]}>Mature Size</Text>
+                  <Text style={[S.tableHdrT, { width: '12%' }]}>Layer</Text>
+                  <Text style={[S.tableHdrT, { width: '8%' }]}>Care</Text>
                 </View>
                 {plants.map((p: any, i: number) => (
                   <View key={i} wrap={false} style={i % 2 === 0 ? S.tableRow : S.tableRowAlt}>
-                    <Text style={[S.tableCellB, { flex: 3 }]}>{safe(p.botanicalName)}{p.cultivar && p.cultivar !== 'null' && p.cultivar !== '' ? ` '${p.cultivar}'` : ''}</Text>
-                    <Text style={[S.tableCell, { flex: 2 }]}>{safe(p.commonName)}</Text>
-                    <Text style={[S.tableCell, { flex: 1 }]}>{safe(p.quantity)}</Text>
-                    <Text style={[S.tableCell, { flex: 2 }]}>{safe(p.matureSize)}</Text>
-                    <Text style={[S.tableCell, { flex: 1.5 }]}>{safe(p.layer)}</Text>
-                    <Text style={[S.tableCell, { flex: 1, fontSize: 10 }]}>{getPlantCareStars(p)}</Text>
+                    <Text style={[S.tableCellB, { width: '30%' }]}>{safe(p.botanicalName)}{p.cultivar && p.cultivar !== 'null' && p.cultivar !== '' ? ` '${p.cultivar}'` : ''}</Text>
+                    <Text style={[S.tableCell, { width: '22%' }]}>{safe(p.commonName)}</Text>
+                    <Text style={[S.tableCell, { width: '8%' }]}>{safe(p.quantity)}</Text>
+                    <Text style={[S.tableCell, { width: '20%' }]}>{safe(p.matureSize)}</Text>
+                    <Text style={[S.tableCell, { width: '12%' }]}>{safe(p.layer)}</Text>
+                    <Text style={[S.tableCell, { width: '8%', fontSize: 10 }]}>{getPlantCareStars(p)}</Text>
                   </View>
                 ))}
               </View>
-              <Text style={[S.small, { color: T.inkLight, marginTop: 4 }]}>{'\u2605\u2605\u2605'} easy{'  '}{'\u2605\u2605\u2606'} moderate{'  '}{'\u2605\u2606\u2606'} needs attention</Text>
+              <View style={{ flexDirection: 'row', marginTop: 8, marginBottom: 4 }}>
+                <Text style={{ fontSize: 9, color: '#0a3d2b', marginRight: 12 }}>
+                  {'\u2605\u2605\u2605'} easy
+                </Text>
+                <Text style={{ fontSize: 9, color: '#0a3d2b', marginRight: 12 }}>
+                  {'\u2605\u2605\u2606'} moderate
+                </Text>
+                <Text style={{ fontSize: 9, color: '#0a3d2b' }}>
+                  {'\u2605\u2606\u2606'} needs attention
+                </Text>
+              </View>
             </>
           ) : null}
         </Section>
@@ -626,12 +689,12 @@ export const GardenPlanPDF = ({ doc, plan, logoBase64, imageBase64, imageDataUrl
                         <Text style={[S.tableCellB, { flex: 2 }]}>{safe(m.element)}</Text>
                         <Text style={[S.tableCell, { flex: 2 }]}>{safe(m.material)}</Text>
                         <Text style={S.tableCell}>{safe(m.finish)}</Text>
-                        <Text style={S.tableCell}>{safe(m.unitCostRange)}</Text>
+                        <Text style={S.tableCell}>{formatCost(m.unitCostRange)}</Text>
                       </View>
                     ))}
                   </View>
                   <Text style={[S.small, { color: T.inkLight, fontStyle: 'italic', marginTop: 6 }]}>
-                    All costs are unit cost estimates only and may vary by supplier, region, and project scope. Obtain formal quotes before committing to purchase.
+                    These are ballpark figures to help you plan. Prices vary by supplier and region — always get a quote before you commit.
                   </Text>
                 </>
               ) : null}
@@ -724,8 +787,8 @@ export const GardenPlanPDF = ({ doc, plan, logoBase64, imageBase64, imageDataUrl
         {/* ── 8. Implementation Plan ──────────────────────────── */}
         <Section num="08" title="How to Do It — Your Phased Plan">
           <View style={{ borderLeftWidth: 3, borderLeftColor: T.accent, paddingLeft: 10, paddingRight: 10, paddingTop: 10, paddingBottom: 10, marginBottom: 14, backgroundColor: '#f9f7f3' }}>
-            <Text style={{ fontSize: 7, color: T.accent, fontFamily: 'Helvetica-Bold', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 4 }}>Getting started</Text>
-            <Text style={S.body}>The phases below break your project into manageable steps. Start with Phase 1 — most of it can be done in a single weekend. Work at your own pace and return to this plan whenever you're ready for the next stage.</Text>
+            <Text style={{ fontSize: 7, color: T.accent, fontFamily: 'Helvetica-Bold', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 4 }}>Right, let&apos;s get started</Text>
+            <Text style={S.body}>We&apos;ve broken this into phases so it never feels overwhelming. Phase 1 is a great place to start — most people get it done over a couple of weekends. Come back to this plan whenever you&apos;re ready for the next step.</Text>
           </View>
           {(() => {
             const allTasks = safeArr(d.implementationPlan?.tasks);
@@ -754,7 +817,7 @@ export const GardenPlanPDF = ({ doc, plan, logoBase64, imageBase64, imageDataUrl
                   <Text style={[S.body, { marginBottom: 3 }]}>{safe(r.description)}</Text>
                   <Text style={[S.small, { fontStyle: 'italic', color: T.inkLight }]}>{safe(r.justification)}</Text>
                   {r.estimatedCost ? (
-                    <Text style={[S.small, { color: T.accent, fontFamily: 'Helvetica-Bold', marginTop: 4 }]}>{safe(r.estimatedCost)}</Text>
+                    <Text style={[S.small, { color: T.accent, fontFamily: 'Helvetica-Bold', marginTop: 4 }]}>{formatCost(r.estimatedCost)}</Text>
                   ) : null}
                 </View>
               ))}
@@ -777,13 +840,13 @@ export const GardenPlanPDF = ({ doc, plan, logoBase64, imageBase64, imageDataUrl
                   <View style={S.tableHdr}>
                     <Text style={[S.tableHdrT, { flex: 2 }]}>Phase</Text>
                     <Text style={[S.tableHdrT, { flex: 3 }]}>Task</Text>
-                    <Text style={S.tableHdrT}>Days</Text>
+                    <Text style={S.tableHdrT}>Time needed</Text>
                   </View>
                   {safeArr(d.implementationPlan.tasks).map((t: any, i: number) => (
                     <View key={i} wrap={false} style={i % 2 === 0 ? S.tableRow : S.tableRowAlt}>
                       <Text style={[S.tableCellB, { flex: 2 }]}>{safe(t.phase)}</Text>
                       <Text style={[S.tableCell, { flex: 3 }]}>{safe(t.task)}</Text>
-                      <Text style={S.tableCell}>{safe(t.estimatedDays)}</Text>
+                      <Text style={S.tableCell}>{t.estimatedDays ? getDurationLabel(Number(t.estimatedDays)) : '—'}</Text>
                     </View>
                   ))}
                 </View>
@@ -795,7 +858,7 @@ export const GardenPlanPDF = ({ doc, plan, logoBase64, imageBase64, imageDataUrl
         {/* ── 9. Maintenance Schedule ─────────────────────────── */}
         <Section num="09" title="Ongoing Care">
           <Text style={[S.small, { color: T.inkLight, fontStyle: 'italic', marginBottom: 10 }]}>
-            Based on the proposed plant palette. Adjust for your local climate and how plants establish in their first season.
+            This is your year-round care guide. Every garden is different — use this as a starting point and adjust as you get to know your plants.
           </Text>
           {d.maintenanceSchedule ? (
             <>
@@ -870,14 +933,18 @@ export const GardenPlanPDF = ({ doc, plan, logoBase64, imageBase64, imageDataUrl
 
           <Section num="11" title="Key Considerations">
             <Text style={[S.body, { marginBottom: 12 }]}>
-              The following are important factors that must be addressed before groundworks begin.
+              A few things worth checking before you get started — nothing to worry about, just good to know.
             </Text>
-            {safeArr(d.keyConsiderations).map((item: any, i: number) => (
-              <View key={i} style={{ marginBottom: 10 }} wrap={false}>
-                <Text style={[S.bold, { marginBottom: 2 }]}>{safe(item.heading)}</Text>
-                <Text style={S.body}>{safe(item.guidance)}</Text>
-              </View>
-            ))}
+            {safeArr(d.keyConsiderations).map((item: any, i: number) => {
+              const prepend = KEY_CONSIDERATION_PREPEND[item.heading] || null;
+              return (
+                <View key={i} style={{ marginBottom: 10 }} wrap={false}>
+                  <Text style={[S.bold, { marginBottom: 2 }]}>{safe(item.heading)}</Text>
+                  {prepend ? <Text style={[S.body, { fontStyle: 'italic', marginBottom: 2 }]}>{prepend}</Text> : null}
+                  <Text style={S.body}>{safe(item.guidance)}</Text>
+                </View>
+              );
+            })}
           </Section>
         </Page>
       ) : null}
@@ -930,25 +997,20 @@ export const GardenPlanPDF = ({ doc, plan, logoBase64, imageBase64, imageDataUrl
               {hasBefore && hasAfter ? (
                 <View style={S.imgRow}>
                   <View style={S.imgCol}>
-                    <Text style={S.imgCap}>Before — Existing Site</Text>
+                    <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: '#0a3d2b', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 1 }}>Before</Text>
                     <Image src={imageDataUrl!} style={S.imgPhoto} />
                   </View>
                   <View style={S.imgCol}>
-                    <Text style={S.imgCap}>Your finished garden</Text>
+                    <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: '#0a3d2b', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 1 }}>Your redesigned garden</Text>
                     <Image src={imageBase64} style={S.imgPhoto} />
                   </View>
                 </View>
               ) : hasAfter ? (
                 <>
-                  <Text style={S.imgCap}>Your finished garden — {style}</Text>
+                  <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: '#0a3d2b', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 1 }}>Your redesigned garden</Text>
                   <Image src={imageBase64} style={S.imgSingle} />
                 </>
-              ) : (
-                <>
-                  <Text style={S.imgCap}>Existing Site</Text>
-                  <Image src={imageDataUrl!} style={S.imgSingle} />
-                </>
-              )}
+              ) : null}
             </>
           ) : null}
 
@@ -1005,13 +1067,6 @@ export const GardenPlanPDF = ({ doc, plan, logoBase64, imageBase64, imageDataUrl
                 <Bullet key={i} text={c} />
               ))}
             </>
-          ) : null}
-
-          {/* E: Confidence */}
-          {d.confidence ? (
-            <Text style={[S.small, { marginTop: 8 }]}>
-              Design confidence score: {Math.round(d.confidence * 100)}% — based on image clarity and available site data.
-            </Text>
           ) : null}
 
         </Section>
