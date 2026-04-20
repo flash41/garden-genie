@@ -7,6 +7,23 @@ export const dynamic = 'force-dynamic';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+function normalisePostcode(raw: string): string {
+  const upper = raw.toUpperCase().trim().replace(/\s+/g, ' ');
+  // Already has a space — return as-is
+  if (upper.includes(' ')) return upper;
+  // US zip: 5 digits or 5+4
+  if (/^\d{5}(-\d{4})?$/.test(upper)) return upper;
+  // Irish: 3 chars + 5 chars = 8 chars total (e.g. D08KRW0 → D08 KRW0)
+  if (/^[A-Z]\d{2}[A-Z0-9]{4,5}$/.test(upper)) {
+    return upper.slice(0, 3) + ' ' + upper.slice(3);
+  }
+  // UK: insert space before last 3 chars (e.g. SW1A1AA → SW1A 1AA)
+  if (upper.length >= 5) {
+    return upper.slice(0, upper.length - 3) + ' ' + upper.slice(upper.length - 3);
+  }
+  return upper;
+}
+
 export async function POST(req: NextRequest) {
   let body: Record<string, unknown>;
   try {
@@ -15,13 +32,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: false, error: 'Invalid request body' }, { status: 400 });
   }
 
-  const { sessionId, email, postcode, quotesRequested, countryCode } = body as {
+  const { sessionId, email, quotesRequested, countryCode } = body as {
     sessionId?: string;
     email?: string;
-    postcode?: string;
     quotesRequested?: number;
     countryCode?: string;
   };
+  const postcode = normalisePostcode(body.postcode ?? '');
 
   if (!email || !postcode || !sessionId) {
     return NextResponse.json({ success: false, error: 'email, postcode and sessionId are required' }, { status: 400 });
