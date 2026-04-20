@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import ExamplesCarousel from '@/components/ExamplesCarousel';
 
 const exampleGardens = [
   { slug: 'japanese-zen',         badge: 'Japanese Zen',           title: 'The Tranquil Courtyard',    descriptor: 'Calm. Considered. Timeless.',    image: '/examples/zen-after.jpg' },
@@ -460,7 +461,7 @@ export default function LandingPage() {
                 See a real Action Plan
               </h2>
             </div>
-            <Link href="/design" style={{ fontSize: 10, letterSpacing: 2.5, textTransform: 'uppercase', color: 'var(--gold)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10, whiteSpace: 'nowrap', transition: 'gap 0.3s' }}>
+            <Link href="/examples" style={{ fontSize: 10, letterSpacing: 2.5, textTransform: 'uppercase', color: 'var(--gold)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10, whiteSpace: 'nowrap', transition: 'gap 0.3s' }}>
               See a real Action Plan →
               <svg width="20" height="8" viewBox="0 0 20 8" fill="none"><line x1="0" y1="4" x2="18" y2="4" stroke="currentColor" strokeWidth="1"/><polyline points="14,1 18,4 14,7" stroke="currentColor" strokeWidth="1" fill="none"/></svg>
             </Link>
@@ -484,6 +485,11 @@ export default function LandingPage() {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Before/After Carousel */}
+        <div style={{ marginTop: 48, position: 'relative', zIndex: 2 }}>
+          <ExamplesCarousel />
         </div>
       </section>
 
