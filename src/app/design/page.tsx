@@ -2745,9 +2745,21 @@ export default function GardigApp() {
 
         {/* ── YOUR GARDEN (merged: overview + site + concept) ── */}
         {activeTab === "your-garden" && <>
+          {renderUrl && (
+            <div style={{ marginBottom: 20 }}>
+              <img
+                src={renderUrl}
+                alt={designLang + ' garden render'}
+                style={{ width: '100%', maxHeight: 480, objectFit: 'cover', borderRadius: C.rLg, display: 'block' }}
+              />
+              <p style={{ margin: '8px 0 0', textAlign: 'center', fontSize: px(11), fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#b8962e' }}>
+                {designLang}
+              </p>
+            </div>
+          )}
           <SectionTitle n="01" title="Your Garden" />
           <Card accent>
-            <Body>{doc.overview?.scopeDescription}</Body>
+            <Body style={{ fontSize: px(18), fontStyle: 'italic', paddingLeft: '1.25rem' }}>{doc.overview?.scopeDescription}</Body>
           </Card>
           <StatGrid items={[
             { label: "Client",            value: clientName || "Private Client" },
