@@ -940,7 +940,7 @@ function GridOverlayImage({ src, plants, label, showMarkers = true, perspectiveD
 
 function LayoutPlanImage({ src }: { src: string; boundaryPolygon?: Array<{x: number; y: number}> | null }) {
   return (
-    <div style={{ position: 'relative' }}>
+    <div style={{ position: 'relative', backgroundColor: '#f9f6f0' }}>
       <img
         src={src}
         alt="Garden Layout Plan"

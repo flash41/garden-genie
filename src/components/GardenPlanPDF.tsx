@@ -549,7 +549,9 @@ export const GardenPlanPDF = ({ doc, plan, logoBase64, imageBase64, imageDataUrl
         <Section num="04" title="Spatial Layout &amp; Zoning">
           {aerialImageUrl ? (
             <>
-              <Image src={aerialImageUrl} style={[S.imgSingle, { height: 300, objectFit: 'contain', marginBottom: 4 }]} />
+              <View style={{ backgroundColor: '#f9f6f0', marginBottom: 4 }}>
+                <Image src={aerialImageUrl} style={[S.imgSingle, { height: 340, objectFit: 'contain', marginBottom: 0 }]} />
+              </View>
               <Text style={[S.small, { color: T.inkLight, fontStyle: 'italic', marginBottom: 12, textAlign: 'center' }]}>
                 Garden Layout Plan — print this and take it outside.
               </Text>
@@ -986,7 +988,9 @@ export const GardenPlanPDF = ({ doc, plan, logoBase64, imageBase64, imageDataUrl
             <Text style={[S.small, { marginBottom: 8 }]}>
               Top-down layout sketch showing proposed planting areas. Print this and take it outside.
             </Text>
-            <Image src={aerialImageUrl} style={[S.imgSingle, { height: 360, objectFit: 'contain' }]} />
+            <View style={{ backgroundColor: '#f9f6f0', marginBottom: 12 }}>
+              <Image src={aerialImageUrl} style={[S.imgSingle, { height: 360, objectFit: 'contain', marginBottom: 0 }]} />
+            </View>
             {plants.length > 0 ? (
               <>
                 <SubHead text="Plant Reference" />
