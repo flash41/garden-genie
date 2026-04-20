@@ -257,10 +257,17 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
       // ── 4. Fetch render image as base64 via proxy (avoids CORS in WASM) ──
       let imageBase64 = '';
       if (dbRenderUrl) {
+        console.log('[generatePdfFallback] Fetching render image via proxy:', dbRenderUrl);
         const fetched = await fetchAssetSafe(dbRenderUrl);
         if (fetched) {
+          console.log('[generatePdfFallback] Render image fetched OK, resizing…');
           imageBase64 = await resizeImageForPdf(fetched);
+          console.log('[generatePdfFallback] Resize complete, base64 length:', imageBase64.length);
+        } else {
+          console.error('[generatePdfFallback] fetchAssetSafe returned null for render URL — image will be blank in PDF. URL was:', dbRenderUrl);
         }
+      } else {
+        console.warn('[generatePdfFallback] No render URL available — imageBase64 will be empty');
       }
 
       // ── 5. Fetch logo ──
@@ -276,6 +283,7 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
           imageDataUrl={beforeImageBase64 || undefined}
           style={dbStyle}
           referenceNumber={dbRefNum}
+          postcode={postcode || undefined}
         />
       );
 

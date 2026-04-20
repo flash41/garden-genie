@@ -1,4 +1,5 @@
 import { Document, Page, Text, View, Image, StyleSheet } from '@react-pdf/renderer';
+import { getCurrencyFromPostcode, formatCurrency, type CurrencyConfig } from '@/lib/currencyFromPostcode';
 
 // Logo is passed as a pre-fetched base64 data URL from the caller to avoid
 // CORS failures when react-pdf's WASM renderer tries to fetch remote URLs.
@@ -60,7 +61,7 @@ const S = StyleSheet.create({
 
   // ── Cover ──────────────────────────────────────────────────────────────────
   coverPage:    { backgroundColor: T.brandDk, fontFamily: 'Helvetica', position: 'relative' },
-  coverBg:      { position: 'absolute', top: 0, left: 0, right: 0, height: 420, objectFit: 'cover', opacity: 0.42 },
+  coverBg:      { position: 'absolute', top: 0, left: 0, right: 0, height: 500, objectFit: 'cover', opacity: 0.75 },
   coverOverlay: { position: 'absolute', top: 300, left: 0, right: 0, height: 140, backgroundColor: T.brandDk, opacity: 0.88 },
   coverTopRule: { position: 'absolute', top: 0, left: 0, right: 0, height: 4, backgroundColor: T.accent },
   coverContent: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, padding: 44, justifyContent: 'space-between' },
@@ -224,9 +225,10 @@ function getDurationLabel(days: number): string {
   return 'A few weeks';
 }
 
+// formatCost is currency-aware; populated from postcode prop inside the component
+let _activeCurrency: CurrencyConfig = { code: 'EUR', symbol: '\u20ac', locale: 'en-IE' };
 function formatCost(val: string | undefined): string {
-  if (!val) return '';
-  return val.replace(/\$/g, '\u20ac');
+  return formatCurrency(val, _activeCurrency);
 }
 
 const KEY_CONSIDERATION_PREPEND: Record<string, string> = {
@@ -268,13 +270,15 @@ interface Props {
   gardenOrientation?: string;
   transformationLevel?: number;
   referenceNumber?: string;
+  postcode?: string;
 }
 
-export const GardenPlanPDF = ({ doc, plan, logoBase64, imageBase64, imageDataUrl, gridImageUrl, aerialImageUrl, style, clientName, siteAddress, gardenOrientation, transformationLevel, referenceNumber }: Props) => {
+export const GardenPlanPDF = ({ doc, plan, logoBase64, imageBase64, imageDataUrl, gridImageUrl, aerialImageUrl, style, clientName, siteAddress, gardenOrientation, transformationLevel, referenceNumber, postcode }: Props) => {
   const d = doc || {};
   const hasBefore = !!imageDataUrl;
   const hasAfter  = !!imageBase64;
-  const cur = d.costEstimate?.currency || 'EUR';
+  _activeCurrency = getCurrencyFromPostcode(postcode || d.siteAddress);
+  const cur = _activeCurrency.code;
   const coverImg = imageBase64 || imageDataUrl || null;
 
   const dateStr = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
