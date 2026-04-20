@@ -3,7 +3,7 @@
 export default function ExamplesCTA() {
   return (
     <a
-      href="/"
+      href="/design"
       style={{
         display: 'inline-block',
         background: '#0a3d2b',
