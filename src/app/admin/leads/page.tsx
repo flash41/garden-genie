@@ -22,21 +22,18 @@ export default async function AdminLeadsPage() {
       email,
       postcode,
       quotes_requested,
-      created_at,
-      submitted_at,
       actioned,
       actioned_at,
-      latitude,
-      longitude,
-      country,
-      country_code,
+      submitted_at,
+      confirmation_sent,
+      design_record_id,
       design_records (
+        reference_number,
         design_style,
-        pdf_url,
-        reference_number
+        render_url
       )
     `)
-    .order('created_at', { ascending: false });
+    .order('submitted_at', { ascending: false });
 
   if (error) {
     console.error('Leads fetch error:', error);
