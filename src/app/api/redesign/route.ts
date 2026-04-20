@@ -43,7 +43,7 @@ const DESIGN_SCHEMA = `{
     "conceptStatement": "3-4 sentences on design approach",
     "rationale": "why this design language suits this specific site",
     "principles": ["5-6 specific guiding design principles"],
-    "colourPalette": ["5-8 colours as named descriptions"],
+    "colourPalette": "return exactly 5-6 colours as an array of objects, each with: { name: string, hex: string, role: string } where hex is a valid CSS hex code (e.g. #87AE73) and role is a short label such as 'Primary foliage', 'Hardscape', 'Accent bloom', 'Ground cover'.",
     "materialMoods": ["4-6 defining material types"]
   },
   "spatialLayout": {
