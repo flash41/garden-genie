@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const PROTECTED_PAGES = ['/design'];
+const PROTECTED_PAGES: string[] = [];
 const PROTECTED_API = ['/api/redesign', '/api/analyse'];
 
 export function middleware(request: NextRequest) {
@@ -26,8 +26,6 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/design',
-    '/design/:path*',
     '/api/redesign',
     '/api/redesign/:path*',
     '/api/analyse',
