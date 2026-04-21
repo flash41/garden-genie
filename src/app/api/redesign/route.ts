@@ -1335,6 +1335,19 @@ Return ONLY valid JSON:
 // unreliable at scale. The credit safety rule above must be preserved in any
 // future architecture.
 
+function currencyFromCountry(countryCode: string | null): string {
+  if (!countryCode) return 'EUR';
+  const c = countryCode.toUpperCase();
+  if (c === 'GB') return 'GBP';
+  if (c === 'US' || c === 'CA') return 'USD';
+  if (c === 'AU' || c === 'NZ') return 'AUD';
+  const eur = ['IE','DE','FR','ES','IT','NL','BE','AT','PT',
+    'FI','SE','DK','NO','PL','CZ','HU','RO','GR','HR','SK',
+    'SI','EE','LV','LT','LU','MT','CY','BG'];
+  if (eur.includes(c)) return 'EUR';
+  return 'EUR';
+}
+
 export async function POST(request: NextRequest) {
   const apiKey = process.env.GOOGLE_API_KEY;
   if (!apiKey) {
@@ -1397,6 +1410,13 @@ export async function POST(request: NextRequest) {
     console.log('Geo lookup failed, using default region');
   }
 
+  // Prefer Vercel's edge-injected country header over IP geolocation
+  const vercelCountry = request.headers.get('x-vercel-ip-country');
+  if (vercelCountry) country = vercelCountry;
+
+  const serverCurrency = currencyFromCountry(country);
+  const effectiveCurrency = serverCurrency;
+
   try {
     const {
       originalImageBase64,
@@ -1405,7 +1425,6 @@ export async function POST(request: NextRequest) {
       orientation,
       clientName,
       turnstileToken,
-      currency,
       hardinessZone,
       transformationLevel: rawTransformationLevel,
     } = await request.json();
@@ -1444,7 +1463,6 @@ export async function POST(request: NextRequest) {
     const effectiveMimeType = originalImageMimeType || 'image/jpeg';
     const effectiveOrientation = orientation || 'N';
     const effectiveClientName = clientName || 'Private Client';
-    const effectiveCurrency = currency || 'GBP';
 
     // ── Step 1 — Spatial Fingerprint ────────────────────────────────────────────
     console.log('[Pipeline] Step 1: Spatial fingerprint...');
@@ -1614,7 +1632,7 @@ export async function POST(request: NextRequest) {
       costEstimate: { total: 'To be confirmed', breakdown: [] },
     };
 
-    return NextResponse.json({ designJSON: finalDesignJSON, imageBase64, aerialImageBase64, validationResult, retried, fingerprint, perspectiveGridBase64, controlPoints, g2Grid });
+    return NextResponse.json({ designJSON: finalDesignJSON, imageBase64, aerialImageBase64, validationResult, retried, fingerprint, perspectiveGridBase64, controlPoints, g2Grid, detectedCurrency: effectiveCurrency });
 
   } catch (error: unknown) {
     if (jobId) {

@@ -339,6 +339,21 @@ const SCHEMA = `{
   "caveats": ["any assumptions made or limitations of this proposal"]
 }`;
 
+// ─── CURRENCY HELPER ───────────────────────────────────────────────────────────
+
+function currencyFromCountry(countryCode: string | null): string {
+  if (!countryCode) return 'EUR';
+  const c = countryCode.toUpperCase();
+  if (c === 'GB') return 'GBP';
+  if (c === 'US' || c === 'CA') return 'USD';
+  if (c === 'AU' || c === 'NZ') return 'AUD';
+  const eur = ['IE','DE','FR','ES','IT','NL','BE','AT','PT',
+    'FI','SE','DK','NO','PL','CZ','HU','RO','GR','HR','SK',
+    'SI','EE','LV','LT','LU','MT','CY','BG'];
+  if (eur.includes(c)) return 'EUR';
+  return 'EUR';
+}
+
 // ─── ROUTE HANDLER ─────────────────────────────────────────────────────────────
 
 export async function POST(request: Request) {
@@ -367,8 +382,15 @@ export async function POST(request: Request) {
     console.log('Geo lookup failed, using default region');
   }
 
+  // Prefer Vercel's edge-injected country header over IP geolocation
+  const vercelCountry = request.headers.get('x-vercel-ip-country');
+  if (vercelCountry) country = vercelCountry;
+
+  const serverCurrency = currencyFromCountry(country);
+  const effectiveCurrency = serverCurrency;
+
   try {
-    const { image, designLang, clientName, orientation, turnstileToken, currency } = await request.json();
+    const { image, designLang, clientName, orientation, turnstileToken } = await request.json();
 
     // ── Turnstile verification (only when secret key is configured) ────────────
     const turnstileSecret = process.env.TURNSTILE_SECRET_KEY;
@@ -400,7 +422,7 @@ Client: ${clientName || 'Private Client'}
 Design Language: ${designLang}
 Geographic Region: ${region}
 Plant Climate: Only suggest plants proven to thrive in ${country} — hardy to at least -10°C, tolerating wet winters and cool summers for this region.
-Cost Currency: All cost estimates must be provided in ${currency || 'GBP'}. Use realistic local market prices for ${country}.${orientation ? `\nGarden Orientation: ${orientation} — The garden faces ${orientation}. The photo was taken looking ${orientation}. Factor sun exposure accordingly.` : ''}
+Cost Currency: All cost estimates must be provided in ${effectiveCurrency}. Use realistic local market prices for ${country}.${orientation ? `\nGarden Orientation: ${orientation} — The garden faces ${orientation}. The photo was taken looking ${orientation}. Factor sun exposure accordingly.` : ''}
 
 STEP 1 — Study the photograph:
 Identify every visible element: surfaces, structures, boundaries, plants, levels, light direction, shadows, existing trees, paths, drainage evidence, access points.
@@ -421,7 +443,7 @@ Minimum counts you must meet:
 - irrigationZones: 2+
 - implementationPlan tasks: 9+ across 3 phases
 - maintenanceSchedule tasks: 8+ across 4 seasons
-- costEstimate lines: 6+ with realistic non-zero ${currency || 'GBP'} values
+- costEstimate lines: 6+ with realistic non-zero ${effectiveCurrency} values
 
 SCHEMA:
 ${SCHEMA}`;
@@ -482,7 +504,7 @@ ${SCHEMA}`;
       );
     }
 
-    return NextResponse.json(parsed);
+    return NextResponse.json({ ...(parsed as Record<string, unknown>), detectedCurrency: effectiveCurrency });
 
   } catch (error: any) {
     console.error('❌ /api/analyse error:', error);

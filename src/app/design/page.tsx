@@ -1324,6 +1324,10 @@ function CostTable({ costEstimate, currency: currencyProp }: { costEstimate: any
   const [currency, setCurrency] = useState(currencyProp || 'GBP');
   useEffect(() => { setCurrency(currencyProp || detectCurrency()); }, [currencyProp]);
   if (!costEstimate?.lines?.length) return null;
+  const currencySymbol =
+    currency === 'GBP' ? '£' :
+    currency === 'USD' ? '$' :
+    currency === 'AUD' ? 'A$' : '€';
   const lo = costEstimate.lines.reduce((s: number, l: any) => s + (l.low || 0), 0);
   const hi = costEstimate.lines.reduce((s: number, l: any) => s + (l.high || 0), 0);
   const mid = (lo + hi) / 2;
@@ -1333,7 +1337,7 @@ function CostTable({ costEstimate, currency: currencyProp }: { costEstimate: any
     try {
       return new Intl.NumberFormat(navigator.language, { style: 'currency', currency, maximumFractionDigits: 0 }).format(Math.round(n));
     } catch {
-      return `${currency} ${Math.round(n).toLocaleString()}`;
+      return `${currencySymbol}${Math.round(n).toLocaleString()}`;
     }
   };
   return (
@@ -1730,6 +1734,7 @@ export default function GardigApp() {
       perspectiveGridBase64: data.perspectiveGridBase64 || null,
       controlPoints: data.controlPoints || {},
       g2Grid: data.g2Grid || {},
+      detectedCurrency: data.detectedCurrency || null,
     };
   };
 
@@ -1777,6 +1782,9 @@ export default function GardigApp() {
       console.log('[pipeline] response received — imageBase64:', result.imageBase64 ? result.imageBase64.length : 'NULL', '| imageError:', (result as any).imageError ?? 'none', '| aerialImageBase64:', result.aerialImageBase64 ? result.aerialImageBase64.length : 'NULL');
 
       setDocData(result.designJSON);
+      if (result.detectedCurrency) {
+        setUserCurrency(result.detectedCurrency);
+      }
       if (!result.designJSON) {
         console.warn('[handleAnalyse] designJSON missing from pipeline response — plan data will be incomplete');
         try { sessionStorage.setItem('garden_plan_data_status', 'missing'); } catch (_) {}
@@ -3223,7 +3231,7 @@ export default function GardigApp() {
         {/* ── COST ESTIMATE ── */}
         {activeTab === "costs" && <>
           <SectionTitle n="08" title="Cost Estimate" />
-          <CostTable costEstimate={doc.costEstimate} />
+          <CostTable costEstimate={doc.costEstimate} currency={userCurrency} />
           {doc.costEstimate?.costingNotes && (
             <Card style={{ marginTop: 16 }}>
               <Body>{doc.costEstimate.costingNotes}</Body>
