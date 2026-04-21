@@ -967,7 +967,7 @@ function SectionTitle({ n, title }: { n: string; title: string }) {
 
 function Card({ children, style = {}, accent = false }: { children: React.ReactNode; style?: React.CSSProperties; accent?: boolean }) {
   return (
-    <div style={{
+    <div className="dedrab-card" style={{
       background: C.card, borderRadius: C.rLg,
       border: `1px solid ${C.rule}`,
       borderLeft: accent ? `4px solid ${C.accent}` : `1px solid ${C.rule}`,
@@ -980,7 +980,12 @@ function Card({ children, style = {}, accent = false }: { children: React.ReactN
 }
 
 function Label({ children }: { children: React.ReactNode }) {
-  return <div style={{ fontSize: px(11), color: C.inkLight, fontFamily: C.font, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 6 }}>{children}</div>;
+  return (
+    <div style={{ marginBottom: 10 }}>
+      <div className="dedrab-section-title" style={{ fontFamily: C.font }}>{children}</div>
+      <hr className="dedrab-section-rule" />
+    </div>
+  );
 }
 
 function Body({ children, style = {} }: { children: React.ReactNode; style?: React.CSSProperties }) {
@@ -1522,11 +1527,9 @@ export default function GardigApp() {
   const [saveComplete, setSaveComplete]       = useState(false);
   const [showRestoreBanner, setShowRestoreBanner] = useState(false);
   const [savedResults, setSavedResults]           = useState<any>(null);
-  const [inviteCode, setInviteCode]           = useState<string | null>(null);
   const [rendersRemaining, setRendersRemaining] = useState<number | null>(null);
   const [maxRenders, setMaxRenders]           = useState<number | null>(null);
-  const [renderBlocked, setRenderBlocked]     = useState(false);
-  const [inviteRedirectNeeded, setInviteRedirectNeeded] = useState(false);
+  const [gateMessage, setGateMessage]         = useState<'none' | 'expired' | 'no_invite'>('none');
   const [pdfGenerating, setPdfGenerating] = useState(false);
   const [pdfError, setPdfError]           = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -1574,13 +1577,9 @@ export default function GardigApp() {
     setUserCurrency(detectCurrency());
   }, []);
 
-  // Read invite cookie and fetch remaining renders on mount
+  // Fetch remaining renders on mount (reads invite cookie server-side)
   useEffect(() => {
-    const match = document.cookie.match(/(?:^|;\s*)dedrab_invite=([^;]+)/);
-    const code = match ? decodeURIComponent(match[1]) : null;
-    if (!code) return;
-    setInviteCode(code);
-    fetch('/api/invite-status?code=' + encodeURIComponent(code))
+    fetch('/api/invite-status', { credentials: 'include' })
       .then(r => r.json())
       .then(d => {
         if (typeof d.remaining === 'number') setRendersRemaining(d.remaining);
@@ -1702,21 +1701,17 @@ export default function GardigApp() {
         return;
       }
       if (response.status === 401) {
-        setError("Please return to the invite page and enter your code.");
-        setInviteRedirectNeeded(true);
-        setRenderBlocked(true);
+        setGateMessage('no_invite');
         setStep("upload");
         return;
       }
       if (response.status === 402) {
-        setError("You have used all of your available renders. Thank you for testing Dedrab.");
-        setRenderBlocked(true);
+        setGateMessage('expired');
         setStep("upload");
         return;
       }
       if (response.status === 429) {
         setError("You have reached the maximum of 4 renders in 24 hours. Please try again tomorrow.");
-        setRenderBlocked(true);
         setStep("upload");
         return;
       }
@@ -1741,6 +1736,20 @@ export default function GardigApp() {
   const handleAnalyse = async () => {
     setHasAttempted(true);
     if (!isFormValid()) return;
+
+    // Gate check — verify invite is still valid before calling the pipeline
+    try {
+      const gateRes = await fetch('/api/invite-status', { credentials: 'include' });
+      const gateData = await gateRes.json();
+      if (!gateData.valid) {
+        setGateMessage(gateData.reason === 'expired' ? 'expired' : 'no_invite');
+        return;
+      }
+      setGateMessage('none');
+    } catch {
+      // Network error — proceed and let the pipeline handle auth
+    }
+
     setError(null);
     setDocData(null);
     setRenderUrl(null);
@@ -1841,15 +1850,13 @@ export default function GardigApp() {
       setStep("result");
       setActiveTab("your-garden");
       // Refresh remaining renders count
-      if (inviteCode) {
-        fetch('/api/invite-status?code=' + encodeURIComponent(inviteCode))
-          .then(r => r.json())
-          .then(d => {
-            if (typeof d.remaining === 'number') setRendersRemaining(d.remaining);
-            if (typeof d.max_renders === 'number') setMaxRenders(d.max_renders);
-          })
-          .catch(() => {});
-      }
+      fetch('/api/invite-status', { credentials: 'include' })
+        .then(r => r.json())
+        .then(d => {
+          if (typeof d.remaining === 'number') setRendersRemaining(d.remaining);
+          if (typeof d.max_renders === 'number') setMaxRenders(d.max_renders);
+        })
+        .catch(() => {});
     } catch (err: any) {
       setError(err.message);
       setStep("upload");
@@ -1873,6 +1880,21 @@ export default function GardigApp() {
         .site-logo-h{height:40px;width:auto;display:block}
         @media(max-width:640px){.site-logo-h{height:28px}}
         .upload-generate-btn:hover:not(:disabled){background:#053d2f!important;transform:translateY(-1px);box-shadow:0 6px 20px rgba(6,78,59,0.35)!important}
+        input:focus,select:focus{outline:2px solid #b8962e;outline-offset:-1px}
+        .dedrab-input,.dedrab-select{width:100%;box-sizing:border-box;border:1.5px solid #c8bfaf!important;border-radius:8px!important;padding:12px 14px!important;font-size:15px!important;color:#1a1a1a!important;background:#ffffff!important;transition:border-color 0.15s,box-shadow 0.15s;outline:none!important}
+        .dedrab-input:focus,.dedrab-select:focus{border-color:#0a3d2b!important;box-shadow:0 0 0 3px rgba(10,61,43,0.10)!important}
+        .dedrab-label{display:block;font-weight:600!important;font-size:13px!important;color:#1a1a1a!important;letter-spacing:0.02em;margin-bottom:7px!important}
+        .dedrab-section-rule{height:1px;background:#D4AF37;opacity:0.5;margin:10px 0 20px 0;border:none}
+        .dedrab-section-title{font-size:11px!important;font-weight:700!important;letter-spacing:0.14em!important;color:#b8962e!important;text-transform:uppercase;margin-bottom:0!important}
+        .upload-generate-btn{font-size:17px!important;font-weight:700!important;letter-spacing:0.05em!important;padding:17px 32px!important;box-shadow:0 4px 20px rgba(10,61,43,0.22)!important;transition:all 0.2s!important;border-radius:10px!important}
+        .upload-generate-btn:hover:not(:disabled){background:#0d5238!important;box-shadow:0 6px 24px rgba(10,61,43,0.30)!important;transform:translateY(-1px)}
+        .dedrab-card{box-shadow:0 2px 16px rgba(0,0,0,0.07)!important;transition:box-shadow 0.2s}
+        .dedrab-tip{background:#f0f7f0!important;border-left:4px solid #0a3d2b!important;border-radius:6px!important;padding:14px 18px!important;margin-top:16px}
+        .dedrab-tip-title{color:#0a3d2b!important;font-size:11px!important;font-weight:700!important;letter-spacing:0.12em!important;margin-bottom:8px!important}
+        .dedrab-level-display{font-size:22px!important;font-weight:700!important;color:#0a3d2b!important}
+        .dedrab-level-number{color:#b8962e!important}
+        .dedrab-level-desc{font-size:13px!important;color:#555555!important;line-height:1.6!important;font-style:italic!important;max-width:560px;margin:8px auto 0!important}
+        .dedrab-submit-meta{text-align:center;margin-top:10px;font-size:12px;color:#999999;line-height:1.5}
       `}</style>
 
       <Suspense fallback={null}>
@@ -1980,14 +2002,14 @@ export default function GardigApp() {
             <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])} />
 
 {/* Upload guidelines */}
-<div style={{
+<div className="dedrab-tip" style={{
   marginTop: 14,
   background: '#f0f7f4',
   borderLeft: `3px solid #064e3b`,
   borderRadius: `0 ${C.r} ${C.r} 0`,
   padding: '12px 14px',
 }}>
-  <div style={{ fontSize: px(10), letterSpacing: "0.12em", color: '#064e3b', textTransform: "uppercase", fontWeight: 700, marginBottom: 8, fontFamily: C.font }}>
+  <div className="dedrab-tip-title" style={{ fontSize: px(10), letterSpacing: "0.12em", color: '#064e3b', textTransform: "uppercase", fontWeight: 700, marginBottom: 8, fontFamily: C.font }}>
     For the best result
   </div>
   <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -2014,28 +2036,28 @@ export default function GardigApp() {
             <Label>02 — Project Details</Label>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               <div>
-                <label style={{ display: "block", fontSize: px(12), color: C.inkLight, marginBottom: 5, fontWeight: 600 }}>Client Name <span style={{ color: C.inkLight, fontWeight: 400 }}>(optional)</span></label>
-                <input value={clientName} onChange={(e: any) => setClientName(e.target.value)} placeholder="e.g. Johnson Residence"
+                <label className="dedrab-label" style={{ display: "block", fontSize: px(12), color: C.inkMid, marginBottom: 5, fontWeight: 600 }}>Client Name <span style={{ color: C.inkLight, fontWeight: 400 }}>(optional)</span></label>
+                <input className="dedrab-input" value={clientName} onChange={(e: any) => setClientName(e.target.value)} placeholder="e.g. Johnson Residence"
                   style={{ width: "100%", padding: "9px 11px", border: `1px solid ${C.rule}`, borderRadius: C.r, fontFamily: C.font, fontSize: px(BASE - 1), color: C.ink, outline: "none" }} />
               </div>
               <div>
-                <label style={{ display: "block", fontSize: px(12), color: C.inkLight, marginBottom: 5, fontWeight: 600 }}>Your Email Address <span style={{ color: C.red }}>*</span></label>
-                <input type="email" value={userEmail} onChange={(e: any) => setUserEmail(e.target.value)} placeholder="we'll send your plan here"
+                <label className="dedrab-label" style={{ display: "block", fontSize: px(12), color: C.inkMid, marginBottom: 5, fontWeight: 600 }}>Your Email Address <span style={{ color: C.red }}>*</span></label>
+                <input className="dedrab-input" type="email" value={userEmail} onChange={(e: any) => setUserEmail(e.target.value)} placeholder="we'll send your plan here"
                   style={{ width: "100%", padding: "9px 11px", border: `1px solid ${hasAttempted && (!userEmail || !userEmail.includes('@') || !userEmail.includes('.')) ? "#fca5a5" : C.rule}`, borderRadius: C.r, fontFamily: C.font, fontSize: px(BASE - 1), color: C.ink, outline: "none" }} />
                 <div style={{ fontSize: px(11), color: C.inkLight, marginTop: 4 }}>We only use this to send you your plan</div>
               </div>
               <div>
-                <label style={{ display: "block", fontSize: px(12), color: C.inkLight, marginBottom: 5, fontWeight: 600 }}>Design Language <span style={{ color: C.red }}>*</span></label>
-                <select value={designLang} onChange={(e: any) => setDesignLang(e.target.value)}
+                <label className="dedrab-label" style={{ display: "block", fontSize: px(12), color: C.inkMid, marginBottom: 5, fontWeight: 600 }}>Design Language <span style={{ color: C.red }}>*</span></label>
+                <select className="dedrab-select" value={designLang} onChange={(e: any) => setDesignLang(e.target.value)}
                   style={{ width: "100%", padding: "9px 11px", border: `1px solid ${C.rule}`, borderRadius: C.r, fontFamily: C.font, fontSize: px(BASE - 1), background: C.card, color: C.ink, outline: "none" }}>
                   {DESIGN_LANGUAGES.map(l => <option key={l.value} value={l.label}>{l.label}</option>)}
                 </select>
               </div>
               <div>
-                <label style={{ display: "block", fontSize: px(12), color: C.inkLight, marginBottom: 5, fontWeight: 600 }}>
+                <label className="dedrab-label" style={{ display: "block", fontSize: px(12), color: C.inkMid, marginBottom: 5, fontWeight: 600 }}>
                   Hardiness Zone <span style={{ color: C.inkLight, fontWeight: 400 }}>(optional)</span>
                 </label>
-                <select value={hardinessZone} onChange={(e: any) => setHardinessZone(e.target.value)}
+                <select className="dedrab-select" value={hardinessZone} onChange={(e: any) => setHardinessZone(e.target.value)}
                   style={{ width: "100%", padding: "9px 11px", border: `1px solid ${C.rule}`, borderRadius: C.r, fontFamily: C.font, fontSize: px(BASE - 1), background: C.card, color: hardinessZone ? C.ink : C.inkLight, outline: "none" }}>
                   <option value="">Select zone…</option>
                   <option value="Zone 1">Zone 1 — below −46°C (below −51°F)</option>
@@ -2068,11 +2090,11 @@ export default function GardigApp() {
           const cl = TRANSFORMATION_LEVELS[transformationLevel - 1];
           const pct = `${(transformationLevel - 1) / 4 * 100}%`;
           return (
-            <div style={{ marginTop: 22, background: C.card, border: `1px solid ${C.rule}`, borderTop: `2px solid #D4AF37`, borderLeft: `4px solid ${C.accent}`, borderRadius: C.rLg, padding: "18px 22px", boxShadow: C.shadow }}>
+            <div className="dedrab-card" style={{ marginTop: 22, background: C.card, border: `1px solid ${C.rule}`, borderTop: `2px solid #D4AF37`, borderLeft: `4px solid ${C.accent}`, borderRadius: C.rLg, padding: "18px 22px", boxShadow: C.shadow }}>
               <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 12, gap: 12 }}>
                 <Label>03 — Level of Transformation</Label>
-                <span style={{ fontFamily: C.fontSerif, fontSize: px(15), fontWeight: 600, color: C.brand, whiteSpace: "nowrap" }}>
-                  {transformationLevel} — {cl.name}
+                <span className="dedrab-level-display" style={{ fontFamily: C.fontSerif, fontSize: px(15), fontWeight: 600, color: C.brand, whiteSpace: "nowrap" }}>
+                  <span className="dedrab-level-number">{transformationLevel}</span> — {cl.name}
                 </span>
               </div>
               <input
@@ -2089,7 +2111,7 @@ export default function GardigApp() {
                   </span>
                 ))}
               </div>
-              <div style={{ fontSize: px(13), color: C.inkMid, lineHeight: 1.55, fontFamily: C.font, borderTop: `1px solid ${C.rule}`, paddingTop: 10 }}>
+              <div className="dedrab-level-desc" style={{ fontSize: px(13), color: C.inkMid, lineHeight: 1.55, fontFamily: C.font, borderTop: `1px solid ${C.rule}`, paddingTop: 10 }}>
                 <span style={{ fontWeight: 600, color: C.brand }}>Level {transformationLevel}:</span> {cl.description}
               </div>
             </div>
@@ -2099,9 +2121,18 @@ export default function GardigApp() {
         {error && (
           <div style={{ background: "#fef2f2", border: `1px solid #fca5a5`, borderRadius: C.r, padding: "11px 15px", color: C.red, fontSize: px(14), marginTop: 14 }}>
             ⚠ {error}
-            {inviteRedirectNeeded && (
-              <> &nbsp;<a href="/invite" style={{ color: C.red, fontWeight: 700, textDecoration: 'underline' }}>Go to invite page →</a></>
-            )}
+          </div>
+        )}
+
+        {gateMessage === 'expired' && (
+          <div style={{ background: C.accentLight, border: `1px solid ${C.accent}`, borderRadius: C.r, padding: "11px 15px", fontSize: px(13), color: C.inkMid, marginTop: 14, lineHeight: 1.5 }}>
+            You have used all of your available renders. To request more access, email <a href="mailto:support@dedrab.com" style={{ color: C.brand, fontWeight: 600 }}>support@dedrab.com</a>.
+          </div>
+        )}
+
+        {gateMessage === 'no_invite' && (
+          <div style={{ background: C.accentLight, border: `1px solid ${C.accent}`, borderRadius: C.r, padding: "11px 15px", fontSize: px(13), color: C.inkMid, marginTop: 14, lineHeight: 1.5 }}>
+            An invite code is required. <a href="/invite" style={{ color: C.brand, fontWeight: 600 }}>Enter your invite code →</a>
           </div>
         )}
 
@@ -2132,29 +2163,25 @@ export default function GardigApp() {
           </label>
         </div>
 
-        {!renderBlocked && (
-          <div style={{ marginTop: 28 }}>
-            <button onClick={handleAnalyse} className="upload-generate-btn"
-              style={{
-                display: 'block', width: '100%',
-                background: isFormValid() ? '#064e3b' : "#d1d5db",
-                color: isFormValid() ? '#fff' : "#9ca3af",
-                border: "none", padding: "16px 24px", borderRadius: C.r,
-                fontSize: px(17), fontFamily: C.fontSerif, fontWeight: 600,
-                cursor: isFormValid() ? "pointer" : "not-allowed",
-                boxShadow: isFormValid() ? '0 4px 14px rgba(6,78,59,0.28)' : "none",
-                letterSpacing: "0.02em",
-                opacity: isFormValid() ? 1 : 0.5, transition: "all 0.2s"
-              }}>
-              Build my Action Plan →
-            </button>
-            {isFormValid() && (
-              <p style={{ textAlign: 'center', fontSize: px(12), color: C.inkLight, margin: '10px 0 0', fontFamily: C.font }}>
-                Takes around 4 minutes · Your plan will be emailed to you
-              </p>
-            )}
+        <div style={{ marginTop: 28 }}>
+          <button onClick={handleAnalyse} className="upload-generate-btn"
+            style={{
+              display: 'block', width: '100%',
+              background: isFormValid() ? '#064e3b' : "#d1d5db",
+              color: isFormValid() ? '#fff' : "#9ca3af",
+              border: "none", padding: "16px 24px", borderRadius: C.r,
+              fontSize: px(17), fontFamily: C.fontSerif, fontWeight: 600,
+              cursor: isFormValid() ? "pointer" : "not-allowed",
+              boxShadow: isFormValid() ? '0 4px 14px rgba(6,78,59,0.28)' : "none",
+              letterSpacing: "0.02em",
+              opacity: isFormValid() ? 1 : 0.5, transition: "all 0.2s"
+            }}>
+            Build my Action Plan →
+          </button>
+          <div className="dedrab-submit-meta">
+            Takes around 4 minutes · Your plan will be emailed to you
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
