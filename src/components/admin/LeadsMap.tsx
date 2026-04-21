@@ -28,7 +28,6 @@ export interface LeadRow {
   latitude: number | null;
   longitude: number | null;
   country: string | null;
-  country_code: string | null;
   design_records: {
     design_style: string | null;
     pdf_url: string | null;
@@ -111,9 +110,17 @@ function LeadsMapView({ leads }: { leads: LeadRow[] }) {
       markersRef.current.forEach(m => m.remove());
       markersRef.current = [];
 
-      const validForMarkers = leads.filter(
-        l => l.latitude !== null && l.longitude !== null
-      );
+      const validForMarkers = leads
+        .filter(l => l.latitude !== null && l.longitude !== null)
+        .map(l => ({
+          ...l,
+          latitude: typeof l.latitude === 'string'
+            ? parseFloat(l.latitude)
+            : l.latitude,
+          longitude: typeof l.longitude === 'string'
+            ? parseFloat(l.longitude)
+            : l.longitude,
+        }));
 
       const greyIcon = leafletModuleRef.current.divIcon({
         className: '',
@@ -123,7 +130,8 @@ function LeadsMapView({ leads }: { leads: LeadRow[] }) {
       });
 
       validForMarkers.forEach(lead => {
-        if (lead.latitude === null || lead.longitude === null) return;
+        if (lead.latitude === null || lead.longitude === null ||
+            isNaN(lead.latitude as number) || isNaN(lead.longitude as number)) return;
         const marker = lead.actioned
           ? leafletModuleRef.current.marker([lead.latitude, lead.longitude], { icon: greyIcon })
           : leafletModuleRef.current.marker([lead.latitude, lead.longitude]);

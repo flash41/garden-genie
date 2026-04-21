@@ -29,7 +29,6 @@ export default async function AdminLeadsPage() {
       latitude,
       longitude,
       country,
-      country_code,
       confirmation_sent,
       design_record_id,
       design_records (
@@ -41,7 +40,8 @@ export default async function AdminLeadsPage() {
     .order('submitted_at', { ascending: false });
 
   if (error) {
-    console.error('Leads fetch error:', error);
+    console.error('Leads fetch error:', JSON.stringify(error));
+    // Return empty array — do not crash the page
   }
 
   const leads = (rows as LeadRow[] | null) || [];
