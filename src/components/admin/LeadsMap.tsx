@@ -39,10 +39,11 @@ export interface LeadRow {
 // ── Leaflet map — all leaflet code lives inside useEffect, never at module level ──
 
 function LeadsMapView({ leads }: { leads: LeadRow[] }) {
-  const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<any>(null);
-  const markersRef    = useRef<any[]>([]);
-  const leafletRef    = useRef<any>(null);
+  const mapContainerRef   = useRef<HTMLDivElement>(null);
+  const mapInstanceRef    = useRef<any>(null);
+  const markersRef        = useRef<any[]>([]);
+  const leafletRef        = useRef<any>(null);
+  const leafletModuleRef  = useRef<any>(null);
   const [mapReady, setMapReady] = useState(false);
 
   const validLeads = leads.filter(l => l.latitude !== null && l.longitude !== null);
@@ -63,9 +64,14 @@ function LeadsMapView({ leads }: { leads: LeadRow[] }) {
       }
 
       const L = (await import('leaflet')).default;
+      leafletModuleRef.current = L;
 
       // Fix Leaflet default icon paths broken by Webpack/Next.js
-      delete (L.Icon.Default.prototype as any)._getIconUrl;
+      try {
+        delete (leafletModuleRef.current.Icon.Default.prototype as any)._getIconUrl;
+      } catch {
+        // property may not exist or may be non-configurable — safe to ignore
+      }
       L.Icon.Default.mergeOptions({
         iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
         iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
@@ -84,7 +90,9 @@ function LeadsMapView({ leads }: { leads: LeadRow[] }) {
       setMapReady(true);
     };
 
-    initMap();
+    initMap().catch(err => {
+      console.error('[LeadsMap] Map init failed:', err);
+    });
 
     return () => {
       if (mapInstanceRef.current) {
@@ -96,40 +104,42 @@ function LeadsMapView({ leads }: { leads: LeadRow[] }) {
 
   // ── useEffect 2: Marker rendering (runs when leads or mapReady change) ─────
   useEffect(() => {
-    if (!mapReady || !mapInstanceRef.current) return;
-    const L = leafletRef.current;
-    if (!L) return;
+    if (!mapReady || !mapInstanceRef.current || !leafletModuleRef.current) return;
 
-    // Clear existing markers before re-adding
-    markersRef.current.forEach(m => m.remove());
-    markersRef.current = [];
+    try {
+      // Clear existing markers before re-adding
+      markersRef.current.forEach(m => m.remove());
+      markersRef.current = [];
 
-    const validForMarkers = leads.filter(
-      l => l.latitude !== null && l.longitude !== null
-    );
-
-    const greyIcon = L.divIcon({
-      className: '',
-      html: '<div style="width:12px;height:12px;background:#888;border-radius:50%;border:2px solid #555;"></div>',
-      iconSize: [12, 12],
-      iconAnchor: [6, 6],
-    });
-
-    validForMarkers.forEach(lead => {
-      if (lead.latitude === null || lead.longitude === null) return;
-      const marker = lead.actioned
-        ? L.marker([lead.latitude, lead.longitude], { icon: greyIcon })
-        : L.marker([lead.latitude, lead.longitude]);
-
-      marker.addTo(mapInstanceRef.current).bindPopup(
-        '<strong>' + lead.email + '</strong><br>' +
-        lead.postcode + (lead.country ? ' (' + lead.country + ')' : '') + '<br>' +
-        new Date(lead.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + '<br>' +
-        'Quotes: ' + lead.quotes_requested + '<br>' +
-        (lead.actioned ? 'Actioned' : 'Pending')
+      const validForMarkers = leads.filter(
+        l => l.latitude !== null && l.longitude !== null
       );
-      markersRef.current.push(marker);
-    });
+
+      const greyIcon = leafletModuleRef.current.divIcon({
+        className: '',
+        html: '<div style="width:12px;height:12px;background:#888;border-radius:50%;border:2px solid #555;"></div>',
+        iconSize: [12, 12],
+        iconAnchor: [6, 6],
+      });
+
+      validForMarkers.forEach(lead => {
+        if (lead.latitude === null || lead.longitude === null) return;
+        const marker = lead.actioned
+          ? leafletModuleRef.current.marker([lead.latitude, lead.longitude], { icon: greyIcon })
+          : leafletModuleRef.current.marker([lead.latitude, lead.longitude]);
+
+        marker.addTo(mapInstanceRef.current).bindPopup(
+          '<strong>' + lead.email + '</strong><br>' +
+          lead.postcode + (lead.country ? ' (' + lead.country + ')' : '') + '<br>' +
+          new Date(lead.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + '<br>' +
+          'Quotes: ' + lead.quotes_requested + '<br>' +
+          (lead.actioned ? 'Actioned' : 'Pending')
+        );
+        markersRef.current.push(marker);
+      });
+    } catch (err) {
+      console.error('[LeadsMap] Marker render failed:', err);
+    }
   }, [leads, mapReady]);
 
   return (
