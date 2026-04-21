@@ -25,12 +25,17 @@ export default async function AdminLeadsPage() {
       actioned,
       actioned_at,
       submitted_at,
+      created_at,
+      latitude,
+      longitude,
+      country,
+      country_code,
       confirmation_sent,
       design_record_id,
       design_records (
         reference_number,
         design_style,
-        render_url
+        pdf_url
       )
     `)
     .order('submitted_at', { ascending: false });
