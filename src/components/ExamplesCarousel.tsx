@@ -1,19 +1,38 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { EXAMPLES } from '../data/examples';
 
 const CARD_WIDTH = 320; // md:w-80 in px
 const GAP = 16;        // gap-4 in px
+const AUTOPLAY_INTERVAL_MS = 4500;      // time between auto-advances
+const PAUSE_AFTER_INTERACTION_MS = 9000; // quiet period after user interaction
 
 export default function ExamplesCarousel() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [showBefore, setShowBefore] = useState<Record<number, boolean>>({});
+  const [isPaused, setIsPaused] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const pauseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isProgrammaticScrollRef = useRef(false);
 
-  const scrollToIndex = (i: number) => {
+  // Suspend autoplay for a grace period after any user interaction so
+  // the carousel doesn't fight the user for control of the current slide.
+  const pauseAutoplay = (durationMs = PAUSE_AFTER_INTERACTION_MS) => {
+    setIsPaused(true);
+    if (pauseTimerRef.current) clearTimeout(pauseTimerRef.current);
+    pauseTimerRef.current = setTimeout(() => setIsPaused(false), durationMs);
+  };
+
+  const scrollToIndex = (i: number, opts: { programmatic?: boolean } = {}) => {
     if (scrollRef.current) {
+      if (opts.programmatic) {
+        isProgrammaticScrollRef.current = true;
+        // clear the flag once the smooth-scroll has had time to settle
+        setTimeout(() => { isProgrammaticScrollRef.current = false; }, 600);
+      }
       scrollRef.current.scrollTo({ left: i * (CARD_WIDTH + GAP), behavior: 'smooth' });
     }
     setActiveIndex(i);
@@ -23,16 +42,56 @@ export default function ExamplesCarousel() {
     if (scrollRef.current) {
       const idx = Math.round(scrollRef.current.scrollLeft / (CARD_WIDTH + GAP));
       setActiveIndex(Math.max(0, Math.min(idx, EXAMPLES.length - 1)));
+      // If the scroll came from the user (not our own scrollTo), pause autoplay.
+      if (!isProgrammaticScrollRef.current) {
+        pauseAutoplay();
+      }
     }
   };
 
   const toggleBefore = (i: number, e: React.MouseEvent) => {
     e.stopPropagation();
     setShowBefore(prev => ({ ...prev, [i]: !prev[i] }));
+    pauseAutoplay();
   };
 
+  // Autoplay: advance to the next slide every AUTOPLAY_INTERVAL_MS,
+  // wrapping to 0 at the end. Paused while hovered, during the grace
+  // window after user interaction, or if the user prefers reduced motion.
+  useEffect(() => {
+    if (isPaused || isHovered) return;
+
+    // Respect OS-level reduced-motion preference (accessibility).
+    if (typeof window !== 'undefined'
+        && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setActiveIndex(prev => {
+        const next = (prev + 1) % EXAMPLES.length;
+        scrollToIndex(next, { programmatic: true });
+        return next;
+      });
+    }, AUTOPLAY_INTERVAL_MS);
+
+    return () => clearInterval(interval);
+  }, [isPaused, isHovered]);
+
+  // Clear any pending pause timer on unmount.
+  useEffect(() => {
+    return () => {
+      if (pauseTimerRef.current) clearTimeout(pauseTimerRef.current);
+    };
+  }, []);
+
   return (
-    <div className="w-full overflow-hidden">
+    <div
+      className="w-full overflow-hidden"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onTouchStart={() => pauseAutoplay()}
+    >
       <div
         ref={scrollRef}
         onScroll={handleScroll}
@@ -96,7 +155,7 @@ export default function ExamplesCarousel() {
         {EXAMPLES.map((_, i) => (
           <button
             key={i}
-            onClick={() => scrollToIndex(i)}
+            onClick={() => { pauseAutoplay(); scrollToIndex(i, { programmatic: true }); }}
             aria-label={`Go to ${EXAMPLES[i].style}`}
             className="transition-all duration-300 rounded-full"
             style={{
