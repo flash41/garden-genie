@@ -1,4 +1,5 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
+import { rateLimit, callerIp, purgeOldRateLimits } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -356,7 +357,7 @@ function currencyFromCountry(countryCode: string | null): string {
 
 // ─── ROUTE HANDLER ─────────────────────────────────────────────────────────────
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   const apiKey = process.env.GOOGLE_API_KEY;
 
   if (!apiKey) {
@@ -365,6 +366,30 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
+
+  // ── Per-IP rate limit: 5 analyses / hour ─────────────────────────────────────
+  const ipForLimit = callerIp(request);
+  const rl = await rateLimit({
+    key: `analyse:ip:${ipForLimit}`,
+    limit: 5,
+    windowMs: 60 * 60 * 1000,
+  });
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: 'Too many requests. Please wait and try again later.' },
+      {
+        status: 429,
+        headers: {
+          'Retry-After': String(Math.max(1, Math.ceil((rl.resetAt.getTime() - Date.now()) / 1000))),
+          'X-RateLimit-Limit': String(rl.limit),
+          'X-RateLimit-Remaining': '0',
+          'X-RateLimit-Reset': rl.resetAt.toISOString(),
+        },
+      }
+    );
+  }
+  // Opportunistic housekeeping (fire and forget)
+  purgeOldRateLimits();
 
   // ── Geographic region detection ──────────────────────────────────────────────
   const forwarded = request.headers.get('x-forwarded-for');
@@ -392,8 +417,15 @@ export async function POST(request: Request) {
   try {
     const { image, designLang, clientName, orientation, turnstileToken } = await request.json();
 
-    // ── Turnstile verification (only when secret key is configured) ────────────
+    // ── Turnstile verification ─────────────────────────────────────────────────
+    // Mandatory in production (fail closed if secret key missing).
+    // In dev/preview, run only if configured — keeps local workflow painless.
     const turnstileSecret = process.env.TURNSTILE_SECRET_KEY;
+    const isProd = process.env.NODE_ENV === 'production';
+    if (isProd && !turnstileSecret) {
+      console.error('[analyse] TURNSTILE_SECRET_KEY missing in production — blocking request');
+      return NextResponse.json({ error: 'Security check misconfigured.' }, { status: 500 });
+    }
     if (turnstileSecret) {
       const verifyRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
         method: 'POST',

@@ -21,12 +21,15 @@ export default function InvitePage() {
       const data = await res.json();
       if (data.success) {
         const validatedCode = data.code || upper;
-        document.cookie = 'dedrab_invite=' + validatedCode + '; path=/; max-age=' + (60 * 60 * 24 * 30) + '; SameSite=Lax';
+        // Cookie is non-sensitive (code is already validated server-side each
+        // render); Secure flag added — SameSite=Lax retained for top-level nav.
+        const isSecureContext = typeof window !== 'undefined' && window.location.protocol === 'https:';
+        document.cookie = 'dedrab_invite=' + validatedCode + '; path=/; max-age=' + (60 * 60 * 24 * 30) + '; SameSite=Lax' + (isSecureContext ? '; Secure' : '');
         window.location.href = '/design';
-      } else if (data.error === 'exhausted') {
-        setError('This code has already been used. If this is a mistake please get in touch.');
       } else {
-        setError('This code is not recognised. Please check and try again.');
+        // Unified failure message — server no longer distinguishes "not found"
+        // vs "exhausted" to prevent invite code enumeration.
+        setError('This code is not valid. It may be unknown or already used. If this is a mistake, please get in touch.');
       }
     } catch {
       setError('Something went wrong. Please try again.');

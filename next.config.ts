@@ -1,8 +1,49 @@
 import type { NextConfig } from "next";
 
+// Content-Security-Policy — tuned for:
+//   - Google Analytics (gtag.js from googletagmanager.com)
+//   - Cloudflare Turnstile (challenges.cloudflare.com)
+//   - Supabase storage + auth (any *.supabase.co origin)
+//   - Google fonts (fonts.googleapis.com, fonts.gstatic.com)
+//   - Images: self + data: (PDF rendering), blob: (canvas), and public origins used by /api/image-proxy
+//
+// `unsafe-inline` on script-src is required because Next.js ships small inline bootstrap
+// scripts. When we add a nonce-based CSP (Sprint 3), this relaxes.
+const CSP = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://challenges.cloudflare.com",
+  "script-src-elem 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://challenges.cloudflare.com",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "font-src 'self' data: https://fonts.gstatic.com",
+  "img-src 'self' data: blob: https: https://*.supabase.co",
+  "connect-src 'self' https://*.supabase.co https://www.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://challenges.cloudflare.com",
+  "frame-src https://challenges.cloudflare.com",
+  "frame-ancestors 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "object-src 'none'",
+  "upgrade-insecure-requests",
+].join('; ');
+
+const securityHeaders = [
+  { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
+  { key: 'X-Content-Type-Options', value: 'nosniff' },
+  { key: 'X-Frame-Options', value: 'DENY' },
+  { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+  { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()' },
+  { key: 'Content-Security-Policy', value: CSP },
+];
+
 const nextConfig: NextConfig = {
-  /* config options here */
   reactCompiler: true,
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: securityHeaders,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

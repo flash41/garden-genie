@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
+import AnalyticsConsent from "@/components/AnalyticsConsent";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -55,6 +56,7 @@ export default function RootLayout({
       >
         {children}
         <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" strategy="afterInteractive" />
+        <AnalyticsConsent />
       </body>
     </html>
   );

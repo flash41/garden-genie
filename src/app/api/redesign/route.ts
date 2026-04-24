@@ -1,6 +1,7 @@
 import { GoogleGenAI } from '@google/genai';
 import { NextResponse, NextRequest } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-server';
+import { rateLimit, callerIp, purgeOldRateLimits } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
@@ -1354,6 +1355,31 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'GOOGLE_API_KEY is not set' }, { status: 500 });
   }
 
+  // ── Per-IP rate limit: 10 redesigns / hour (belt-and-braces on top of the
+  //     per-invite-code 4/24h limit below — protects against distributed
+  //     attacks using multiple stolen codes from one host). ───────────────────
+  const ipForLimit = callerIp(request);
+  const ipRl = await rateLimit({
+    key: `redesign:ip:${ipForLimit}`,
+    limit: 10,
+    windowMs: 60 * 60 * 1000,
+  });
+  if (!ipRl.allowed) {
+    return NextResponse.json(
+      { error: 'rate_limited', message: 'Too many requests. Please wait and try again later.' },
+      {
+        status: 429,
+        headers: {
+          'Retry-After': String(Math.max(1, Math.ceil((ipRl.resetAt.getTime() - Date.now()) / 1000))),
+          'X-RateLimit-Limit': String(ipRl.limit),
+          'X-RateLimit-Remaining': '0',
+          'X-RateLimit-Reset': ipRl.resetAt.toISOString(),
+        },
+      }
+    );
+  }
+  purgeOldRateLimits();
+
   // ── Invite code check ────────────────────────────────────────────────────────
   const inviteCode = request.cookies.get('dedrab_invite')?.value;
   if (!inviteCode) {
@@ -1443,7 +1469,13 @@ export async function POST(request: NextRequest) {
     const creativityDescription = TRANSFORMATION_DESCRIPTIONS[creativityLevel];
 
     // ── Turnstile verification ──────────────────────────────────────────────────
+    // Mandatory in production (fail closed if secret key missing).
     const turnstileSecret = process.env.TURNSTILE_SECRET_KEY;
+    const isProd = process.env.NODE_ENV === 'production';
+    if (isProd && !turnstileSecret) {
+      console.error('[redesign] TURNSTILE_SECRET_KEY missing in production — blocking request');
+      return NextResponse.json({ error: 'Security check misconfigured.' }, { status: 500 });
+    }
     if (turnstileSecret) {
       const verifyRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
         method: 'POST',

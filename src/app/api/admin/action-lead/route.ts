@@ -1,15 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-server';
+import { isAuthenticatedAdminRequest } from '@/lib/admin-session';
 
 export const dynamic = 'force-dynamic';
 
-function checkAdminAuth(req: NextRequest): boolean {
-  const cookie = req.cookies.get('admin_auth');
-  return !!(cookie && cookie.value && cookie.value === process.env.ADMIN_PASSWORD);
-}
-
 export async function PATCH(req: NextRequest) {
-  if (!checkAdminAuth(req)) {
+  if (!(await isAuthenticatedAdminRequest(req))) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
 

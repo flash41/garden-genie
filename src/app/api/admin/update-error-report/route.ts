@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { supabaseAdmin } from '@/lib/supabase-server';
+import { isAuthenticatedAdminRequest } from '@/lib/admin-session';
 
 export const dynamic = 'force-dynamic';
 
 const validStatuses = ['new', 'under_review', 'resolved'];
 
 export async function PATCH(req: NextRequest) {
-  const cookieStore = await cookies();
-  const adminAuth = cookieStore.get('admin_auth');
-  if (!adminAuth || adminAuth.value !== process.env.ADMIN_PASSWORD) {
+  if (!(await isAuthenticatedAdminRequest(req))) {
     return NextResponse.json({ success: false, error: 'Unauthorised' }, { status: 401 });
   }
 
@@ -25,8 +23,6 @@ export async function PATCH(req: NextRequest) {
     status?: string;
     resolution_note?: string;
   };
-
-  console.log('[update-error-report] body received:', { id, status, resolution_note });
 
   if (!id || !status) {
     return NextResponse.json({ success: false, error: 'id and status are required' }, { status: 400 });

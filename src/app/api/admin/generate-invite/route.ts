@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-server';
+import { isAuthenticatedAdminRequest } from '@/lib/admin-session';
 
 export const dynamic = 'force-dynamic';
 
-function checkAdminAuth(req: NextRequest): boolean {
-  const cookie = req.cookies.get('admin_auth');
-  return !!(cookie && cookie.value && cookie.value === process.env.ADMIN_PASSWORD);
+async function checkAdminAuth(req: NextRequest): Promise<boolean> {
+  return isAuthenticatedAdminRequest(req);
 }
 
 function generateInviteCode(): string {
@@ -17,7 +17,7 @@ function generateInviteCode(): string {
 }
 
 export async function GET(req: NextRequest) {
-  if (!checkAdminAuth(req)) {
+  if (!(await checkAdminAuth(req))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!checkAdminAuth(req)) {
+  if (!(await checkAdminAuth(req))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

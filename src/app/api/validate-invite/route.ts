@@ -24,25 +24,15 @@ export async function POST(req: NextRequest) {
     .eq('code', code)
     .maybeSingle();
 
-  console.log('INVITE DEBUG - code received:', code);
-  console.log('INVITE DEBUG - data returned:', JSON.stringify(data));
-  console.log('INVITE DEBUG - error returned:', JSON.stringify(error));
-
   if (error) {
     console.error('[validate-invite] Supabase error:', error);
     return NextResponse.json({ success: false, error: 'server_error' }, { status: 500 });
   }
 
-  if (!data) {
-    return NextResponse.json({ success: false, error: 'not_found' }, { status: 200 });
-  }
-
-  if (data.renders_used >= data.max_renders) {
-    return NextResponse.json({
-      success: false,
-      error: 'exhausted',
-      message: 'This code has reached its render limit.',
-    }, { status: 200 });
+  // Unified failure response — do not distinguish "not found" vs "exhausted"
+  // to avoid code enumeration via response differentiation (audit M5).
+  if (!data || data.renders_used >= data.max_renders) {
+    return NextResponse.json({ success: false, error: 'invalid' }, { status: 200 });
   }
 
   return NextResponse.json({

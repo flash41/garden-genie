@@ -1,17 +1,14 @@
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase-server';
+import { isAuthenticatedAdmin } from '@/lib/admin-session';
 import AdminLeadsContent from '@/components/admin/LeadsMap';
 import type { LeadRow, ErrorReport } from '@/components/admin/LeadsMap';
 
 export default async function AdminLeadsPage() {
-  const cookieStore = await cookies();
-  const adminAuth = cookieStore.get('admin_auth');
-
-  if (!adminAuth || adminAuth.value !== process.env.ADMIN_PASSWORD) {
+  if (!(await isAuthenticatedAdmin())) {
     redirect('/admin/login');
   }
 
