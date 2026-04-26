@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Playfair_Display } from "next/font/google";
 import Script from "next/script";
 import AnalyticsConsent from "@/components/AnalyticsConsent";
 import "./globals.css";
@@ -14,33 +14,36 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const playfairDisplay = Playfair_Display({
+  subsets: ['latin'],
+  variable: '--font-playfair',
+  weight: ['400', '600', '700', '800'],
+  display: 'swap',
+});
+
 export const metadata: Metadata = {
-  icons: {
-    icon: '/og-image.png',
-    apple: '/og-image.png',
+  title: {
+    default: 'Dedrab — Garden Design & Layout Planning',
+    template: '%s · Dedrab',
   },
-  title: 'Dedrab — De-drab your garden',
-  description: 'Upload a photo of your garden and get a full AI-powered redesign — a visual render, plant list, materials guide and actionable plan.',
+  description:
+    'Transform your outdoor space with a personalised garden design and layout plan. Upload a photo and receive a detailed planting guide, materials list, and phased weekend plan.',
   openGraph: {
-    title: 'Dedrab — De-drab your garden',
-    description: 'Upload a photo of your garden and get a full AI-powered redesign in minutes.',
+    type: 'website',
+    locale: 'en_IE',
     url: 'https://dedrab.com',
     siteName: 'Dedrab',
+    title: 'Dedrab — Garden Design & Layout Planning',
+    description:
+      'A personalised garden design and layout plan from a single photo. Planting guide, materials list, and phased weekend plan included.',
     images: [
       {
-        url: 'https://dedrab.com/og-image.png',
+        url: 'https://dedrab.com/og-default.jpg',
         width: 1200,
         height: 630,
-        alt: 'Dedrab garden design',
+        alt: 'Dedrab garden design and layout planning tool',
       },
     ],
-    type: 'website',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Dedrab — De-drab your garden',
-    description: 'Upload a photo of your garden and get a full AI-powered redesign in minutes.',
-    images: ['https://dedrab.com/og-image.png'],
   },
 };
 
@@ -52,11 +55,25 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${playfairDisplay.variable} antialiased`}
       >
         {children}
         <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" strategy="afterInteractive" />
         <AnalyticsConsent />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'Organization',
+              name: 'Dedrab',
+              url: 'https://dedrab.com',
+              logo: 'https://dedrab.com/logo.png',
+              description:
+                'Garden design and layout planning for self-implementing gardeners.',
+            }),
+          }}
+        />
       </body>
     </html>
   );
