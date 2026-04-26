@@ -7,7 +7,7 @@ import { CATEGORY_LABELS } from '@/types/notes';
 import type { NotesCategory } from '@/types/notes';
 
 interface PageProps {
-  params: { cat: string };
+  params: Promise<{ cat: string }>;
 }
 
 export async function generateStaticParams() {
@@ -15,7 +15,8 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const cat = params.cat as NotesCategory;
+  const { cat: catParam } = await params;
+  const cat = catParam as NotesCategory;
   if (!CATEGORY_LABELS[cat]) return {};
 
   const label = CATEGORY_LABELS[cat];
@@ -34,8 +35,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default function CategoryPage({ params }: PageProps) {
-  const cat = params.cat as NotesCategory;
+export default async function CategoryPage({ params }: PageProps) {
+  const { cat: catParam } = await params;
+  const cat = catParam as NotesCategory;
 
   if (!CATEGORY_LABELS[cat]) notFound();
 

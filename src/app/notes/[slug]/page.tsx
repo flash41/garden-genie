@@ -14,7 +14,7 @@ import { ImageComparison } from '@/components/notes/ImageComparison';
 import { MaterialSwatch } from '@/components/notes/MaterialSwatch';
 
 interface PageProps {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 const mdxComponents = {
@@ -38,7 +38,8 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const result = getNotesPost(params.slug);
+  const { slug } = await params;
+  const result = getNotesPost(slug);
   if (!result) return {};
 
   const { post } = result;
@@ -71,14 +72,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default function NotesPostPage({ params }: PageProps) {
-  const result = getNotesPost(params.slug);
+export default async function NotesPostPage({ params }: PageProps) {
+  const { slug } = await params;
+  const result = getNotesPost(slug);
   if (!result) notFound();
 
   const { post, content } = result;
   const headings = extractHeadings(content);
   const hasToC = headings.length >= 3;
-  const canonical = post.canonicalUrl ?? `https://dedrab.com/notes/${post.slug}`;
+  const canonical = post.canonicalUrl ?? `https://dedrab.com/notes/${slug}`;
   const ogImage = post.ogImage ?? post.coverImage;
 
   const articleJsonLd = {
