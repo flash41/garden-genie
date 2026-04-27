@@ -2140,7 +2140,7 @@ export default function GardigApp() {
 
         {gateMessage === 'no_invite' && (
           <div style={{ background: C.accentLight, border: `1px solid ${C.accent}`, borderRadius: C.r, padding: "11px 15px", fontSize: px(13), color: C.inkMid, marginTop: 14, lineHeight: 1.5 }}>
-            An invite code is required. <a href="/invite" style={{ color: C.brand, fontWeight: 600 }}>Enter your invite code →</a>
+            An invite code is required. <a href="/next" style={{ color: C.brand, fontWeight: 600 }}>Get access →</a>
           </div>
         )}
 
