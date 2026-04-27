@@ -106,7 +106,7 @@ export default function InvitePage() {
 
       <p style={{ marginTop: 28, fontSize: 12, color: '#b0a898', textAlign: 'center' }}>
         {'Don\u2019t have a code? '}
-        <a href="mailto:hello@dedrab.com" style={{ color: '#b8962e', textDecoration: 'none', fontWeight: 600 }}>Get in touch</a>
+        <a href="mailto:our contact form" style={{ color: '#b8962e', textDecoration: 'none', fontWeight: 600 }}>Get in touch</a>
       </p>
     </div>
   );

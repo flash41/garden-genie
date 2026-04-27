@@ -137,8 +137,8 @@ function ReportForm() {
                 <p style={{ fontSize: 13, color: '#8a2a2a', margin: '10px 0 0' }}>
                   {errorMsg}{' '}
                   {ref
-                    ? <>Please email <a href="mailto:support@dedrab.com" style={{ color: '#8a2a2a' }}>support@dedrab.com</a> and quote reference <strong>{ref}</strong>.</>
-                    : <>Please email <a href="mailto:support@dedrab.com" style={{ color: '#8a2a2a' }}>support@dedrab.com</a> directly.</>
+                    ? <>Please email <a href="#contact" style={{ color: '#8a2a2a' }}>our contact form</a> and quote reference <strong>{ref}</strong>.</>
+                    : <>Please email <a href="#contact" style={{ color: '#8a2a2a' }}>our contact form</a> directly.</>
                   }
                 </p>
               )}

@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
   if (error) {
     console.error('[report-error] Supabase insert error:', error);
     return NextResponse.json(
-      { success: false, error: 'Could not save your report. Please email support@dedrab.com directly.' },
+      { success: false, error: 'Could not save your report. Please email our contact form directly.' },
       { status: 500 }
     );
   }

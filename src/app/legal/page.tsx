@@ -1,276 +1,352 @@
-import Link from 'next/link';
+import { Metadata } from 'next';
 
-export const metadata = {
+export const metadata: Metadata = {
   title: 'Legal — Dedrab',
-  description: 'Terms of Use and Privacy Policy for Dedrab.',
+  description: 'Terms of Service and Privacy Policy for Dedrab.',
+  alternates: { canonical: 'https://dedrab.com/legal' },
+  robots: { index: true, follow: false },
 };
+
+const EFFECTIVE_DATE = '26 April 2026';
 
 export default function LegalPage() {
   return (
-    <>
-      <style>{`
-        :root {
-          --parchment: #F4EFE4;
-          --linen: #EDE6D3;
-          --forest: #0a3d2b;
-          --forest-mid: #1a5c3f;
-          --gold: #b8962e;
-          --gold-light: #D4AF37;
-          --umber: #2C1A0E;
-          --warm-grey: #8a7e6e;
-          --cream-dark: #d9cdb8;
-        }
-        body { background: var(--parchment); color: var(--umber); }
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Cormorant+Garamond:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap');
-        .legal-h2 {
-          font-family: 'Playfair Display', serif;
-          font-size: 28px;
-          font-weight: 600;
-          color: var(--forest);
-          margin: 48px 0 16px;
-          padding-top: 48px;
-          border-top: 1px solid var(--cream-dark);
-        }
-        .legal-h2:first-of-type { border-top: none; padding-top: 0; margin-top: 0; }
-        .legal-h3 {
-          font-family: 'Playfair Display', serif;
-          font-size: 18px;
-          font-weight: 600;
-          color: var(--forest-mid);
-          margin: 28px 0 10px;
-        }
-        .legal-p {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 18px;
-          line-height: 1.75;
-          color: var(--warm-grey);
-          margin: 0 0 14px;
-        }
-        .legal-ul {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 18px;
-          line-height: 1.75;
-          color: var(--warm-grey);
-          padding-left: 24px;
-          margin: 0 0 14px;
-        }
-        .legal-ul li { margin-bottom: 6px; }
-        a.legal-link { color: var(--forest); text-decoration: underline; }
-        a.legal-link:hover { color: var(--gold); }
-      `}</style>
+    <div className="min-h-screen bg-[#F8F9F8]">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
 
-      {/* Nav */}
-      <nav style={{
-        background: 'var(--forest)',
-        padding: '16px 60px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-      }}>
-        <Link href="/" style={{ textDecoration: 'none' }}>
-          <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, fontWeight: 700, color: 'white', letterSpacing: 3, textTransform: 'uppercase' }}>Dedrab</span>
-        </Link>
-        <Link href="/design" style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 10, letterSpacing: 2.5, textTransform: 'uppercase', color: 'var(--gold-light)', textDecoration: 'none' }}>
-          ← Back to Design Tool
-        </Link>
-      </nav>
-
-      {/* Content */}
-      <main style={{ maxWidth: 780, margin: '0 auto', padding: '80px 40px 120px' }}>
-        {/* Page heading */}
-        <div style={{ marginBottom: 56 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
-            <div style={{ width: 32, height: 1, background: 'var(--gold)' }} />
-            <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 10, letterSpacing: 4, textTransform: 'uppercase', color: 'var(--gold)' }}>Legal</span>
-          </div>
-          <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 42, fontWeight: 400, color: 'var(--forest)', margin: '0 0 16px' }}>
-            Terms &amp; Privacy
+        <header className="mb-10">
+          <p className="text-xs font-semibold tracking-widest uppercase text-[#b8962e] mb-3">
+            Legal
+          </p>
+          <h1 className="font-serif font-extrabold text-[#0a3d2b] text-4xl md:text-5xl mb-4">
+            Legal
           </h1>
-          <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 19, color: 'var(--warm-grey)', lineHeight: 1.7 }}>
-            Last updated: March 2026
-          </p>
-        </div>
+          <p className="text-stone-500 text-sm">Effective date: {EFFECTIVE_DATE}</p>
+        </header>
 
-        {/* ── TERMS OF SERVICE ─────────────────────────── */}
-        <section id="terms">
-          <h2 className="legal-h2">Terms of Service</h2>
-          <p className="legal-p">
-            Please read these Terms of Service carefully before using Dedrab. By using the service you agree to be bound by these terms.
-          </p>
+        <nav className="flex gap-6 mb-14 pb-6 border-b border-stone-200">
+          <a href="#terms" className="text-sm font-semibold text-[#0a3d2b] underline underline-offset-2 hover:text-[#b8962e]">
+            Terms of Service
+          </a>
+          <a href="#privacy" className="text-sm font-semibold text-[#0a3d2b] underline underline-offset-2 hover:text-[#b8962e]">
+            Privacy Policy
+          </a>
+        </nav>
 
-          <h3 className="legal-h3">What Dedrab Is</h3>
-          <p className="legal-p">
-            Dedrab is an AI-powered garden design tool. You upload a photograph of your garden and receive an AI-generated design proposal including a visual render, plant list, materials guide, and implementation plan.
-          </p>
-          <p className="legal-p">
-            Dedrab is a Garden Inspiration Guide. It is not a surveying service, a professional landscape architecture service, or a guaranteed specification. All outputs are AI-generated and are intended as creative inspiration to help you plan.
-          </p>
+        {/* ─── Terms of Service ─── */}
+        <section id="terms" className="scroll-mt-24 mb-20">
+          <div className="prose prose-stone max-w-none
+            prose-headings:font-serif prose-headings:font-bold prose-headings:text-[#0a3d2b]
+            prose-h2:text-3xl prose-h2:mt-0 prose-h2:mb-6
+            prose-h3:text-xl prose-h3:mt-8 prose-h3:mb-3
+            prose-p:text-[#1A1A1A] prose-p:leading-relaxed
+            prose-a:text-[#0a3d2b] prose-a:font-medium prose-a:underline hover:prose-a:text-[#b8962e]
+            prose-strong:text-[#1A1A1A]
+            prose-li:text-[#1A1A1A]
+            prose-hr:border-stone-200">
 
-          <h3 className="legal-h3">Use of the Service</h3>
-          <p className="legal-p">You must be 18 years or older to use Dedrab.</p>
-          <p className="legal-p">
-            You are responsible for ensuring you have the right to upload any photograph you submit. Do not upload photographs of other people&apos;s properties without their permission.
-          </p>
-          <p className="legal-p">You may not use Dedrab to generate content that is unlawful, offensive, or harmful.</p>
-          <p className="legal-p">
-            Access to Dedrab during the early access period requires an invitation code. Invitation codes are personal, non-transferable, and may not be shared.
-          </p>
+            <h2>Terms of Service</h2>
 
-          <h3 className="legal-h3">AI-Generated Content</h3>
-          <p className="legal-p">
-            All design proposals, plant lists, renders, and reports are generated by artificial intelligence. While we aim for accuracy, AI-generated content may contain errors, omissions, or suggestions that are not suitable for your specific site conditions, soil type, climate, or local regulations.
-          </p>
-          <p className="legal-p">
-            You should always verify plant suitability, material specifications, and implementation plans with a qualified professional before proceeding. Dedrab accepts no liability for any loss or damage arising from reliance on AI-generated design content.
-          </p>
-          <p className="legal-p">
-            The Garden Layout Plan included in your report is a starting point for your planning, not a surveyed drawing. It may contain inaccuracies in scale or proportion due to perspective limitations in the source photograph.
-          </p>
-          <p className="legal-p">
-            Cost estimates provided in your report are indicative unit cost estimates only and will vary by supplier, region, and project scope. Always obtain formal quotes before committing to purchase.
-          </p>
+            <p>
+              These Terms of Service govern your access to and use of Dedrab (the &quot;Service&quot;),
+              operated by Dedrab (&quot;we&quot;, &quot;us&quot;, or &quot;our&quot;). By accessing or using the Service,
+              you agree to be bound by these terms in full. If you do not agree, you must not use
+              the Service.
+            </p>
 
-          <h3 className="legal-h3">Quote Requests and Landscaping Partners</h3>
-          <p className="legal-p">
-            If you choose to request quotes from landscaping partners through Dedrab, you are consenting to your contact details and design plan being shared with those partners. Dedrab facilitates this introduction but is not party to any agreement between you and a landscaping partner. We are not responsible for the quality, pricing, or conduct of any third-party landscaper.
-          </p>
+            <h3>1. What the Service Is</h3>
+            <p>
+              Dedrab is a garden design visualisation tool. It allows you to upload a photograph
+              of your outdoor space and receive a computer-generated visual render, planting
+              suggestions, a phased implementation guide, and a materials reference — collectively
+              referred to as the &quot;Action Plan&quot;.
+            </p>
+            <p>
+              The Service is currently available on an invite-only basis. Access requires a valid
+              invite code issued by Dedrab.
+            </p>
 
-          <h3 className="legal-h3">Your Content</h3>
-          <p className="legal-p">
-            You retain ownership of any photographs you upload to Dedrab. By uploading a photograph you grant us a limited licence to process it for the purpose of generating your design proposal and storing it as part of your design record.
-          </p>
-          <p className="legal-p">
-            The AI-generated design proposals, renders, and reports produced for you are yours to use for personal, non-commercial purposes. You may share them with contractors or landscapers for the purpose of implementing your garden design.
-          </p>
+            <h3>2. What the Service Is Not</h3>
+            <p>
+              The Action Plan produced by Dedrab is a design visualisation and reference tool. It
+              is not, and must not be treated as, professional landscape architecture advice,
+              horticultural consultancy, structural engineering advice, or planning guidance of any
+              kind.
+            </p>
+            <p>
+              Dedrab makes no representation that any design, plant selection, material, or
+              construction suggestion in an Action Plan is appropriate for your specific site
+              conditions, soil type, microclimate, local planning regulations, or any other
+              site-specific factor. All outputs should be reviewed by a qualified professional
+              before implementation.
+            </p>
 
-          <h3 className="legal-h3">Payments</h3>
-          <p className="legal-p">
-            During the early access period, access to Dedrab is by invitation only and no payment is required. When paid access is introduced, pricing will be clearly stated before any payment is taken. All payments are processed securely through Stripe. We do not store card details.
-          </p>
+            <h3>3. Your Responsibilities</h3>
+            <p>By using the Service, you confirm that:</p>
+            <ul>
+              <li>You are 18 years of age or older.</li>
+              <li>You have the right to upload the photographs and other content you provide.</li>
+              <li>You will not use the Service for any unlawful purpose.</li>
+              <li>You will not attempt to reverse-engineer, scrape, or otherwise misuse the Service.</li>
+              <li>
+                You will exercise your own judgement and, where appropriate, seek professional
+                advice before implementing any suggestion generated by the Service.
+              </li>
+            </ul>
 
-          <h3 className="legal-h3">Limitation of Liability</h3>
-          <p className="legal-p">
-            To the fullest extent permitted by law, Dedrab shall not be liable for any indirect, incidental, or consequential loss arising from your use of the service, including but not limited to any loss arising from reliance on AI-generated design content or from any arrangement made with a landscaping partner.
-          </p>
-          <p className="legal-p">
-            Our total liability to you shall not exceed the amount you paid to use the service.
-          </p>
+            <h3>4. Intellectual Property</h3>
+            <p>
+              <strong>Your content.</strong> You retain ownership of any photographs and content
+              you upload. By uploading content, you grant Dedrab a limited, non-exclusive licence
+              to process that content solely for the purpose of delivering your Action Plan. We do
+              not use your uploaded images to train models or share them with third parties, except
+              where required by our infrastructure providers to deliver the Service.
+            </p>
+            <p>
+              <strong>Our content.</strong> The Service, including all software, design, text, and
+              generated outputs (except your uploaded content), is owned by or licensed to Dedrab.
+              Generated Action Plans are provided for your personal, non-commercial use only. You
+              may not resell, redistribute, or commercially exploit any output of the Service
+              without our prior written consent.
+            </p>
 
-          <h3 className="legal-h3">Changes to These Terms</h3>
-          <p className="legal-p">
-            We may update these terms from time to time. We will notify users of material changes by posting a notice on the site. Continued use of the service after changes take effect constitutes acceptance of the updated terms.
-          </p>
+            <h3>5. Limitation of Liability</h3>
+            <p>
+              To the fullest extent permitted by applicable law, Dedrab shall not be liable for
+              any direct, indirect, incidental, consequential, or special loss or damage arising
+              out of or in connection with:
+            </p>
+            <ul>
+              <li>Your use of, or inability to use, the Service;</li>
+              <li>
+                Any reliance placed on the content of an Action Plan, including but not limited to
+                plant selection, design layouts, materials specifications, or implementation
+                guidance;
+              </li>
+              <li>
+                Any costs, damages, or losses arising from the implementation of any design or
+                suggestion generated by the Service;
+              </li>
+              <li>Any interruption, suspension, or termination of the Service.</li>
+            </ul>
+            <p>
+              Where liability cannot be excluded by law, our total liability to you shall not
+              exceed the amount paid by you (if any) for access to the Service in the twelve
+              months preceding the event giving rise to the claim.
+            </p>
 
-          <h3 className="legal-h3">Governing Law</h3>
-          <p className="legal-p">
-            These terms are governed by the laws of Ireland. Any disputes shall be subject to the exclusive jurisdiction of the Irish courts.
-          </p>
+            <h3>6. No Warranty</h3>
+            <p>
+              The Service is provided &quot;as is&quot; and &quot;as available&quot; without warranty of any kind,
+              express or implied, including but not limited to warranties of merchantability,
+              fitness for a particular purpose, or non-infringement. We do not warrant that the
+              Service will be error-free, uninterrupted, or that any outputs will be accurate or
+              suitable for your purposes.
+            </p>
 
-          <h3 className="legal-h3">Contact</h3>
-          <p className="legal-p">
-            For any questions about these terms, contact us at <a href="mailto:hello@dedrab.com" className="legal-link">hello@dedrab.com</a>.
-          </p>
+            <h3>7. Termination</h3>
+            <p>
+              We reserve the right to suspend or terminate your access to the Service at any time,
+              with or without notice, including where we reasonably believe you have breached these
+              terms.
+            </p>
+
+            <h3>8. Changes to These Terms</h3>
+            <p>
+              We may update these Terms of Service from time to time. Continued use of the Service
+              after any change constitutes your acceptance of the revised terms. The effective date
+              at the top of this page will reflect the date of the most recent update.
+            </p>
+
+            <h3>9. Contact and Support</h3>
+            <p>
+              If you have a question, concern, or support request, please use the contact form on
+              our website. We do not accept requests by post or any other means.
+            </p>
+
+            <h3>10. Governing Law</h3>
+            <p>
+              These Terms of Service are governed by and construed in accordance with the laws of
+              Ireland. Any dispute arising under or in connection with these terms shall be subject
+              to the exclusive jurisdiction of the courts of Ireland.
+            </p>
+
+          </div>
         </section>
 
-        {/* ── PRIVACY POLICY ───────────────────────────── */}
-        <section id="privacy">
-          <h2 className="legal-h2">Privacy Policy</h2>
+        <hr className="border-stone-200 mb-20" />
 
-          <h3 className="legal-h3">Who We Are</h3>
-          <p className="legal-p">
-            Dedrab is a garden design tool that uses artificial intelligence to generate visual redesigns and design proposals from photographs of your garden. We are based in Ireland and this policy is written in compliance with the General Data Protection Regulation (GDPR).
-          </p>
+        {/* ─── Privacy Policy ─── */}
+        <section id="privacy" className="scroll-mt-24">
+          <div className="prose prose-stone max-w-none
+            prose-headings:font-serif prose-headings:font-bold prose-headings:text-[#0a3d2b]
+            prose-h2:text-3xl prose-h2:mt-0 prose-h2:mb-6
+            prose-h3:text-xl prose-h3:mt-8 prose-h3:mb-3
+            prose-p:text-[#1A1A1A] prose-p:leading-relaxed
+            prose-a:text-[#0a3d2b] prose-a:font-medium prose-a:underline hover:prose-a:text-[#b8962e]
+            prose-strong:text-[#1A1A1A]
+            prose-li:text-[#1A1A1A]
+            prose-hr:border-stone-200">
 
-          <h3 className="legal-h3">What Information We Collect</h3>
-          <p className="legal-p">We collect the following information when you use Dedrab:</p>
-          <ul className="legal-ul">
-            <li><strong>Your email address</strong> — provided by you when you request your design plan to be delivered, when you request quotes from landscaping partners, or when you share your plan with someone else.</li>
-            <li><strong>Your postcode or ZIP code</strong> — provided by you when you request a quote from one of our landscaping partners.</li>
-            <li><strong>Your garden photograph</strong> — the image you upload to generate your design proposal.</li>
-            <li><strong>Your design preferences</strong> — the design style, transformation level, garden orientation, and hardiness zone you select.</li>
-            <li><strong>Your design report and render</strong> — the AI-generated design proposal, plant list, render image, and PDF report produced from your inputs.</li>
-            <li><strong>Your unique reference number</strong> — a reference code assigned to your design session for reconciliation and support purposes.</li>
-            <li><strong>Usage data</strong> — standard server logs including IP address, browser type, and pages visited, retained for security and performance monitoring.</li>
-          </ul>
+            <h2>Privacy Policy</h2>
 
-          <h3 className="legal-h3">How We Use Your Information</h3>
-          <p className="legal-p">We use your information for the following purposes:</p>
-          <ul className="legal-ul">
-            <li><strong>To deliver your design proposal</strong> — your email address is used to send you your plan PDF and any confirmation emails you request.</li>
-            <li><strong>To process quote requests</strong> — if you request quotes from landscaping partners, your email address, postcode, and design plan are shared with those partners so they can contact you with a quote. By submitting a quote request you are giving explicit consent to this sharing.</li>
-            <li><strong>To improve our service</strong> — we may retain anonymised design data to improve the quality of our AI outputs.</li>
-            <li><strong>For security and fraud prevention</strong> — usage logs are retained to protect the service from abuse.</li>
-          </ul>
+            <p>
+              This Privacy Policy explains how Dedrab collects, uses, stores, and protects personal
+              data when you use the Service. We are the data controller for the purposes of the
+              General Data Protection Regulation (GDPR) and the Irish Data Protection Acts 1988
+              to 2018.
+            </p>
 
-          <h3 className="legal-h3">Sharing Your Information</h3>
-          <p className="legal-p">
-            We do not sell your personal information.
-          </p>
-          <p className="legal-p">
-            If you request a quote from a landscaping partner, we will share the following with that partner: your email address, your postcode, and a copy of your design plan. This sharing happens only when you explicitly request it by submitting the quote request form.
-          </p>
-          <p className="legal-p">We use the following third-party services to operate Dedrab, each of which may process your data as a data processor on our behalf:</p>
-          <ul className="legal-ul">
-            <li><strong>Vercel</strong> — website hosting and serverless infrastructure (USA, with EU data transfer safeguards)</li>
-            <li><strong>Supabase</strong> — database storage for design records and quote requests (EU region)</li>
-            <li><strong>Resend</strong> — transactional email delivery</li>
-            <li><strong>Google Gemini API</strong> — AI processing of your garden photograph and design generation</li>
-            <li><strong>Cloudflare</strong> — DNS, security, and performance</li>
-          </ul>
-          <p className="legal-p">
-            Each of these providers operates under their own privacy policies and data processing agreements.
-          </p>
+            <h3>1. What Data We Collect</h3>
+            <p><strong>Data you provide directly:</strong></p>
+            <ul>
+              <li>
+                <strong>Photographs and site images</strong> — uploaded by you to generate an
+                Action Plan.
+              </li>
+              <li>
+                <strong>Invite code</strong> — used to verify your access to the Service.
+              </li>
+              <li>
+                <strong>Support communications</strong> — any information submitted through our
+                contact form.
+              </li>
+            </ul>
+            <p><strong>Data collected automatically:</strong></p>
+            <ul>
+              <li>
+                <strong>Analytics data</strong> — if you accept cookies, we collect anonymised
+                usage data via Google Analytics 4, including pages visited and session duration.
+                IP addresses are anonymised before processing. No personally identifiable
+                information is passed to Google Analytics.
+              </li>
+              <li>
+                <strong>Technical data</strong> — standard server logs including IP addresses,
+                browser type, and access timestamps. Used for security purposes only.
+              </li>
+            </ul>
 
-          <h3 className="legal-h3">Your Garden Photographs</h3>
-          <p className="legal-p">
-            When you upload a photograph of your garden, it is processed by our AI provider (Google Gemini) to generate your design proposal. Your photograph may be retained as part of your design record in our database and included within your PDF design report. We do not use your photographs for any purpose other than generating and storing your design proposal.
-          </p>
+            <h3>2. How We Use Your Data</h3>
+            <ul>
+              <li>To deliver your Action Plan.</li>
+              <li>To manage access to the Service via invite codes.</li>
+              <li>To respond to support requests submitted through our contact form.</li>
+              <li>
+                To understand how the Service is used and improve it, where analytics consent
+                has been given.
+              </li>
+              <li>To maintain the security and integrity of the Service.</li>
+            </ul>
+            <p>
+              We do not use your data for advertising or profiling, and we do not sell your data
+              to third parties.
+            </p>
 
-          <h3 className="legal-h3">How Long We Retain Your Data</h3>
-          <p className="legal-p">
-            Email addresses provided for plan delivery are retained only for the purpose of delivering what you requested and are not used for marketing.
-          </p>
-          <p className="legal-p">
-            Design records including your photograph reference, report data, and PDF are retained to allow us to reconcile quote requests and provide support. You may request deletion of your record at any time by contacting us.
-          </p>
-          <p className="legal-p">
-            Quote request records including your email and postcode are retained for business reconciliation purposes.
-          </p>
+            <h3>3. Legal Basis for Processing</h3>
+            <ul>
+              <li>
+                <strong>Contract performance</strong> — processing your images and delivering the
+                Action Plan is necessary to fulfil the service you have requested.
+              </li>
+              <li>
+                <strong>Legitimate interests</strong> — server logs and security monitoring are
+                necessary to protect the Service and our users.
+              </li>
+              <li>
+                <strong>Consent</strong> — analytics tracking is only activated where you have
+                explicitly accepted cookies.
+              </li>
+            </ul>
 
-          <h3 className="legal-h3">Your Rights Under GDPR</h3>
-          <p className="legal-p">If you are based in the EU or UK you have the following rights:</p>
-          <ul className="legal-ul">
-            <li>The right to access the personal data we hold about you.</li>
-            <li>The right to request correction of inaccurate data.</li>
-            <li>The right to request deletion of your data.</li>
-            <li>The right to object to processing of your data.</li>
-            <li>The right to data portability.</li>
-          </ul>
-          <p className="legal-p">
-            To exercise any of these rights, contact us at <a href="mailto:privacy@dedrab.com" className="legal-link">privacy@dedrab.com</a>.
-          </p>
-          <p className="legal-p">
-            You also have the right to lodge a complaint with the Data Protection Commission (Ireland) at <a href="https://www.dataprotection.ie" className="legal-link" target="_blank" rel="noopener noreferrer">dataprotection.ie</a>.
-          </p>
+            <h3>4. Third-Party Services</h3>
+            <ul>
+              <li>
+                <strong>Supabase</strong> — database and storage, hosted within the EU (eu-west-1).
+              </li>
+              <li>
+                <strong>Vercel</strong> — application hosting and delivery.
+              </li>
+              <li>
+                <strong>Google Analytics 4</strong> — anonymised usage analytics, only where
+                consent is given.
+              </li>
+              <li>
+                <strong>Cloudflare</strong> — network security and delivery.
+              </li>
+            </ul>
 
-          <h3 className="legal-h3">Cookies</h3>
-          <p className="legal-p">
-            Dedrab uses a session cookie to remember your access code during your visit. We do not use advertising cookies or tracking cookies. We use Cloudflare Turnstile for bot protection which may set a functional cookie.
-          </p>
+            <h3>5. Data Retention</h3>
+            <ul>
+              <li>
+                <strong>Uploaded photographs</strong> — deleted within 30 days of your last use,
+                or immediately upon a valid deletion request.
+              </li>
+              <li>
+                <strong>Support communications</strong> — retained for up to 12 months, then
+                deleted.
+              </li>
+              <li>
+                <strong>Server logs</strong> — retained for up to 90 days for security purposes.
+              </li>
+              <li>
+                <strong>Analytics data</strong> — retained per Google Analytics default settings
+                (14 months), where consent has been given.
+              </li>
+            </ul>
 
-          <h3 className="legal-h3">Contact</h3>
-          <p className="legal-p">
-            For any privacy-related questions or requests, contact us at <a href="mailto:privacy@dedrab.com" className="legal-link">privacy@dedrab.com</a>.
-          </p>
+            <h3>6. Your Rights Under GDPR</h3>
+            <p>You have the right to access, rectify, erase, restrict, or port your personal
+            data, and to object to processing or withdraw consent at any time. To exercise any of
+            these rights, please submit a request through the contact form on our website. We will
+            respond within 30 days.</p>
+            <p>
+              You also have the right to lodge a complaint with the Data Protection Commission
+              of Ireland at{' '}
+              <a href="https://www.dataprotection.ie" target="_blank" rel="noopener noreferrer">
+                dataprotection.ie
+              </a>.
+            </p>
+
+            <h3>7. Cookies</h3>
+            <ul>
+              <li>
+                <strong>Consent cookie</strong> — stores your analytics preference, valid for
+                365 days.
+              </li>
+              <li>
+                <strong>Google Analytics cookies</strong> — only set after explicit consent.
+              </li>
+            </ul>
+            <p>
+              We do not use advertising cookies, tracking pixels, or third-party marketing
+              scripts. You can update your cookie preference at any time using the consent control
+              on our website.
+            </p>
+
+            <h3>8. Data Security</h3>
+            <p>
+              We implement appropriate technical and organisational measures to protect your
+              personal data, including HTTPS encryption in transit, access controls, rate
+              limiting, and infrastructure hosted within the EEA.
+            </p>
+
+            <h3>9. Contact</h3>
+            <p>
+              For all enquiries, data subject requests, and support matters, please use the
+              contact form on our website. For formal data protection correspondence, you may
+              contact us at <strong>support@dedrab.com</strong>.
+            </p>
+
+            <h3>10. Changes to This Policy</h3>
+            <p>
+              We may update this Privacy Policy from time to time. The effective date at the top
+              of this page reflects the date of the most recent revision.
+            </p>
+
+          </div>
         </section>
-      </main>
 
-      {/* Footer */}
-      <footer style={{ background: '#050f0a', padding: '28px 60px', textAlign: 'center' }}>
-        <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 10, color: 'rgba(255,255,255,0.25)', letterSpacing: 1 }}>
-          © 2025 Dedrab · <Link href="/" style={{ color: 'rgba(255,255,255,0.35)', textDecoration: 'none' }}>Home</Link> · <Link href="/design" style={{ color: 'rgba(255,255,255,0.35)', textDecoration: 'none' }}>Design Tool</Link>
-        </span>
-      </footer>
-    </>
+      </div>
+    </div>
   );
 }

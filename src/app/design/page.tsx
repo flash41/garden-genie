@@ -2134,7 +2134,7 @@ export default function GardigApp() {
 
         {gateMessage === 'expired' && (
           <div style={{ background: C.accentLight, border: `1px solid ${C.accent}`, borderRadius: C.r, padding: "11px 15px", fontSize: px(13), color: C.inkMid, marginTop: 14, lineHeight: 1.5 }}>
-            You have used all of your available renders. To request more access, email <a href="mailto:support@dedrab.com" style={{ color: C.brand, fontWeight: 600 }}>support@dedrab.com</a>.
+            You have used all of your available renders. To request more access, email <a href="#contact" style={{ color: C.brand, fontWeight: 600 }}>our contact form</a>.
           </div>
         )}
 
@@ -2701,7 +2701,7 @@ export default function GardigApp() {
                     <div style={{ marginTop: 10, fontSize: px(13), color: C.red }}>{emailError || 'Failed to send. Please try again.'}</div>
                   )}
                   <div style={{ marginTop: 16, fontSize: px(12), color: C.inkLight, lineHeight: 1.5 }}>
-                    The PDF plan will be attached to a branded Dedrab email sent from hello@dedrab.com.
+                    The PDF plan will be attached to a branded Dedrab email sent from our contact form.
                   </div>
                   <div style={{ marginTop: 20, display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
                     <button onClick={() => setEmailModal(false)} style={{ background: C.surface, border: `1px solid ${C.rule}`, color: C.inkMid, padding: '9px 18px', borderRadius: C.r, cursor: 'pointer', fontFamily: C.font, fontSize: px(13), fontWeight: 600 }}>Cancel</button>
