@@ -36,6 +36,15 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
+  async redirects() {
+    return [
+      {
+        source: '/invite',
+        destination: '/next',
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {
