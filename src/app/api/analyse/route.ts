@@ -1,5 +1,6 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { rateLimit, callerIp, purgeOldRateLimits } from '@/lib/rate-limit';
+import { validateImage } from '@/lib/validate-image';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -416,6 +417,12 @@ export async function POST(request: NextRequest) {
 
   try {
     const { image, designLang, clientName, orientation, turnstileToken } = await request.json();
+
+  // H3/M3 — image validation (type, size, magic bytes)
+  const imgValidation = validateImage(image);
+  if (!imgValidation.valid) {
+    return NextResponse.json({ error: imgValidation.message }, { status: 400 });
+  }
 
     // ── Turnstile verification ─────────────────────────────────────────────────
     // Mandatory in production (fail closed if secret key missing).
