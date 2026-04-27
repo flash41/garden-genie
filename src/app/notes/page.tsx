@@ -3,6 +3,7 @@ import { getNotesPosts, getFeaturedPost } from '@/lib/notes';
 import { NotesFeatured } from '@/components/notes/NotesFeatured';
 import { NotesGrid } from '@/components/notes/NotesGrid';
 import { CategoryFilter } from '@/components/notes/CategoryFilter';
+import { SiteFooter } from '@/components/SiteFooter';
 import type { NotesCategory } from '@/types/notes';
 
 export const metadata: Metadata = {
@@ -92,6 +93,7 @@ export default function NotesPage() {
           )}
         </div>
       </div>
+      <SiteFooter />
     </>
   );
 }

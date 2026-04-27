@@ -6,6 +6,7 @@ import { getNotesPost, getNotesSlugParams, extractHeadings } from '@/lib/notes';
 import { NotesHero } from '@/components/notes/NotesHero';
 import { TableOfContents } from '@/components/notes/TableOfContents';
 import { NotesCta } from '@/components/notes/NotesCta';
+import { SiteFooter } from '@/components/SiteFooter';
 import { Callout } from '@/components/notes/Callout';
 import { PlantCard } from '@/components/notes/PlantCard';
 import { PullQuote } from '@/components/notes/PullQuote';
@@ -187,6 +188,7 @@ export default async function NotesPostPage({ params }: PageProps) {
           </div>
         </div>
       </div>
+      <SiteFooter />
     </>
   );
 }

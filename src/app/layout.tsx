@@ -57,6 +57,8 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${playfairDisplay.variable} antialiased`}
       >
+        {/* L3 — GDPR consent default: deny analytics_storage before any GA script can load */}
+        <script dangerouslySetInnerHTML={{ __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('consent','default',{analytics_storage:'denied'});` }} />
         {children}
         <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" strategy="afterInteractive" />
         <AnalyticsConsent />

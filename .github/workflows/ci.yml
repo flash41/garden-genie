@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  check:
+    name: Lint, types, audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript — no emit check
+        run: npx tsc --noEmit
+
+      - name: npm audit — high and critical only
+        run: npm audit --audit-level=high
+        # Fails CI on high or critical severity CVEs.
+        # Run `npm audit --fix` locally to resolve, or add a .npmrc
+        # audit-level override for a specific known false-positive.
+
+      - name: Build check
+        run: npm run build
+        env:
+          # Provide stub env vars so the build doesn't fail on missing config.
+          # These are not real values — build-time checks only.
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder
+          SUPABASE_SERVICE_ROLE_KEY: placeholder
+          GEMINI_API_KEY: placeholder
+          ADMIN_PASSWORD: placeholder
+          TURNSTILE_SECRET_KEY: placeholder

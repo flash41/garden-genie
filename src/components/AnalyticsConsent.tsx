@@ -3,23 +3,6 @@
 import { useEffect, useState } from 'react';
 import Script from 'next/script';
 
-/**
- * Minimal GDPR-aware cookie consent banner + Google Analytics (gtag.js) loader.
- *
- * Behaviour:
- *   - On first visit, displays a discreet banner at the bottom of the viewport.
- *   - Accept → stores `granted` in a 365-day cookie, loads gtag.
- *   - Reject → stores `denied`, does NOT load gtag.
- *   - Choice is persistent across sessions. User can revisit /legal to withdraw
- *     (full preference centre arrives in the Sprint 3 GDPR polish pass).
- *
- * Implementation notes:
- *   - Cookie (not localStorage) so SSR and API routes can read it if needed.
- *   - Consent is stored per-browser; there is no account concept yet.
- *   - The banner renders only after mount to avoid hydration mismatches and to
- *     prevent it flashing on top of the app for users who have already chosen.
- */
-
 const GA_MEASUREMENT_ID = 'G-532QK8PLBH';
 const CONSENT_COOKIE = 'dedrab_analytics_consent';
 const CONSENT_MAX_AGE_DAYS = 365;
@@ -28,143 +11,135 @@ type ConsentValue = 'granted' | 'denied' | null;
 
 function readConsent(): ConsentValue {
   if (typeof document === 'undefined') return null;
-  const match = document.cookie.match(/(?:^|;\s*)dedrab_analytics_consent=([^;]+)/);
-  if (!match) return null;
-  const v = decodeURIComponent(match[1]);
-  return v === 'granted' || v === 'denied' ? v : null;
+  const match = document.cookie
+    .split('; ')
+    .find(row => row.startsWith(`${CONSENT_COOKIE}=`));
+  const val = match?.split('=')[1];
+  if (val === 'granted' || val === 'denied') return val;
+  return null;
 }
 
 function writeConsent(value: 'granted' | 'denied'): void {
-  if (typeof document === 'undefined') return;
-  const secure = window.location.protocol === 'https:' ? '; Secure' : '';
   const maxAge = CONSENT_MAX_AGE_DAYS * 24 * 60 * 60;
-  document.cookie = `${CONSENT_COOKIE}=${value}; path=/; max-age=${maxAge}; SameSite=Lax${secure}`;
+  document.cookie = `${CONSENT_COOKIE}=${value};max-age=${maxAge};path=/;SameSite=Lax${location.protocol === 'https:' ? ';Secure' : ''}`;
+}
+
+function clearConsent(): void {
+  document.cookie = `${CONSENT_COOKIE}=;max-age=0;path=/`;
+}
+
+function updateGtagConsent(value: 'granted' | 'denied'): void {
+  if (typeof window !== 'undefined' && 'gtag' in window) {
+    (window as unknown as { gtag: (...args: unknown[]) => void }).gtag(
+      'consent',
+      'update',
+      { analytics_storage: value }
+    );
+  }
 }
 
 export default function AnalyticsConsent() {
   const [consent, setConsent] = useState<ConsentValue>(null);
   const [mounted, setMounted] = useState(false);
+  const [showBanner, setShowBanner] = useState(false);
 
   useEffect(() => {
+    const stored = readConsent();
+    setConsent(stored);
+    setShowBanner(stored === null);
     setMounted(true);
-    setConsent(readConsent());
+
+    // Listen for manual re-open (e.g. from footer cookie preferences link)
+    const handler = () => setShowBanner(true);
+    window.addEventListener('dedrab:open-cookie-banner', handler);
+    return () => window.removeEventListener('dedrab:open-cookie-banner', handler);
   }, []);
 
-  const accept = () => {
+  function handleAccept() {
     writeConsent('granted');
+    updateGtagConsent('granted');
     setConsent('granted');
-  };
+    setShowBanner(false);
+  }
 
-  const reject = () => {
+  function handleDecline() {
     writeConsent('denied');
+    updateGtagConsent('denied');
     setConsent('denied');
-  };
+    setShowBanner(false);
+  }
+
+  if (!mounted) return null;
 
   return (
     <>
+      {/* GA scripts — only when consent is granted */}
       {consent === 'granted' && (
         <>
           <Script
             src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
             strategy="afterInteractive"
           />
-          <Script id="gtag-init" strategy="afterInteractive">
+          <Script id="ga-init" strategy="afterInteractive">
             {`
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
               gtag('js', new Date());
               gtag('config', '${GA_MEASUREMENT_ID}', { anonymize_ip: true });
+              gtag('consent', 'update', { analytics_storage: 'granted' });
             `}
           </Script>
         </>
       )}
 
-      {mounted && consent === null && (
+      {/* Consent banner */}
+      {showBanner && (
         <div
           role="dialog"
-          aria-labelledby="consent-title"
-          aria-describedby="consent-desc"
-          style={{
-            position: 'fixed',
-            left: 16,
-            right: 16,
-            bottom: 16,
-            maxWidth: 560,
-            margin: '0 auto',
-            background: '#fff',
-            border: '1px solid #e5ddd0',
-            borderTop: '3px solid #b8962e',
-            borderRadius: 10,
-            padding: '18px 20px',
-            boxShadow: '0 10px 30px rgba(0,0,0,0.12)',
-            fontFamily: "'DM Sans', sans-serif",
-            fontSize: 14,
-            lineHeight: 1.55,
-            color: '#2f2a22',
-            zIndex: 9999,
-          }}
+          aria-label="Cookie consent"
+          className="fixed bottom-4 left-4 right-4 md:left-auto md:right-6 md:max-w-sm z-50 bg-white border border-stone-200 rounded-lg shadow-lg p-4"
         >
-          <div id="consent-title" style={{
-            fontFamily: "'Playfair Display', serif",
-            fontSize: 17,
-            color: '#0a3d2b',
-            marginBottom: 6,
-          }}>
-            A quiet note on cookies
-          </div>
-          <p id="consent-desc" style={{ margin: '0 0 14px 0', color: '#6b5e50' }}>
-            We use a single analytics cookie to understand how the site is used. Nothing more, nothing sold. You can accept or decline; your choice is remembered.
+          <p className="text-sm text-stone-700 mb-3 leading-relaxed">
+            We use analytics cookies to understand how the site is used. No
+            advertising, no tracking across other sites.
           </p>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <div className="flex gap-2">
             <button
-              type="button"
-              onClick={accept}
-              style={{
-                background: '#0a3d2b',
-                color: '#fff',
-                border: 'none',
-                borderRadius: 6,
-                padding: '10px 18px',
-                fontSize: 14,
-                fontWeight: 600,
-                cursor: 'pointer',
-                letterSpacing: '0.02em',
-              }}
+              onClick={handleAccept}
+              className="flex-1 bg-[#0a3d2b] text-white text-sm font-semibold py-2 px-4 rounded hover:bg-[#064e3b] transition-colors"
             >
               Accept
             </button>
             <button
-              type="button"
-              onClick={reject}
-              style={{
-                background: 'transparent',
-                color: '#4a3f32',
-                border: '1px solid #d4c9b8',
-                borderRadius: 6,
-                padding: '10px 18px',
-                fontSize: 14,
-                fontWeight: 600,
-                cursor: 'pointer',
-                letterSpacing: '0.02em',
-              }}
+              onClick={handleDecline}
+              className="flex-1 border border-stone-300 text-stone-600 text-sm font-semibold py-2 px-4 rounded hover:bg-stone-50 transition-colors"
             >
               Decline
             </button>
-            <a
-              href="/legal"
-              style={{
-                alignSelf: 'center',
-                marginLeft: 'auto',
-                fontSize: 12,
-                color: '#6b5e50',
-                textDecoration: 'underline',
-              }}
-            >
-              Learn more
-            </a>
           </div>
         </div>
       )}
     </>
+  );
+}
+
+/**
+ * CookiePreferencesButton — drop this anywhere in the UI to let users
+ * re-open the consent banner (e.g. in SiteFooter).
+ * Fires a custom event that AnalyticsConsent listens for.
+ */
+export function CookiePreferencesButton({ className }: { className?: string }) {
+  function handleClick() {
+    clearConsent();
+    window.dispatchEvent(new Event('dedrab:open-cookie-banner'));
+  }
+
+  return (
+    <button
+      onClick={handleClick}
+      className={className ?? 'text-xs text-stone-400 hover:text-[#0a3d2b] underline underline-offset-2'}
+    >
+      Cookie preferences
+    </button>
   );
 }

@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { getCategoryPosts, getCategoryParams, getNotesPosts } from '@/lib/notes';
 import { NotesGrid } from '@/components/notes/NotesGrid';
 import { CategoryFilter } from '@/components/notes/CategoryFilter';
+import { SiteFooter } from '@/components/SiteFooter';
 import { CATEGORY_LABELS } from '@/types/notes';
 import type { NotesCategory } from '@/types/notes';
 
@@ -88,6 +89,7 @@ export default async function CategoryPage({ params }: PageProps) {
           <NotesGrid posts={posts} />
         </div>
       </div>
+      <SiteFooter />
     </>
   );
 }
