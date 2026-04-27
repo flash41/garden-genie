@@ -1914,6 +1914,11 @@ export default function GardigApp() {
         <a href="/" style={{ display: 'flex', alignItems: 'center' }}>
           <img src="/dd_logo.png" alt="Dedrab" className="site-logo-h" />
         </a>
+        {rendersRemaining !== null && maxRenders !== null && (
+          <span style={{ fontSize: px(11), color: "rgba(255,255,255,0.45)", marginLeft: 'auto', letterSpacing: "0.04em" }}>
+            {rendersRemaining} of {maxRenders} plans remaining
+          </span>
+        )}
       </header>
 
       {/* Hero band */}
