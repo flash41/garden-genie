@@ -67,7 +67,7 @@ export function validateImage(dataUrl: unknown): ImageValidationResult {
   }
 
   // 2. Parse data URL — must match data:<mime>;base64,<payload>
-  const match = dataUrl.match(/^data:([^;]+);base64,(.+)$/s);
+  const match = dataUrl.match(/^data:([^;]+);base64,([\s\S]+)$/);
   if (!match) {
     return { valid: false, error: 'INVALID_FORMAT', message: 'Image must be a base64 data URL.' };
   }
