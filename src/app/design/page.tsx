@@ -1682,8 +1682,22 @@ export default function GardigApp() {
     if (file?.type.startsWith("image/")) handleFile(file);
   }, []);
 
+  const LOADING_MESSAGES = [
+    "Mapping your site boundaries...",
+    "Reading light and aspect...",
+    "Selecting plants for your climate...",
+    "Drawing up the spatial layout...",
+    "Speccing the hard landscaping...",
+    "Working out the implementation phases...",
+    "Costing out the materials...",
+    "Generating your render...",
+    "Reviewing the design for accuracy...",
+    "Pulling it all together...",
+  ];
+
   const callUnifiedPipeline = async (base64Data: string, mimeType: string) => {
-    const response = await fetch('/api/redesign', {
+    // Step 1 — submit job, get jobId back immediately
+    const submitRes = await fetch('/api/redesign', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -1698,43 +1712,75 @@ export default function GardigApp() {
         transformationLevel,
       }),
     });
-    if (!response.ok) {
-      if (response.status === 504 || response.status === 408) {
+
+    if (!submitRes.ok) {
+      if (submitRes.status === 504 || submitRes.status === 408) {
         setError("Your design took longer than expected. No render credit has been used. Please try again.");
         setStep("upload");
         return;
       }
-      if (response.status === 401) {
-        setGateMessage('no_invite');
-        setStep("upload");
-        return;
-      }
-      if (response.status === 402) {
-        setGateMessage('expired');
-        setStep("upload");
-        return;
-      }
-      if (response.status === 429) {
+      if (submitRes.status === 401) { setGateMessage('no_invite'); setStep("upload"); return; }
+      if (submitRes.status === 402) { setGateMessage('expired'); setStep("upload"); return; }
+      if (submitRes.status === 429) {
         setError("You have reached the maximum of 4 renders in 24 hours. Please try again tomorrow.");
         setStep("upload");
         return;
       }
-      const err = await response.json().catch(() => ({}));
-      throw new Error(err.error || `Design pipeline failed (${response.status})`);
+      const err = await submitRes.json().catch(() => ({}));
+      throw new Error(err.error || `Design pipeline failed (${submitRes.status})`);
     }
-    const data = await response.json();
-    if (data.error) throw new Error(data.error);
+
+    const { jobId } = await submitRes.json();
+    if (!jobId) throw new Error('No job ID returned. Please try again.');
+
+    // Step 2 — poll for completion
+    let msgIndex = 0;
+    setLoadingMsg(LOADING_MESSAGES[0]);
+
+    const poll = (): Promise<any> => new Promise((resolve, reject) => {
+      const interval = setInterval(async () => {
+        try {
+          // Rotate loading messages every 12 seconds
+          msgIndex = (msgIndex + 1) % LOADING_MESSAGES.length;
+          setLoadingMsg(LOADING_MESSAGES[msgIndex]);
+
+          const statusRes = await fetch(`/api/job-status/${jobId}`, { credentials: 'include' });
+          if (!statusRes.ok) {
+            clearInterval(interval);
+            reject(new Error(`Status check failed (${statusRes.status})`));
+            return;
+          }
+          const data = await statusRes.json();
+
+          if (data.status === 'complete') {
+            clearInterval(interval);
+            resolve(data);
+          } else if (data.status === 'failed') {
+            clearInterval(interval);
+            reject(new Error(data.error || 'Design pipeline failed. Please try again.'));
+          }
+          // else still queued/running — keep polling
+        } catch (err) {
+          clearInterval(interval);
+          reject(err);
+        }
+      }, 4000);
+    });
+
+    const result = await poll();
+
+    // Step 3 — return result in the same shape the rest of the page expects
     return {
-      designJSON: data.designJSON || null,
-      imageBase64: (data.imageError ? null : data.imageBase64) || null,
-      aerialImageBase64: (data.imageError ? null : data.aerialImageBase64) || null,
-      validationResult: data.validationResult || null,
-      retried: data.retried || false,
-      fingerprint: data.fingerprint || null,
-      perspectiveGridBase64: data.perspectiveGridBase64 || null,
-      controlPoints: data.controlPoints || {},
-      g2Grid: data.g2Grid || {},
-      detectedCurrency: data.detectedCurrency || null,
+      designJSON: result.designJSON || null,
+      imageBase64: result.renderUrl || null,
+      aerialImageBase64: result.aerialUrl || null,
+      validationResult: result.validationResult || null,
+      retried: result.retried || false,
+      fingerprint: result.fingerprint || null,
+      perspectiveGridBase64: null,
+      controlPoints: result.controlPoints || {},
+      g2Grid: result.g2Grid || {},
+      detectedCurrency: result.detectedCurrency || null,
     };
   };
 
@@ -1792,7 +1838,7 @@ export default function GardigApp() {
         try { sessionStorage.setItem('garden_plan_data_status', 'complete'); } catch (_) {}
       }
       setRenderUrl(result.imageBase64);
-      console.log('RENDER RECEIVED - type:', result.imageBase64 ? (result.imageBase64.startsWith('data:') ? 'dataURL' : 'base64') : 'null', 'length:', result.imageBase64?.length ?? 0);
+      console.log('RENDER RECEIVED - type:', result.imageBase64 ? (result.imageBase64.startsWith('data:') ? 'dataURL' : result.imageBase64.startsWith('https://') ? 'signedUrl' : 'base64') : 'null', 'length:', result.imageBase64?.length ?? 0);
       setAerialImageUrl(result.aerialImageBase64);
       setFingerprint(result.fingerprint);
       setControlPoints(result.controlPoints || {});
