@@ -123,7 +123,10 @@ export async function POST(request: NextRequest) {
   }
 
   // h. Validate image
-  const imgValidation = validateImage(originalImageBase64);
+  const base64ForValidation = originalImageBase64.includes(',')
+    ? originalImageBase64
+    : `data:${effectiveMimeType};base64,${originalImageBase64}`;
+  const imgValidation = validateImage(base64ForValidation);
   if (!imgValidation.valid) {
     return NextResponse.json({ error: imgValidation.message }, { status: 400 });
   }
