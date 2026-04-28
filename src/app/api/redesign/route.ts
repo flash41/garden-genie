@@ -218,7 +218,13 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (err: any) {
-    console.error('[redesign] Inngest send failed:', err?.message);
+    console.error('[redesign] Inngest send failed — full error:', JSON.stringify({
+      message: err?.message,
+      name: err?.name,
+      status: (err as any)?.status,
+      eventKeyPresent: !!(process.env.INNGEST_EVENT_KEY),
+      eventKeyPrefix: process.env.INNGEST_EVENT_KEY?.slice(0, 8) ?? 'MISSING',
+    }));
     if (jobId) {
       await supabaseAdmin.from('pipeline_jobs').update({ status: 'failed' }).eq('id', jobId);
     }
