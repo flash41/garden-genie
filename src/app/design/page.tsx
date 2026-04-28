@@ -1576,6 +1576,8 @@ export default function GardigApp() {
     const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
     if (!siteKey) return;
 
+    (window as any).onTurnstileSuccess = (token: string) => setTurnstileToken(token);
+
     const tryRender = () => {
       if ((window as any).turnstile) {
         (window as any).turnstile.render('.cf-turnstile', {
@@ -2219,10 +2221,7 @@ export default function GardigApp() {
 
         {process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && (
           <div style={{ display: "flex", justifyContent: "center", marginTop: 18 }}>
-            <div className="cf-turnstile"
-              data-sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
-              data-callback="onTurnstileSuccess"
-            />
+            <div className="cf-turnstile" />
           </div>
         )}
 
