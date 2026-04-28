@@ -2469,37 +2469,56 @@ export default function GardigApp() {
           // the upload succeeds, then fetched back via fetch-asset to avoid canvas CORS taint.
           let pdfRenderSrc: string | null = capturedRenderUrl;
           if (capturedRenderUrl) {
-            try {
-              console.log('[runPdfAndUpload] Uploading render image — sessionId:', capturedSessionId);
-              const renderRes = await fetch('/api/upload-render', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ renderBase64: capturedRenderUrl, sessionId: capturedSessionId }),
-              });
-              if (renderRes.ok) {
-                const { renderUrl: hostedRenderUrl } = await renderRes.json();
-                console.log('[runPdfAndUpload] Render upload succeeded, renderUrl:', hostedRenderUrl);
-                uploadedRenderUrl = hostedRenderUrl || null;
-                if (hostedRenderUrl) {
-                  try {
-                    sessionStorage.setItem('garden_render_url', hostedRenderUrl);
-                  } catch (e) {
-                    console.warn('[runPdfAndUpload] sessionStorage write failed (garden_render_url):', e);
-                  }
-                  // Fetch back as base64 via the server proxy so resizeImageForPdf
-                  // receives a data: URI (avoids canvas cross-origin taint).
-                  const fetchedRender = await fetchAssetSafe(hostedRenderUrl);
-                  if (fetchedRender) {
-                    pdfRenderSrc = fetchedRender;
-                    console.log('[runPdfAndUpload] Render fetched back as base64, using for PDF');
-                  }
-                }
-              } else {
-                const errText = await renderRes.text();
-                console.error('[runPdfAndUpload] Render upload failed — status:', renderRes.status, 'body:', errText);
+            if (capturedRenderUrl.startsWith('https://')) {
+              // Async pipeline: render is already stored in Supabase. Skip upload,
+              // fetch back as base64 via the server proxy so resizeImageForPdf
+              // receives a data: URI (avoids canvas cross-origin taint).
+              console.log('[runPdfAndUpload] Render is already a hosted URL (async pipeline) — fetching as base64');
+              uploadedRenderUrl = capturedRenderUrl;
+              try {
+                sessionStorage.setItem('garden_render_url', capturedRenderUrl);
+              } catch (e) {
+                console.warn('[runPdfAndUpload] sessionStorage write failed (garden_render_url):', e);
               }
-            } catch (err) {
-              console.error('[runPdfAndUpload] Render upload error:', err);
+              const fetchedRender = await fetchAssetSafe(capturedRenderUrl);
+              if (fetchedRender) {
+                pdfRenderSrc = fetchedRender;
+                console.log('[runPdfAndUpload] Render fetched back as base64, using for PDF');
+              } else {
+                console.warn('[runPdfAndUpload] fetchAssetSafe returned null for hosted render URL — PDF may have blank image');
+              }
+            } else {
+              // Legacy sync pipeline: render is a base64 data URI — upload to Supabase first.
+              try {
+                console.log('[runPdfAndUpload] Uploading render image — sessionId:', capturedSessionId);
+                const renderRes = await fetch('/api/upload-render', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ renderBase64: capturedRenderUrl, sessionId: capturedSessionId }),
+                });
+                if (renderRes.ok) {
+                  const { renderUrl: hostedRenderUrl } = await renderRes.json();
+                  console.log('[runPdfAndUpload] Render upload succeeded, renderUrl:', hostedRenderUrl);
+                  uploadedRenderUrl = hostedRenderUrl || null;
+                  if (hostedRenderUrl) {
+                    try {
+                      sessionStorage.setItem('garden_render_url', hostedRenderUrl);
+                    } catch (e) {
+                      console.warn('[runPdfAndUpload] sessionStorage write failed (garden_render_url):', e);
+                    }
+                    const fetchedRender = await fetchAssetSafe(hostedRenderUrl);
+                    if (fetchedRender) {
+                      pdfRenderSrc = fetchedRender;
+                      console.log('[runPdfAndUpload] Render fetched back as base64, using for PDF');
+                    }
+                  }
+                } else {
+                  const errText = await renderRes.text();
+                  console.error('[runPdfAndUpload] Render upload failed — status:', renderRes.status, 'body:', errText);
+                }
+              } catch (err) {
+                console.error('[runPdfAndUpload] Render upload error:', err);
+              }
             }
           }
 
