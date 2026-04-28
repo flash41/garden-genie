@@ -1573,7 +1573,23 @@ export default function GardigApp() {
 
   // Register Turnstile success callback on window
   useEffect(() => {
-    (window as any).onTurnstileSuccess = (token: string) => setTurnstileToken(token);
+    const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+    if (!siteKey) return;
+
+    const tryRender = () => {
+      if ((window as any).turnstile) {
+        (window as any).turnstile.render('.cf-turnstile', {
+          sitekey: siteKey,
+          callback: (token: string) => setTurnstileToken(token),
+          'error-callback': () => setTurnstileToken(''),
+          'expired-callback': () => setTurnstileToken(''),
+        });
+      } else {
+        setTimeout(tryRender, 200);
+      }
+    };
+
+    tryRender();
   }, []);
 
   // Confirm currency from locale on mount (handles SSR hydration)
