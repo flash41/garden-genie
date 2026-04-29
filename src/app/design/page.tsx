@@ -2565,9 +2565,35 @@ export default function GardigApp() {
         const fetchedRender = await fetchAssetSafe(capturedRenderUrl);
         if (fetchedRender) {
           pdfRenderSrc = fetchedRender;
-          console.log('[runPdfAndUpload] Render fetched back as base64, using for PDF');
+          console.log('[runPdfAndUpload] Render fetched via fetch-asset, length:', fetchedRender.length);
         } else {
-          console.warn('[runPdfAndUpload] fetchAssetSafe returned null for hosted render URL — PDF may have blank image');
+          // fetch-asset failed — try image-proxy as fallback before giving up.
+          // react-pdf runs WASM in the browser and cannot load raw https:// URLs
+          // due to CORS, so we must have a data URL. Never fall through to the https URL.
+          console.warn('[runPdfAndUpload] fetch-asset failed — trying image-proxy fallback');
+          try {
+            const proxyRes = await fetch('/api/image-proxy', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ imageUrl: capturedRenderUrl }),
+            });
+            if (proxyRes.ok) {
+              const { dataUrl } = await proxyRes.json();
+              if (dataUrl) {
+                pdfRenderSrc = dataUrl;
+                console.log('[runPdfAndUpload] Render fetched via image-proxy, length:', dataUrl.length);
+              } else {
+                console.error('[runPdfAndUpload] image-proxy returned no dataUrl — render absent from PDF');
+                pdfRenderSrc = null;
+              }
+            } else {
+              console.error('[runPdfAndUpload] image-proxy failed status:', proxyRes.status, '— render absent from PDF');
+              pdfRenderSrc = null;
+            }
+          } catch (err) {
+            console.error('[runPdfAndUpload] image-proxy error:', err, '— render absent from PDF');
+            pdfRenderSrc = null;
+          }
         }
       } else {
         try {
@@ -2588,7 +2614,22 @@ export default function GardigApp() {
               const fetchedRender = await fetchAssetSafe(hostedRenderUrl);
               if (fetchedRender) {
                 pdfRenderSrc = fetchedRender;
-                console.log('[runPdfAndUpload] Render fetched back as base64, using for PDF');
+                console.log('[runPdfAndUpload] Uploaded render fetched back as base64, length:', fetchedRender.length);
+              } else {
+                // Same fallback for the upload path
+                console.warn('[runPdfAndUpload] fetch-asset failed for uploaded render — trying image-proxy');
+                try {
+                  const proxyRes = await fetch('/api/image-proxy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ imageUrl: hostedRenderUrl }),
+                  });
+                  if (proxyRes.ok) {
+                    const { dataUrl } = await proxyRes.json();
+                    if (dataUrl) { pdfRenderSrc = dataUrl; }
+                    else { pdfRenderSrc = null; }
+                  } else { pdfRenderSrc = null; }
+                } catch { pdfRenderSrc = null; }
               }
             }
           } else {
@@ -2603,11 +2644,22 @@ export default function GardigApp() {
 
     try {
       const aerialSrc = capturedAerialGridImageUrl || capturedAerialImageUrl || null;
+
+      // Fetch aerial image via proxy — same two-layer approach as the render fetch
+      const fetchAerialSafe = async (src: string): Promise<string | null> => {
+        if (src.startsWith('data:')) return src;
+        const via1 = await fetchAssetSafe(src);
+        if (via1) return via1;
+        try {
+          const r = await fetch('/api/image-proxy', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ imageUrl: src }) });
+          if (r.ok) { const { dataUrl } = await r.json(); if (dataUrl) return dataUrl; }
+        } catch (_) {}
+        return null;
+      };
+
       const [logoBase64, aerialRaw] = await Promise.all([
         fetchLogoAsBase64(),
-        aerialSrc
-          ? (aerialSrc.startsWith('data:') ? Promise.resolve(aerialSrc) : fetchAssetSafe(aerialSrc))
-          : Promise.resolve(null),
+        aerialSrc ? fetchAerialSafe(aerialSrc) : Promise.resolve(null),
       ]);
 
       const [resizedRender, resizedBefore, aerialBase64, resizedGrid] = await Promise.all([
