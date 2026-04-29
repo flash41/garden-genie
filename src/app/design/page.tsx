@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback, useEffect, Suspense } from "react";
+import { useState, useRef, useCallback, useEffect, Suspense, startTransition } from "react";
 import { flushSync } from "react-dom";
 import { useRouter, useSearchParams } from 'next/navigation';
 import PDFButton from "@/components/PDFButton";
@@ -1497,7 +1497,6 @@ function ThemePreSelector({ onTheme }: { onTheme: (label: string) => void }) {
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 
 export default function GardigApp() {
-  'use no memo'; // opt out of React Compiler — prevents hook count mismatch on restore path
   const [step, setStep]               = useState<"upload"|"loading"|"result">("upload");
   const [imageFile, setImageFile]     = useState<File | null>(null);
   const [imageDataUrl, setImageDataUrl] = useState<string | null>(null);
@@ -2067,17 +2066,20 @@ export default function GardigApp() {
               }
               console.log('Restored results from session:', savedResults);
               restoredFromSessionRef.current = true; // flag: skip background save for restored results
-              setDocData(savedResults.planData || null);
-              setRenderUrl(savedResults.renderUrl || null);
-              setDesignLang(savedResults.designStyle || 'Japanese Zen');
-              setHardinessZone(savedResults.hardinessZone || '');
-              setGardenOrientation(savedResults.orientation || '');
-              setTransformationLevel(savedResults.transformationLevel || 3);
-              setClientName(savedResults.clientName || '');
-              setUserEmail(savedResults.userEmail || '');
-              setStep('result');
-              setActiveTab('your-garden');
-              setShowRestoreBanner(false);
+              startTransition(() => {
+                setDocData(savedResults.planData || null);
+                setRenderUrl(savedResults.renderUrl || null);
+                setDesignLang(savedResults.designStyle || 'Japanese Zen');
+                setHardinessZone(savedResults.hardinessZone || '');
+                setGardenOrientation(savedResults.orientation || '');
+                setTransformationLevel(savedResults.transformationLevel || 3);
+                setClientName(savedResults.clientName || '');
+                setUserEmail(savedResults.userEmail || '');
+                setStep('result');
+                setActiveTab('your-garden');
+                setShowRestoreBanner(false);
+                setProceedReady(true); // restored sessions are already saved — unlock button immediately
+              });
             }}
             style={{ background: '#b8962e', color: '#fff', border: 'none', borderRadius: 4, padding: '6px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
           >

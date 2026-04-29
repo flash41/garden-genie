@@ -35,7 +35,8 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  reactCompiler: true,
+  // reactCompiler disabled — was causing React error #310 (hook count mismatch) on restore path
+  // due to interaction with Suspense boundary around ThemePreSelector in React 19
   async redirects() {
     return [
       {
