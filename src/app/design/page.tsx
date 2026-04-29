@@ -1751,7 +1751,7 @@ export default function GardigApp() {
         return;
       }
       if (submitRes.status === 401) { setGateMessage('no_invite'); setStep("upload"); return; }
-      if (submitRes.status === 402) { setGateMessage('expired'); setStep("upload"); return; }
+      if (submitRes.status === 402) { router.push('/next'); return; }
       if (submitRes.status === 429) {
         setError("You have reached the maximum of 10 renders in 24 hours. Please try again tomorrow.");
         setStep("upload");
@@ -1836,7 +1836,8 @@ export default function GardigApp() {
       const gateRes = await fetch('/api/invite-status', { credentials: 'include' });
       const gateData = await gateRes.json();
       if (!gateData.valid) {
-        setGateMessage(gateData.reason === 'expired' ? 'expired' : 'no_invite');
+        if (gateData.reason === 'expired') { router.push('/next'); return; }
+        setGateMessage('no_invite');
         return;
       }
       setGateMessage('none');
@@ -2233,11 +2234,6 @@ export default function GardigApp() {
           </div>
         )}
 
-        {gateMessage === 'expired' && (
-          <div style={{ background: C.accentLight, border: `1px solid ${C.accent}`, borderRadius: C.r, padding: "11px 15px", fontSize: px(13), color: C.inkMid, marginTop: 14, lineHeight: 1.5 }}>
-            You have used all of your available renders. To request more access, email <a href="#contact" style={{ color: C.brand, fontWeight: 600 }}>our contact form</a>.
-          </div>
-        )}
 
         {gateMessage === 'no_invite' && (
           <div style={{ background: C.accentLight, border: `1px solid ${C.accent}`, borderRadius: C.r, padding: "11px 15px", fontSize: px(13), color: C.inkMid, marginTop: 14, lineHeight: 1.5 }}>
