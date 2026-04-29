@@ -1984,6 +1984,116 @@ export default function GardigApp() {
     }
   };
 
+  // ── Background save: fires as soon as result arrives ──────────────────────
+  // Starts the save-design API call + PDF generation in the background the
+  // moment step becomes "result", so the work is underway while the user reads
+  // their plan. The "Save and proceed" button is greyed out for 15 seconds
+  // minimum, giving the background work a head start.
+  // NOTE: This useEffect MUST live before any conditional early returns so that
+  // React sees the same number of hooks on every render (Rules of Hooks).
+  useEffect(() => {
+    if (step !== 'result') return;
+    if (restoredFromSessionRef.current) return; // skip background save when restoring from session
+    if (bgSaveStartedRef.current) return;
+    bgSaveStartedRef.current = true;
+
+    // Snapshot current state — these will not change during the review period
+    const snapDocData       = docData;
+    const snapRenderUrl     = renderUrl;
+    const snapAerialGrid    = aerialGridImageUrl;
+    const snapAerialImage   = aerialImageUrl;
+    const snapImageDataUrl  = imageDataUrl;
+    const snapGridImageUrl  = gridImageUrl;
+    const snapDesignLang    = designLang;
+    const snapClientName    = clientName;
+    const snapOrientation   = gardenOrientation;
+    const snapTransform     = transformationLevel;
+    const snapEmail         = userEmail;
+    const snapHardiness     = hardinessZone;
+
+    // 15-second countdown — button stays greyed until it reaches 0
+    let count = 15;
+    setProceedCountdown(count);
+    const tick = setInterval(() => {
+      count -= 1;
+      setProceedCountdown(count);
+      if (count <= 0) {
+        clearInterval(tick);
+        setProceedReady(true);
+      }
+    }, 1000);
+
+    // Background save-design call
+    (async () => {
+      try {
+        if (!snapDocData) {
+          console.warn('[bgSave] docData not ready — skipping background save');
+          clearInterval(tick);
+          setProceedReady(true);
+          return;
+        }
+        const bgSessionId = crypto.randomUUID();
+        const saveRes = await fetch('/api/save-design', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId: bgSessionId,
+            email: snapEmail,
+            designStyle: snapDesignLang,
+            hardinessZone: snapHardiness || '',
+            plantList: snapDocData?.plantingSpecification?.plants || [],
+            fullReport: snapDocData || {},
+          }),
+        });
+        if (!saveRes.ok) {
+          console.error('[bgSave] save-design failed:', saveRes.status);
+          clearInterval(tick);
+          setProceedReady(true);
+          return;
+        }
+        const saveData = await saveRes.json();
+        const bgRefNum: string = saveData.reference_number || '';
+        console.log('[bgSave] save-design complete — sessionId:', bgSessionId, 'ref:', bgRefNum);
+
+        // Store so handleSaveAndProceed can skip the save and just navigate
+        bgSaveRef.current = { sessionId: bgSessionId, refNum: bgRefNum };
+        setSessionId(bgSessionId);
+        setDesignRecordId(saveData.id);
+        if (bgRefNum) setReferenceNumber(bgRefNum);
+
+        try { sessionStorage.setItem('garden_user_email', snapEmail); } catch (_) {}
+        try { sessionStorage.setItem('garden_design_style', snapDesignLang); } catch (_) {}
+        try { sessionStorage.setItem('garden_reference_number', bgRefNum); } catch (_) {}
+        try {
+          const aerialSrc = snapAerialGrid || snapAerialImage || null;
+          sessionStorage.setItem('garden_plan_data', JSON.stringify({
+            ...snapDocData,
+            _aerialImageBase64: aerialSrc,
+            _beforeImageBase64: snapImageDataUrl || null,
+          }));
+        } catch (_) {}
+
+        // Kick off PDF generation in background
+        if (bgRefNum) {
+          runPdfAndUpload(
+            bgSessionId, bgRefNum, snapDocData, snapRenderUrl,
+            snapAerialGrid, snapAerialImage, snapImageDataUrl, snapGridImageUrl,
+            snapDesignLang, snapClientName, snapOrientation, snapTransform,
+          ).catch(err => {
+            console.error('[bgSave] runPdfAndUpload unhandled rejection:', err);
+            setPdfGenerating(false);
+          });
+        }
+      } catch (err) {
+        console.error('[bgSave] unexpected error:', err);
+        clearInterval(tick);
+        setProceedReady(true);
+      }
+    })();
+
+    return () => clearInterval(tick);
+  }, [step]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // ── UPLOAD SCREEN ──────────────────────────────────────────────────────────
   if (step === "upload") return (
     <div style={{ minHeight: "100vh", background: C.surface, fontFamily: C.font }}>
@@ -2416,114 +2526,6 @@ export default function GardigApp() {
       setTimeout(() => { setSelfSendToast(null); setSelfSendStatus("idle"); }, 5000);
     }
   }
-
-  // ── Background save: fires as soon as result arrives ──────────────────────
-  // Starts the save-design API call + PDF generation in the background the
-  // moment step becomes "result", so the work is underway while the user reads
-  // their plan. The "Save and proceed" button is greyed out for 15 seconds
-  // minimum, giving the background work a head start.
-  useEffect(() => {
-    if (step !== 'result') return;
-    if (restoredFromSessionRef.current) return; // skip background save when restoring from session
-    if (bgSaveStartedRef.current) return;
-    bgSaveStartedRef.current = true;
-
-    // Snapshot current state — these will not change during the review period
-    const snapDocData       = docData;
-    const snapRenderUrl     = renderUrl;
-    const snapAerialGrid    = aerialGridImageUrl;
-    const snapAerialImage   = aerialImageUrl;
-    const snapImageDataUrl  = imageDataUrl;
-    const snapGridImageUrl  = gridImageUrl;
-    const snapDesignLang    = designLang;
-    const snapClientName    = clientName;
-    const snapOrientation   = gardenOrientation;
-    const snapTransform     = transformationLevel;
-    const snapEmail         = userEmail;
-    const snapHardiness     = hardinessZone;
-
-    // 15-second countdown — button stays greyed until it reaches 0
-    let count = 15;
-    setProceedCountdown(count);
-    const tick = setInterval(() => {
-      count -= 1;
-      setProceedCountdown(count);
-      if (count <= 0) {
-        clearInterval(tick);
-        setProceedReady(true);
-      }
-    }, 1000);
-
-    // Background save-design call
-    (async () => {
-      try {
-        if (!snapDocData) {
-          console.warn('[bgSave] docData not ready — skipping background save');
-          clearInterval(tick);
-          setProceedReady(true);
-          return;
-        }
-        const bgSessionId = crypto.randomUUID();
-        const saveRes = await fetch('/api/save-design', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            sessionId: bgSessionId,
-            email: snapEmail,
-            designStyle: snapDesignLang,
-            hardinessZone: snapHardiness || '',
-            plantList: snapDocData?.plantingSpecification?.plants || [],
-            fullReport: snapDocData || {},
-          }),
-        });
-        if (!saveRes.ok) {
-          console.error('[bgSave] save-design failed:', saveRes.status);
-          clearInterval(tick);
-          setProceedReady(true);
-          return;
-        }
-        const saveData = await saveRes.json();
-        const bgRefNum: string = saveData.reference_number || '';
-        console.log('[bgSave] save-design complete — sessionId:', bgSessionId, 'ref:', bgRefNum);
-
-        // Store so handleSaveAndProceed can skip the save and just navigate
-        bgSaveRef.current = { sessionId: bgSessionId, refNum: bgRefNum };
-        setSessionId(bgSessionId);
-        setDesignRecordId(saveData.id);
-        if (bgRefNum) setReferenceNumber(bgRefNum);
-
-        try { sessionStorage.setItem('garden_user_email', snapEmail); } catch (_) {}
-        try { sessionStorage.setItem('garden_design_style', snapDesignLang); } catch (_) {}
-        try { sessionStorage.setItem('garden_reference_number', bgRefNum); } catch (_) {}
-        try {
-          const aerialSrc = snapAerialGrid || snapAerialImage || null;
-          sessionStorage.setItem('garden_plan_data', JSON.stringify({
-            ...snapDocData,
-            _aerialImageBase64: aerialSrc,
-            _beforeImageBase64: snapImageDataUrl || null,
-          }));
-        } catch (_) {}
-
-        // Kick off PDF generation in background
-        if (bgRefNum) {
-          runPdfAndUpload(
-            bgSessionId, bgRefNum, snapDocData, snapRenderUrl,
-            snapAerialGrid, snapAerialImage, snapImageDataUrl, snapGridImageUrl,
-            snapDesignLang, snapClientName, snapOrientation, snapTransform,
-          ).catch(err => {
-            console.error('[bgSave] runPdfAndUpload unhandled rejection:', err);
-            setPdfGenerating(false);
-          });
-        }
-      } catch (err) {
-        console.error('[bgSave] unexpected error:', err);
-        clearInterval(tick);
-        setProceedReady(true);
-      }
-    })();
-
-    return () => clearInterval(tick);
-  }, [step]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Standalone PDF + render upload ──────────────────────────────────────────
   // Called both from the background save (on result arrival) and as fallback
