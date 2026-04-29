@@ -1497,6 +1497,7 @@ function ThemePreSelector({ onTheme }: { onTheme: (label: string) => void }) {
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 
 export default function GardigApp() {
+  'use no memo'; // opt out of React Compiler — prevents hook count mismatch on restore path
   const [step, setStep]               = useState<"upload"|"loading"|"result">("upload");
   const [imageFile, setImageFile]     = useState<File | null>(null);
   const [imageDataUrl, setImageDataUrl] = useState<string | null>(null);
