@@ -1165,7 +1165,11 @@ async function step5_generateRender(
   });
 
   const imagePart = response.candidates?.[0]?.content?.parts?.find((p: any) => p.inlineData);
-  if (!imagePart?.inlineData?.data) return null;
+  if (!imagePart?.inlineData?.data) {
+    const finishReason = response.candidates?.[0]?.finishReason ?? 'unknown';
+    const safetyRatings = JSON.stringify(response.candidates?.[0]?.safetyRatings ?? []);
+    throw new Error(`Gemini returned no image (finishReason=${finishReason}, safety=${safetyRatings})`);
+  }
   const mime = imagePart.inlineData.mimeType || 'image/png';
   return `data:${mime};base64,${imagePart.inlineData.data}`;
 }
@@ -1411,9 +1415,14 @@ export const pipelineFunction = inngest.createFunction(
 
           let retried_render: string | null = renderDataUri;
           try {
-            retried_render = await step5_generateRender(retryPrompt, imageBase64, mimeType);
+            const retryResult = await step5_generateRender(retryPrompt, imageBase64, mimeType);
+            if (retryResult) {
+              retried_render = retryResult;
+            } else {
+              console.warn('[Pipeline] Retry render returned null — falling back to original render');
+            }
           } catch (err) {
-            console.error('[Pipeline] Retry render failed:', err);
+            console.error('[Pipeline] Retry render failed — falling back to original render:', err);
           }
           return { finalRenderDataUri: retried_render, retried: true, finalValidation: validation };
         }
@@ -1451,6 +1460,8 @@ export const pipelineFunction = inngest.createFunction(
           }
         }
 
+        const renderMissing = !renderStoragePath;
+
         await supabaseAdmin.from('pipeline_jobs').update({
           status: 'complete',
           design_json: designJSON,
@@ -1462,12 +1473,20 @@ export const pipelineFunction = inngest.createFunction(
           validation_result: finalValidation,
           retried,
           detected_currency: effectiveCurrency,
+          // Surface render failure to the frontend without failing the whole job
+          // (design brief is still usable even without the image)
+          error_message: renderMissing ? 'Render image could not be generated. Your plan is ready but the visual is unavailable — please try again.' : null,
         }).eq('id', jobId);
 
-        await supabaseAdmin
-          .from('invite_codes')
-          .update({ renders_used: currentRendersUsed + 1, used: true, used_at: new Date().toISOString() })
-          .eq('code', inviteCode);
+        // Only charge the render credit if the user actually received a render image
+        if (!renderMissing) {
+          await supabaseAdmin
+            .from('invite_codes')
+            .update({ renders_used: currentRendersUsed + 1, used: true, used_at: new Date().toISOString() })
+            .eq('code', inviteCode);
+        } else {
+          console.warn(`[Pipeline] Render missing for job ${jobId} — render credit NOT charged to invite ${inviteCode}`);
+        }
       });
 
     } catch (error: any) {
