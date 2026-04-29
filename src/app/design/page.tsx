@@ -2136,7 +2136,7 @@ export default function GardigApp() {
             <Label>02 — Project Details</Label>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               <div>
-                <label className="dedrab-label" style={{ display: "block", fontSize: px(12), color: C.inkMid, marginBottom: 5, fontWeight: 600 }}>Client Name <span style={{ color: C.inkLight, fontWeight: 400 }}>(optional)</span></label>
+                <label className="dedrab-label" style={{ display: "block", fontSize: px(12), color: C.inkMid, marginBottom: 5, fontWeight: 600 }}>Full Name</label>
                 <input className="dedrab-input" value={clientName} onChange={(e: any) => setClientName(e.target.value)} placeholder="e.g. Johnson Residence"
                   style={{ width: "100%", padding: "9px 11px", border: `1px solid ${C.rule}`, borderRadius: C.r, fontFamily: C.font, fontSize: px(BASE - 1), color: C.ink, outline: "none" }} />
               </div>
