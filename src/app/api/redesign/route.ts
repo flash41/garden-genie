@@ -77,8 +77,8 @@ export async function POST(request: NextRequest) {
     .gte('created_at', windowStart)
     .neq('status', 'failed');
 
-  if ((recentCount || 0) >= 4) {
-    return NextResponse.json({ error: 'rate_limited', message: 'You have reached the maximum of 4 renders in 24 hours. Please try again tomorrow.' }, { status: 429 });
+  if ((recentCount || 0) >= 10) {
+    return NextResponse.json({ error: 'rate_limited', message: 'You have reached the maximum of 10 renders in 24 hours. Please try again tomorrow.' }, { status: 429 });
   }
 
   // f. Parse request body

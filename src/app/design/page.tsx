@@ -1745,7 +1745,7 @@ export default function GardigApp() {
       if (submitRes.status === 401) { setGateMessage('no_invite'); setStep("upload"); return; }
       if (submitRes.status === 402) { setGateMessage('expired'); setStep("upload"); return; }
       if (submitRes.status === 429) {
-        setError("You have reached the maximum of 4 renders in 24 hours. Please try again tomorrow.");
+        setError("You have reached the maximum of 10 renders in 24 hours. Please try again tomorrow.");
         setStep("upload");
         return;
       }
