@@ -1536,6 +1536,11 @@ export default function GardigApp() {
   const [gateMessage, setGateMessage]         = useState<'none' | 'expired' | 'no_invite'>('none');
   const [pdfGenerating, setPdfGenerating] = useState(false);
   const [pdfError, setPdfError]           = useState<string | null>(null);
+  // Background save — kick off save-design + PDF as soon as result arrives
+  const [proceedReady, setProceedReady]       = useState(false);
+  const [proceedCountdown, setProceedCountdown] = useState(15);
+  const bgSaveRef = useRef<{ sessionId: string; refNum: string } | null>(null);
+  const bgSaveStartedRef = useRef(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const intentionalNavRef = useRef(false);
   const router = useRouter();
@@ -1755,12 +1760,23 @@ export default function GardigApp() {
     let msgIndex = 0;
     setLoadingMsg(LOADING_MESSAGES[0]);
 
+    const POLL_INTERVAL_MS = 4000;
+    const POLL_TIMEOUT_MS  = 8 * 60 * 1000; // 8 minutes — Inngest max step duration is ~5m
+
     const poll = (): Promise<any> => new Promise((resolve, reject) => {
+      const deadline = Date.now() + POLL_TIMEOUT_MS;
       const interval = setInterval(async () => {
         try {
           // Rotate loading messages every 12 seconds
           msgIndex = (msgIndex + 1) % LOADING_MESSAGES.length;
           setLoadingMsg(LOADING_MESSAGES[msgIndex]);
+
+          // Hard timeout — reject if the job takes too long
+          if (Date.now() > deadline) {
+            clearInterval(interval);
+            reject(new Error('Your design is taking longer than expected. Please try again — your render credit has not been used.'));
+            return;
+          }
 
           const statusRes = await fetch(`/api/job-status/${jobId}`, { credentials: 'include' });
           if (!statusRes.ok) {
@@ -1782,7 +1798,7 @@ export default function GardigApp() {
           clearInterval(interval);
           reject(err);
         }
-      }, 4000);
+      }, POLL_INTERVAL_MS);
     });
 
     const result = await poll();
@@ -1799,6 +1815,7 @@ export default function GardigApp() {
       controlPoints: result.controlPoints || {},
       g2Grid: result.g2Grid || {},
       detectedCurrency: result.detectedCurrency || null,
+      renderError: result.renderError || null,
     };
   };
 
@@ -1857,6 +1874,12 @@ export default function GardigApp() {
       }
       setRenderUrl(result.imageBase64);
       console.log('RENDER RECEIVED - type:', result.imageBase64 ? (result.imageBase64.startsWith('data:') ? 'dataURL' : result.imageBase64.startsWith('https://') ? 'signedUrl' : 'base64') : 'null', 'length:', result.imageBase64?.length ?? 0);
+      if (!result.imageBase64 && result.renderError) {
+        console.warn('[handleAnalyse] Render image missing:', result.renderError);
+        // Don't block the result page — the design brief is still usable.
+        // Surface a non-fatal notice at the top of the result view.
+        setError(result.renderError);
+      }
       setAerialImageUrl(result.aerialImageBase64);
       setFingerprint(result.fingerprint);
       setControlPoints(result.controlPoints || {});
@@ -2369,9 +2392,293 @@ export default function GardigApp() {
     }
   }
 
+  // ── Background save: fires as soon as result arrives ──────────────────────
+  // Starts the save-design API call + PDF generation in the background the
+  // moment step becomes "result", so the work is underway while the user reads
+  // their plan. The "Save and proceed" button is greyed out for 15 seconds
+  // minimum, giving the background work a head start.
+  useEffect(() => {
+    if (step !== 'result') return;
+    if (bgSaveStartedRef.current) return;
+    bgSaveStartedRef.current = true;
+
+    // Snapshot current state — these will not change during the review period
+    const snapDocData       = docData;
+    const snapRenderUrl     = renderUrl;
+    const snapAerialGrid    = aerialGridImageUrl;
+    const snapAerialImage   = aerialImageUrl;
+    const snapImageDataUrl  = imageDataUrl;
+    const snapGridImageUrl  = gridImageUrl;
+    const snapDesignLang    = designLang;
+    const snapClientName    = clientName;
+    const snapOrientation   = gardenOrientation;
+    const snapTransform     = transformationLevel;
+    const snapEmail         = userEmail;
+    const snapHardiness     = hardinessZone;
+
+    // 15-second countdown — button stays greyed until it reaches 0
+    let count = 15;
+    setProceedCountdown(count);
+    const tick = setInterval(() => {
+      count -= 1;
+      setProceedCountdown(count);
+      if (count <= 0) {
+        clearInterval(tick);
+        setProceedReady(true);
+      }
+    }, 1000);
+
+    // Background save-design call
+    (async () => {
+      try {
+        if (!snapDocData) {
+          console.warn('[bgSave] docData not ready — skipping background save');
+          clearInterval(tick);
+          setProceedReady(true);
+          return;
+        }
+        const bgSessionId = crypto.randomUUID();
+        const saveRes = await fetch('/api/save-design', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId: bgSessionId,
+            email: snapEmail,
+            designStyle: snapDesignLang,
+            hardinessZone: snapHardiness || '',
+            plantList: snapDocData?.plantingSpecification?.plants || [],
+            fullReport: snapDocData || {},
+          }),
+        });
+        if (!saveRes.ok) {
+          console.error('[bgSave] save-design failed:', saveRes.status);
+          clearInterval(tick);
+          setProceedReady(true);
+          return;
+        }
+        const saveData = await saveRes.json();
+        const bgRefNum: string = saveData.reference_number || '';
+        console.log('[bgSave] save-design complete — sessionId:', bgSessionId, 'ref:', bgRefNum);
+
+        // Store so handleSaveAndProceed can skip the save and just navigate
+        bgSaveRef.current = { sessionId: bgSessionId, refNum: bgRefNum };
+        setSessionId(bgSessionId);
+        setDesignRecordId(saveData.id);
+        if (bgRefNum) setReferenceNumber(bgRefNum);
+
+        try { sessionStorage.setItem('garden_user_email', snapEmail); } catch (_) {}
+        try { sessionStorage.setItem('garden_design_style', snapDesignLang); } catch (_) {}
+        try { sessionStorage.setItem('garden_reference_number', bgRefNum); } catch (_) {}
+        try {
+          const aerialSrc = snapAerialGrid || snapAerialImage || null;
+          sessionStorage.setItem('garden_plan_data', JSON.stringify({
+            ...snapDocData,
+            _aerialImageBase64: aerialSrc,
+            _beforeImageBase64: snapImageDataUrl || null,
+          }));
+        } catch (_) {}
+
+        // Kick off PDF generation in background
+        if (bgRefNum) {
+          runPdfAndUpload(
+            bgSessionId, bgRefNum, snapDocData, snapRenderUrl,
+            snapAerialGrid, snapAerialImage, snapImageDataUrl, snapGridImageUrl,
+            snapDesignLang, snapClientName, snapOrientation, snapTransform,
+          );
+        }
+      } catch (err) {
+        console.error('[bgSave] unexpected error:', err);
+        clearInterval(tick);
+        setProceedReady(true);
+      }
+    })();
+
+    return () => clearInterval(tick);
+  }, [step]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Standalone PDF + render upload ──────────────────────────────────────────
+  // Called both from the background save (on result arrival) and as fallback
+  // from handleSaveAndProceed. All closure state must be passed explicitly.
+  async function runPdfAndUpload(
+    capturedSessionId: string,
+    capturedRefNum: string,
+    capturedDocData: any,
+    capturedRenderUrl: string | null,
+    capturedAerialGridImageUrl: string | null,
+    capturedAerialImageUrl: string | null,
+    capturedImageDataUrl: string | null,
+    capturedGridImageUrl: string | null,
+    capturedDesignLang: string,
+    capturedClientName: string,
+    capturedGardenOrientation: string,
+    capturedTransformationLevel: number,
+  ) {
+    if (!capturedDocData) {
+      console.error('[runPdfAndUpload] docData is null — cannot generate PDF. Writing failed status.');
+      try { sessionStorage.setItem('garden_pdf_status', 'failed'); } catch (_) {}
+      return;
+    }
+    setPdfGenerating(true);
+    setPdfError(null);
+    let uploadedPdfUrl: string | null = null;
+    let uploadedRenderUrl: string | null = null;
+
+    let pdfRenderSrc: string | null = capturedRenderUrl;
+    if (capturedRenderUrl) {
+      if (capturedRenderUrl.startsWith('https://')) {
+        console.log('[runPdfAndUpload] Render is already a hosted URL (async pipeline) — fetching as base64');
+        uploadedRenderUrl = capturedRenderUrl;
+        try { sessionStorage.setItem('garden_render_url', capturedRenderUrl); } catch (e) {
+          console.warn('[runPdfAndUpload] sessionStorage write failed (garden_render_url):', e);
+        }
+        const fetchedRender = await fetchAssetSafe(capturedRenderUrl);
+        if (fetchedRender) {
+          pdfRenderSrc = fetchedRender;
+          console.log('[runPdfAndUpload] Render fetched back as base64, using for PDF');
+        } else {
+          console.warn('[runPdfAndUpload] fetchAssetSafe returned null for hosted render URL — PDF may have blank image');
+        }
+      } else {
+        try {
+          console.log('[runPdfAndUpload] Uploading render image — sessionId:', capturedSessionId);
+          const renderRes = await fetch('/api/upload-render', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ renderBase64: capturedRenderUrl, sessionId: capturedSessionId }),
+          });
+          if (renderRes.ok) {
+            const { renderUrl: hostedRenderUrl } = await renderRes.json();
+            console.log('[runPdfAndUpload] Render upload succeeded, renderUrl:', hostedRenderUrl);
+            uploadedRenderUrl = hostedRenderUrl || null;
+            if (hostedRenderUrl) {
+              try { sessionStorage.setItem('garden_render_url', hostedRenderUrl); } catch (e) {
+                console.warn('[runPdfAndUpload] sessionStorage write failed (garden_render_url):', e);
+              }
+              const fetchedRender = await fetchAssetSafe(hostedRenderUrl);
+              if (fetchedRender) {
+                pdfRenderSrc = fetchedRender;
+                console.log('[runPdfAndUpload] Render fetched back as base64, using for PDF');
+              }
+            }
+          } else {
+            const errText = await renderRes.text();
+            console.error('[runPdfAndUpload] Render upload failed — status:', renderRes.status, 'body:', errText);
+          }
+        } catch (err) {
+          console.error('[runPdfAndUpload] Render upload error:', err);
+        }
+      }
+    }
+
+    try {
+      const aerialSrc = capturedAerialGridImageUrl || capturedAerialImageUrl || null;
+      const [logoBase64, aerialRaw] = await Promise.all([
+        fetchLogoAsBase64(),
+        aerialSrc
+          ? (aerialSrc.startsWith('data:') ? Promise.resolve(aerialSrc) : fetchAssetSafe(aerialSrc))
+          : Promise.resolve(null),
+      ]);
+
+      const [resizedRender, resizedBefore, aerialBase64, resizedGrid] = await Promise.all([
+        pdfRenderSrc ? resizeImageForPdf(pdfRenderSrc) : Promise.resolve(''),
+        capturedImageDataUrl ? resizeImageForPdf(capturedImageDataUrl) : Promise.resolve(''),
+        aerialRaw ? resizeImageForPdf(aerialRaw, 800) : Promise.resolve(''),
+        capturedGridImageUrl ? resizeImageForPdf(capturedGridImageUrl, 800) : Promise.resolve(''),
+      ]);
+
+      console.log('PDF GENERATION STARTING — docData:', !!capturedDocData, 'render size:', resizedRender.length, 'before size:', resizedBefore.length, 'aerial:', !!aerialBase64, 'logo:', !!logoBase64);
+
+      const pdfDoc = (
+        <GardenPlanPDF
+          doc={capturedDocData}
+          logoBase64={logoBase64 || undefined}
+          imageBase64={resizedRender}
+          imageDataUrl={resizedBefore || undefined}
+          gridImageUrl={resizedGrid || undefined}
+          aerialImageUrl={aerialBase64 || undefined}
+          style={capturedDesignLang}
+          clientName={capturedClientName}
+          gardenOrientation={capturedGardenOrientation}
+          transformationLevel={capturedTransformationLevel}
+          referenceNumber={capturedRefNum}
+        />
+      );
+
+      const blob = await Promise.race([
+        pdf(pdfDoc).toBlob(),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('PDF generation timed out (45s)')), 45_000)
+        ),
+      ]);
+      console.log('PDF GENERATION COMPLETE — size:', blob.size);
+
+      const pdfBase64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+
+      console.log('[runPdfAndUpload] Uploading PDF — sessionId:', capturedSessionId, 'referenceNumber:', capturedRefNum);
+      const uploadRes = await fetch('/api/upload-pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pdfBase64, referenceNumber: capturedRefNum, sessionId: capturedSessionId }),
+      });
+      if (uploadRes.ok) {
+        const { pdfUrl } = await uploadRes.json();
+        console.log('[runPdfAndUpload] PDF upload succeeded, pdfUrl:', pdfUrl);
+        uploadedPdfUrl = pdfUrl || null;
+        if (pdfUrl) {
+          try { sessionStorage.setItem('garden_pdf_url', pdfUrl); } catch (e) {
+            console.warn('[runPdfAndUpload] sessionStorage write failed (garden_pdf_url):', e);
+          }
+        }
+      } else {
+        const errText = await uploadRes.text();
+        console.error('[runPdfAndUpload] PDF upload failed — status:', uploadRes.status, 'body:', errText);
+        throw new Error('PDF upload failed: ' + uploadRes.status);
+      }
+    } catch (err) {
+      console.error('[runPdfAndUpload] PDF generation/upload error:', err);
+      setPdfError(String(err));
+      try { sessionStorage.setItem('garden_pdf_status', 'failed'); } catch (_) {}
+    } finally {
+      setPdfGenerating(false);
+    }
+
+    if (uploadedPdfUrl || uploadedRenderUrl) {
+      try {
+        await fetch('/api/update-design', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId: capturedSessionId,
+            pdfUrl: uploadedPdfUrl,
+            renderUrl: uploadedRenderUrl,
+          }),
+        });
+        console.log('[runPdfAndUpload] update-design PATCH complete');
+      } catch (err) {
+        console.error('[runPdfAndUpload] update-design PATCH error:', err);
+      }
+    }
+  }
+
   async function handleSaveAndProceed() {
     console.log('Save and proceed clicked', { sessionId, userEmail, hasResults });
     if (isSaving) return;
+
+    // ── Fast path: background save already ran — skip the API call and navigate ──
+    if (bgSaveRef.current) {
+      intentionalNavRef.current = true;
+      sessionStorage.removeItem('dedrab_last_results');
+      flushSync(() => {
+        router.push('/next-steps?sessionId=' + bgSaveRef.current!.sessionId);
+      });
+      return;
+    }
+
     if (!docData) {
       setSaveError('Your Action Plan data is incomplete. Please try generating your design again before proceeding.');
       return;
@@ -2446,189 +2753,14 @@ export default function GardigApp() {
         console.warn('[handleSaveAndProceed] sessionStorage write failed (garden_plan_data):', e);
       }
 
-      // PDF + render upload — fire and forget so navigation is not blocked
-      if (refNum) {
-        const capturedRefNum = refNum;
-        const capturedSessionId = newSessionId;
-        const capturedRenderUrl = renderUrl;
-
-        const runPdfAndUpload = async () => {
-          const capturedDocData = docData;
-          if (!capturedDocData) {
-            console.error('[runPdfAndUpload] docData is null — cannot generate PDF. Writing failed status.');
-            try { sessionStorage.setItem('garden_pdf_status', 'failed'); } catch (_) {}
-            return;
-          }
-          setPdfGenerating(true);
-          setPdfError(null);
-          let uploadedPdfUrl: string | null = null;
-          let uploadedRenderUrl: string | null = null;
-
-          // ── Render image upload (runs first so Supabase URL is available for PDF) ──
-          // pdfRenderSrc starts as the data: URI and is upgraded to the hosted URL if
-          // the upload succeeds, then fetched back via fetch-asset to avoid canvas CORS taint.
-          let pdfRenderSrc: string | null = capturedRenderUrl;
-          if (capturedRenderUrl) {
-            if (capturedRenderUrl.startsWith('https://')) {
-              // Async pipeline: render is already stored in Supabase. Skip upload,
-              // fetch back as base64 via the server proxy so resizeImageForPdf
-              // receives a data: URI (avoids canvas cross-origin taint).
-              console.log('[runPdfAndUpload] Render is already a hosted URL (async pipeline) — fetching as base64');
-              uploadedRenderUrl = capturedRenderUrl;
-              try {
-                sessionStorage.setItem('garden_render_url', capturedRenderUrl);
-              } catch (e) {
-                console.warn('[runPdfAndUpload] sessionStorage write failed (garden_render_url):', e);
-              }
-              const fetchedRender = await fetchAssetSafe(capturedRenderUrl);
-              if (fetchedRender) {
-                pdfRenderSrc = fetchedRender;
-                console.log('[runPdfAndUpload] Render fetched back as base64, using for PDF');
-              } else {
-                console.warn('[runPdfAndUpload] fetchAssetSafe returned null for hosted render URL — PDF may have blank image');
-              }
-            } else {
-              // Legacy sync pipeline: render is a base64 data URI — upload to Supabase first.
-              try {
-                console.log('[runPdfAndUpload] Uploading render image — sessionId:', capturedSessionId);
-                const renderRes = await fetch('/api/upload-render', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ renderBase64: capturedRenderUrl, sessionId: capturedSessionId }),
-                });
-                if (renderRes.ok) {
-                  const { renderUrl: hostedRenderUrl } = await renderRes.json();
-                  console.log('[runPdfAndUpload] Render upload succeeded, renderUrl:', hostedRenderUrl);
-                  uploadedRenderUrl = hostedRenderUrl || null;
-                  if (hostedRenderUrl) {
-                    try {
-                      sessionStorage.setItem('garden_render_url', hostedRenderUrl);
-                    } catch (e) {
-                      console.warn('[runPdfAndUpload] sessionStorage write failed (garden_render_url):', e);
-                    }
-                    const fetchedRender = await fetchAssetSafe(hostedRenderUrl);
-                    if (fetchedRender) {
-                      pdfRenderSrc = fetchedRender;
-                      console.log('[runPdfAndUpload] Render fetched back as base64, using for PDF');
-                    }
-                  }
-                } else {
-                  const errText = await renderRes.text();
-                  console.error('[runPdfAndUpload] Render upload failed — status:', renderRes.status, 'body:', errText);
-                }
-              } catch (err) {
-                console.error('[runPdfAndUpload] Render upload error:', err);
-              }
-            }
-          }
-
-          // ── PDF generation ────────────────────────────────────────────
-          try {
-            // Pre-fetch images to avoid CORS failures inside react-pdf WASM renderer.
-            // Logo is served from our own origin.
-            // Aerial image: if it's a data: URI (from the pipeline), use it directly —
-            // fetchAssetSafe only accepts https:// Supabase URLs and would return null.
-            const aerialSrc = aerialGridImageUrl || aerialImageUrl || null;
-            const [logoBase64, aerialRaw] = await Promise.all([
-              fetchLogoAsBase64(),
-              aerialSrc
-                ? (aerialSrc.startsWith('data:') ? Promise.resolve(aerialSrc) : fetchAssetSafe(aerialSrc))
-                : Promise.resolve(null),
-            ]);
-
-            // Resize heavy renders to reduce WASM memory pressure.
-            // pdfRenderSrc is the Supabase-fetched base64 if upload succeeded, else the original data: URI.
-            // Aerial and grid overlay are compressed to max 800px / JPEG 0.75 to avoid 413 on upload.
-            const [resizedRender, resizedBefore, aerialBase64, resizedGrid] = await Promise.all([
-              pdfRenderSrc ? resizeImageForPdf(pdfRenderSrc) : Promise.resolve(''),
-              imageDataUrl ? resizeImageForPdf(imageDataUrl) : Promise.resolve(''),
-              aerialRaw ? resizeImageForPdf(aerialRaw, 800) : Promise.resolve(''),
-              gridImageUrl ? resizeImageForPdf(gridImageUrl, 800) : Promise.resolve(''),
-            ]);
-
-            console.log('PDF GENERATION STARTING — docData:', !!capturedDocData, 'render size:', resizedRender.length, 'before size:', resizedBefore.length, 'aerial:', !!aerialBase64, 'logo:', !!logoBase64);
-
-            const pdfDoc = (
-              <GardenPlanPDF
-                doc={capturedDocData}
-                logoBase64={logoBase64 || undefined}
-                imageBase64={resizedRender}
-                imageDataUrl={resizedBefore || undefined}
-                gridImageUrl={resizedGrid || undefined}
-                aerialImageUrl={aerialBase64 || undefined}
-                style={designLang}
-                clientName={clientName}
-                gardenOrientation={gardenOrientation}
-                transformationLevel={transformationLevel}
-                referenceNumber={capturedRefNum}
-              />
-            );
-
-            const blob = await Promise.race([
-              pdf(pdfDoc).toBlob(),
-              new Promise<never>((_, reject) =>
-                setTimeout(() => reject(new Error('PDF generation timed out (45s)')), 45_000)
-              ),
-            ]);
-            console.log('PDF GENERATION COMPLETE — size:', blob.size);
-
-            const pdfBase64 = await new Promise<string>((resolve, reject) => {
-              const reader = new FileReader();
-              reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
-              reader.onerror = reject;
-              reader.readAsDataURL(blob);
-            });
-
-            console.log('[runPdfAndUpload] Uploading PDF — sessionId:', capturedSessionId, 'referenceNumber:', capturedRefNum);
-            const uploadRes = await fetch('/api/upload-pdf', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ pdfBase64, referenceNumber: capturedRefNum, sessionId: capturedSessionId }),
-            });
-            if (uploadRes.ok) {
-              const { pdfUrl } = await uploadRes.json();
-              console.log('[runPdfAndUpload] PDF upload succeeded, pdfUrl:', pdfUrl);
-              uploadedPdfUrl = pdfUrl || null;
-              if (pdfUrl) {
-                try {
-                  sessionStorage.setItem('garden_pdf_url', pdfUrl);
-                } catch (e) {
-                  console.warn('[runPdfAndUpload] sessionStorage write failed (garden_pdf_url):', e);
-                }
-              }
-            } else {
-              const errText = await uploadRes.text();
-              console.error('[runPdfAndUpload] PDF upload failed — status:', uploadRes.status, 'body:', errText);
-              throw new Error('PDF upload failed: ' + uploadRes.status);
-            }
-          } catch (err) {
-            console.error('[runPdfAndUpload] PDF generation/upload error:', err);
-            setPdfError(String(err));
-            sessionStorage.setItem('garden_pdf_status', 'failed');
-          } finally {
-            setPdfGenerating(false);
-          }
-
-          // ── Update design_records with both URLs ──────────────────────
-          if (uploadedPdfUrl || uploadedRenderUrl) {
-            try {
-              await fetch('/api/update-design', {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  sessionId: capturedSessionId,
-                  pdfUrl: uploadedPdfUrl,
-                  renderUrl: uploadedRenderUrl,
-                }),
-              });
-              console.log('[runPdfAndUpload] update-design PATCH complete');
-            } catch (err) {
-              console.error('[runPdfAndUpload] update-design PATCH error:', err);
-            }
-          }
-        };
-
-        runPdfAndUpload();
+      // PDF + render upload — fire and forget so navigation is not blocked.
+      // If background save already started this, it will deduplicate via bgSaveRef.
+      if (refNum && !bgSaveRef.current) {
+        runPdfAndUpload(
+          newSessionId, refNum, docData, renderUrl,
+          aerialGridImageUrl, aerialImageUrl, imageDataUrl, gridImageUrl,
+          designLang, clientName, gardenOrientation, transformationLevel,
+        );
       }
 
       // Show saved confirmation briefly, then navigate
@@ -2710,21 +2842,29 @@ export default function GardigApp() {
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
             <button
               onClick={handleSaveAndProceed}
-              disabled={isSaving}
+              disabled={(!proceedReady && !bgSaveRef.current) || isSaving}
               style={{
                 display: 'flex', alignItems: 'center', gap: 8,
-                background: saveComplete ? '#166534' : '#b8962e', color: '#fff',
+                background: saveComplete ? '#166534' : (!proceedReady && !bgSaveRef.current) ? 'rgba(184,150,46,0.45)' : '#b8962e',
+                color: '#fff',
                 border: 'none', borderRadius: C.r,
-                padding: '10px 22px', cursor: isSaving ? 'not-allowed' : 'pointer',
+                padding: '10px 22px',
+                cursor: ((!proceedReady && !bgSaveRef.current) || isSaving) ? 'not-allowed' : 'pointer',
                 fontFamily: C.font, fontSize: px(BASE), fontWeight: 600,
-                letterSpacing: '0.02em', opacity: isSaving ? 0.85 : 1,
-                transition: 'background 0.2s',
+                letterSpacing: '0.02em',
+                transition: 'background 0.3s',
               }}
             >
               {isSaving && !saveComplete && (
                 <span style={{ display: 'inline-block', width: 14, height: 14, border: '2px solid rgba(255,255,255,0.4)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
               )}
-              {!isSaving ? 'Save and proceed \u2192' : saveComplete ? 'Saved! Redirecting\u2026' : 'Saving\u2026'}
+              {saveComplete
+                ? 'Saved! Redirecting\u2026'
+                : isSaving
+                  ? 'Saving\u2026'
+                  : (!proceedReady && !bgSaveRef.current)
+                    ? `Preparing\u2026 ${proceedCountdown}s`
+                    : 'Save and proceed \u2192'}
             </button>
             {saveError && (
               <span style={{ fontSize: px(12), color: '#fca5a5' }}>{saveError}</span>
@@ -2864,6 +3004,16 @@ export default function GardigApp() {
           ))}
         </div>
       </div>
+
+      {/* Render error notice — shown when pipeline completed but couldn't generate the image */}
+      {error && !renderUrl && step === 'result' && (
+        <div style={{ maxWidth: 980, margin: '0 auto', padding: '16px 24px 0' }}>
+          <div style={{ background: '#fef9ec', border: '1px solid #D4AF37', borderRadius: C.r, padding: '12px 16px', color: '#92720a', fontSize: px(13), lineHeight: 1.5, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+            <span style={{ flexShrink: 0, fontWeight: 700 }}>⚠</span>
+            <span>{error} Your full design brief is ready below.</span>
+          </div>
+        </div>
+      )}
 
       {/* Tab content */}
       <div className="result-content-pad" style={{ maxWidth: 980, margin: "0 auto", padding: "24px 24px 48px", display: Object.keys(doc).length === 0 ? 'none' : undefined }}>

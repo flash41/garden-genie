@@ -78,6 +78,7 @@ export async function GET(
       validationResult: job.validation_result,
       retried: job.retried,
       detectedCurrency: job.detected_currency,
+      renderError: !renderUrl ? (job.error_message ?? 'Render image unavailable') : null,
     });
   }
 
