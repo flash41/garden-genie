@@ -1612,6 +1612,23 @@ export default function GardigApp() {
     setUserCurrency(detectCurrency());
   }, []);
 
+  // ── Crash logger: captures unhandled errors + rejections to localStorage ──
+  // Survives tab death. After a crash, open DevTools console and run:
+  //   JSON.parse(localStorage.getItem('dedrab_crash_log') || '[]')
+  useEffect(() => {
+    const onError = (e: ErrorEvent) => {
+      const entry = { type: 'error', msg: e.message, src: e.filename, line: e.lineno, col: e.colno, stack: e.error?.stack ?? null, ts: Date.now() };
+      try { const log = JSON.parse(localStorage.getItem('dedrab_crash_log') || '[]'); log.push(entry); localStorage.setItem('dedrab_crash_log', JSON.stringify(log.slice(-10))); } catch (_) {}
+    };
+    const onUnhandled = (e: PromiseRejectionEvent) => {
+      const entry = { type: 'unhandledrejection', msg: String(e.reason), stack: e.reason?.stack ?? null, ts: Date.now() };
+      try { const log = JSON.parse(localStorage.getItem('dedrab_crash_log') || '[]'); log.push(entry); localStorage.setItem('dedrab_crash_log', JSON.stringify(log.slice(-10))); } catch (_) {}
+    };
+    window.addEventListener('error', onError);
+    window.addEventListener('unhandledrejection', onUnhandled);
+    return () => { window.removeEventListener('error', onError); window.removeEventListener('unhandledrejection', onUnhandled); };
+  }, []);
+
   // Fetch remaining renders on mount (reads invite cookie server-side)
   useEffect(() => {
     fetch('/api/invite-status', { credentials: 'include' })
@@ -2490,7 +2507,10 @@ export default function GardigApp() {
             bgSessionId, bgRefNum, snapDocData, snapRenderUrl,
             snapAerialGrid, snapAerialImage, snapImageDataUrl, snapGridImageUrl,
             snapDesignLang, snapClientName, snapOrientation, snapTransform,
-          );
+          ).catch(err => {
+            console.error('[bgSave] runPdfAndUpload unhandled rejection:', err);
+            setPdfGenerating(false);
+          });
         }
       } catch (err) {
         console.error('[bgSave] unexpected error:', err);
@@ -2766,7 +2786,10 @@ export default function GardigApp() {
           newSessionId, refNum, docData, renderUrl,
           aerialGridImageUrl, aerialImageUrl, imageDataUrl, gridImageUrl,
           designLang, clientName, gardenOrientation, transformationLevel,
-        );
+        ).catch(err => {
+          console.error('[handleSaveAndProceed] runPdfAndUpload unhandled rejection:', err);
+          setPdfGenerating(false);
+        });
       }
 
       // Show saved confirmation briefly, then navigate
