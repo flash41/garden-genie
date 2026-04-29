@@ -1465,9 +1465,16 @@ function resizeImageForPdf(dataUrl: string, maxPx = 1200): Promise<string> {
       canvas.width  = Math.round(img.width  * scale);
       canvas.height = Math.round(img.height * scale);
       canvas.getContext('2d')!.drawImage(img, 0, 0, canvas.width, canvas.height);
-      resolve(canvas.toDataURL('image/jpeg', 0.85));
+      try {
+        resolve(canvas.toDataURL('image/jpeg', 0.85));
+      } catch (e) {
+        // SecurityError: canvas tainted by cross-origin image (e.g. expired signed URL)
+        console.warn('[resizeImageForPdf] canvas.toDataURL threw (tainted canvas) — falling back to original:', e);
+        resolve(dataUrl);
+      }
     };
     img.onerror = () => resolve(dataUrl); // fall back to original on error
+    img.crossOrigin = 'anonymous'; // prevent canvas taint for cross-origin images
     img.src = dataUrl;
   });
 }
@@ -1541,6 +1548,7 @@ export default function GardigApp() {
   const [proceedCountdown, setProceedCountdown] = useState(15);
   const bgSaveRef = useRef<{ sessionId: string; refNum: string } | null>(null);
   const bgSaveStartedRef = useRef(false);
+  const restoredFromSessionRef = useRef(false); // true when result came from session restore, not a fresh pipeline run
   const fileRef = useRef<HTMLInputElement>(null);
   const intentionalNavRef = useRef(false);
   const router = useRouter();
@@ -2039,6 +2047,7 @@ export default function GardigApp() {
                 return;
               }
               console.log('Restored results from session:', savedResults);
+              restoredFromSessionRef.current = true; // flag: skip background save for restored results
               setDocData(savedResults.planData || null);
               setRenderUrl(savedResults.renderUrl || null);
               setDesignLang(savedResults.designStyle || 'Japanese Zen');
@@ -2399,6 +2408,7 @@ export default function GardigApp() {
   // minimum, giving the background work a head start.
   useEffect(() => {
     if (step !== 'result') return;
+    if (restoredFromSessionRef.current) return; // skip background save when restoring from session
     if (bgSaveStartedRef.current) return;
     bgSaveStartedRef.current = true;
 
