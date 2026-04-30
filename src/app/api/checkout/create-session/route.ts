@@ -3,13 +3,27 @@ import Stripe from 'stripe';
 
 export const dynamic = 'force-dynamic';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2026-04-22.dahlia',
-});
-
-const SITE_URL = 'https://dedrab.com';
+const SITE_URL = 'https://www.dedrab.com';
 
 export async function POST() {
+  // Fail fast with a clear log if env vars are missing — helps diagnose
+  // Vercel environment misconfiguration (e.g. vars scoped to Production only)
+  const stripeKey = process.env.STRIPE_SECRET_KEY;
+  const priceId = process.env.STRIPE_PRICE_ID;
+
+  if (!stripeKey) {
+    console.error('[create-session] STRIPE_SECRET_KEY is not set');
+    return NextResponse.json({ error: 'Checkout unavailable — configuration error' }, { status: 503 });
+  }
+  if (!priceId) {
+    console.error('[create-session] STRIPE_PRICE_ID is not set');
+    return NextResponse.json({ error: 'Checkout unavailable — configuration error' }, { status: 503 });
+  }
+
+  const stripe = new Stripe(stripeKey, {
+    apiVersion: '2026-04-22.dahlia',
+  });
+
   try {
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',

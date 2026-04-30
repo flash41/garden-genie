@@ -25,12 +25,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title: `${label} — Notes`,
     description: `Garden design and layout guidance on ${label.toLowerCase()} from Dedrab.`,
     alternates: {
-      canonical: `https://dedrab.com/notes/category/${cat}`,
+      canonical: `https://www.dedrab.com/notes/category/${cat}`,
     },
     openGraph: {
       title: `${label} · Dedrab Notes`,
       description: `Garden design guidance on ${label.toLowerCase()}.`,
-      url: `https://dedrab.com/notes/category/${cat}`,
+      url: `https://www.dedrab.com/notes/category/${cat}`,
       type: 'website',
     },
   };
@@ -50,7 +50,7 @@ export default async function CategoryPage({ params }: PageProps) {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
     name: `${CATEGORY_LABELS[cat]} — Dedrab Notes`,
-    url: `https://dedrab.com/notes/category/${cat}`,
+    url: `https://www.dedrab.com/notes/category/${cat}`,
     description: `Garden design and layout guidance on ${CATEGORY_LABELS[cat].toLowerCase()} from Dedrab.`,
   };
 

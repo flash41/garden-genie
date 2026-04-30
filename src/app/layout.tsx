@@ -31,14 +31,14 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_IE',
-    url: 'https://dedrab.com',
+    url: 'https://www.dedrab.com',
     siteName: 'Dedrab',
     title: 'Dedrab — Garden Design & Layout Planning',
     description:
       'A personalised garden design and layout plan from a single photo. Planting guide, materials list, and phased weekend plan included.',
     images: [
       {
-        url: 'https://dedrab.com/og-default.jpg',
+        url: 'https://www.dedrab.com/og-default.jpg',
         width: 1200,
         height: 630,
         alt: 'Dedrab garden design and layout planning tool',
@@ -69,8 +69,8 @@ export default function RootLayout({
               '@context': 'https://schema.org',
               '@type': 'Organization',
               name: 'Dedrab',
-              url: 'https://dedrab.com',
-              logo: 'https://dedrab.com/logo.png',
+              url: 'https://www.dedrab.com',
+              logo: 'https://www.dedrab.com/logo.png',
               description:
                 'Garden design and layout planning for self-implementing gardeners.',
             }),

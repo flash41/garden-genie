@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 import { getNotesPosts, getCategoryParams } from '@/lib/notes';
 
-const BASE_URL = 'https://dedrab.com';
+const BASE_URL = 'https://www.dedrab.com';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   let posts: ReturnType<typeof getNotesPosts> = [];

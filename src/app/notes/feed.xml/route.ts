@@ -1,6 +1,6 @@
 import { getNotesPosts } from '@/lib/notes';
 
-const BASE_URL = 'https://dedrab.com';
+const BASE_URL = 'https://www.dedrab.com';
 
 function escapeXml(str: string): string {
   return str

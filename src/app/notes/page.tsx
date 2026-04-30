@@ -11,10 +11,10 @@ export const metadata: Metadata = {
   description:
     'Garden design and layout guidance from Dedrab — planting, materials, spatial planning, and seasonal advice for Irish and UK gardens.',
   alternates: {
-    canonical: 'https://dedrab.com/notes',
+    canonical: 'https://www.dedrab.com/notes',
     types: {
       'application/rss+xml': [
-        { url: 'https://dedrab.com/notes/feed.xml', title: 'Dedrab Notes RSS Feed' },
+        { url: 'https://www.dedrab.com/notes/feed.xml', title: 'Dedrab Notes RSS Feed' },
       ],
     },
   },
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     title: 'Notes — Dedrab Garden Design',
     description:
       'Garden design and layout guidance. Planting, materials, spatial planning, and seasonal advice.',
-    url: 'https://dedrab.com/notes',
+    url: 'https://www.dedrab.com/notes',
     type: 'website',
   },
 };
@@ -40,12 +40,12 @@ export default function NotesPage() {
     '@context': 'https://schema.org',
     '@type': 'Blog',
     name: 'Dedrab Notes',
-    url: 'https://dedrab.com/notes',
+    url: 'https://www.dedrab.com/notes',
     description: 'Garden design and layout guidance from Dedrab.',
     publisher: {
       '@type': 'Organization',
       name: 'Dedrab',
-      url: 'https://dedrab.com',
+      url: 'https://www.dedrab.com',
     },
   };
 

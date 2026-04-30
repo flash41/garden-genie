@@ -44,7 +44,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!result) return {};
 
   const { post } = result;
-  const canonical = post.canonicalUrl ?? `https://dedrab.com/notes/${post.slug}`;
+  const canonical = post.canonicalUrl ?? `https://www.dedrab.com/notes/${post.slug}`;
   const ogImage = post.ogImage ?? post.coverImage;
 
   return {
@@ -64,7 +64,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       ...(ogImage && {
         images: [
           {
-            url: ogImage.startsWith('http') ? ogImage : `https://dedrab.com${ogImage}`,
+            url: ogImage.startsWith('http') ? ogImage : `https://www.dedrab.com${ogImage}`,
             alt: post.coverImageAlt,
           },
         ],
@@ -81,7 +81,7 @@ export default async function NotesPostPage({ params }: PageProps) {
   const { post, content } = result;
   const headings = extractHeadings(content);
   const hasToC = headings.length >= 3;
-  const canonical = post.canonicalUrl ?? `https://dedrab.com/notes/${slug}`;
+  const canonical = post.canonicalUrl ?? `https://www.dedrab.com/notes/${slug}`;
   const ogImage = post.ogImage ?? post.coverImage;
 
   const articleJsonLd = {
@@ -95,21 +95,21 @@ export default async function NotesPostPage({ params }: PageProps) {
     author: {
       '@type': 'Organization',
       name: 'Dedrab',
-      url: 'https://dedrab.com',
+      url: 'https://www.dedrab.com',
     },
     publisher: {
       '@type': 'Organization',
       name: 'Dedrab',
-      url: 'https://dedrab.com',
+      url: 'https://www.dedrab.com',
       logo: {
         '@type': 'ImageObject',
-        url: 'https://dedrab.com/logo.png',
+        url: 'https://www.dedrab.com/logo.png',
       },
     },
     ...(ogImage && {
       image: {
         '@type': 'ImageObject',
-        url: ogImage.startsWith('http') ? ogImage : `https://dedrab.com${ogImage}`,
+        url: ogImage.startsWith('http') ? ogImage : `https://www.dedrab.com${ogImage}`,
       },
     }),
     ...(post.tags && { keywords: post.tags.join(', ') }),
@@ -119,13 +119,13 @@ export default async function NotesPostPage({ params }: PageProps) {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://dedrab.com' },
-      { '@type': 'ListItem', position: 2, name: 'Notes', item: 'https://dedrab.com/notes' },
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.dedrab.com' },
+      { '@type': 'ListItem', position: 2, name: 'Notes', item: 'https://www.dedrab.com/notes' },
       {
         '@type': 'ListItem',
         position: 3,
         name: post.category,
-        item: `https://dedrab.com/notes/category/${post.category}`,
+        item: `https://www.dedrab.com/notes/category/${post.category}`,
       },
       { '@type': 'ListItem', position: 4, name: post.title, item: canonical },
     ],

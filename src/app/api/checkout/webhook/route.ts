@@ -156,7 +156,7 @@ async function sendShareCodeEmail(to: string, code: string): Promise<void> {
               </table>
 
               <p style="margin:0 0 20px;font-size:17px;line-height:1.75;color:#4a3f32;font-family:'Georgia',serif;">
-                They can use it at <a href="https://dedrab.com/next" style="color:#b8962e;text-decoration:none;font-weight:600;">dedrab.com/next</a> to get their own garden design proposal. Just forward this email along.
+                They can use it at <a href="https://www.dedrab.com/next" style="color:#b8962e;text-decoration:none;font-weight:600;">dedrab.com/next</a> to get their own garden design proposal. Just forward this email along.
               </p>
             </td>
           </tr>

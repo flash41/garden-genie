@@ -9,7 +9,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2026-04-22.dahlia',
 });
 
-const SITE_URL = 'https://dedrab.com';
+const SITE_URL = 'https://www.dedrab.com';
 // 30 days in seconds — matches the existing invite cookie lifetime
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 30;
 

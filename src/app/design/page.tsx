@@ -1786,7 +1786,7 @@ export default function GardigApp() {
     setLoadingMsg(LOADING_MESSAGES[0]);
 
     const POLL_INTERVAL_MS = 4000;
-    const POLL_TIMEOUT_MS  = 8 * 60 * 1000; // 8 minutes — Inngest max step duration is ~5m
+    const POLL_TIMEOUT_MS  = 12 * 60 * 1000; // 12 minutes — allows for validate-and-retry render
 
     const poll = (): Promise<any> => new Promise((resolve, reject) => {
       const deadline = Date.now() + POLL_TIMEOUT_MS;

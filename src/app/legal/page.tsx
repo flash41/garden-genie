@@ -3,7 +3,7 @@ import { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'Legal — Dedrab',
   description: 'Terms of Service and Privacy Policy for Dedrab.',
-  alternates: { canonical: 'https://dedrab.com/legal' },
+  alternates: { canonical: 'https://www.dedrab.com/legal' },
   robots: { index: true, follow: false },
 };
 

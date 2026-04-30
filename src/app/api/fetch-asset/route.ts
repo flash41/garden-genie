@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 // Restrict to known safe origins — prevents SSRF to internal hosts
 const ALLOWED_PREFIXES = [
   process.env.NEXT_PUBLIC_SUPABASE_URL,
-  'https://dedrab.com',
+  'https://www.dedrab.com',
 ].filter(Boolean) as string[];
 
 export async function GET(req: NextRequest) {

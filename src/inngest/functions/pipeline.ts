@@ -1276,8 +1276,8 @@ Return ONLY valid JSON:
       throw new Error('Gemini response was truncated. Please try again.');
     }
   } catch (err) {
-    console.error('[Step2b] Validation failed:', err);
-    return { passed: true, corrections: '', confidence: 0 };
+    console.error('[Step2b] Validation failed — treating as not passed:', err);
+    return { passed: false, corrections: '', confidence: 0 };
   }
 }
 
@@ -1361,24 +1361,28 @@ export const pipelineFunction = inngest.createFunction(
         );
       });
 
-      // e. validate-layout
-      const { projectedPositionsText, validationResult } = await step.run('validate-layout', async () => {
-        const projectedElements = projectAllElements(designJSON, fingerprint);
-        let text = projectedElements
-          .map(el => `Plant ${el.index} (${el.name}, grid ${el.gridRef}): ${el.xPct} across, ${el.yPct} down the image frame, at ${el.xMetres}m × ${el.yMetres}m × ${el.zMetres}m`)
-          .join('\n');
+      // e + f. validate-layout and concept-base-plan — run in parallel (both depend only on
+      // garden-design, not on each other). Saves ~60-90s vs sequential execution.
+      const [
+        { projectedPositionsText, validationResult },
+        aerialImageDataUri,
+      ] = await Promise.all([
+        step.run('validate-layout', async () => {
+          const projectedElements = projectAllElements(designJSON, fingerprint);
+          let text = projectedElements
+            .map(el => `Plant ${el.index} (${el.name}, grid ${el.gridRef}): ${el.xPct} across, ${el.yPct} down the image frame, at ${el.xMetres}m × ${el.yMetres}m × ${el.zMetres}m`)
+            .join('\n');
 
-        const validation = await step2b_validateProjectedLayout(imageBase64, mimeType, fingerprint, projectedElements);
-        if (!validation.passed && validation.corrections) {
-          text += `\n\nSPATIAL CORRECTIONS FROM VALIDATION:\n${validation.corrections}`;
-        }
-        return { projectedPositionsText: text, validationResult: validation };
-      });
-
-      // f. concept-base-plan
-      const aerialImageDataUri = await step.run('concept-base-plan', async () => {
-        return await step3_conceptBasePlan(fingerprint, designJSON, orientation, imageBase64, mimeType);
-      });
+          const validation = await step2b_validateProjectedLayout(imageBase64, mimeType, fingerprint, projectedElements);
+          if (!validation.passed && validation.corrections) {
+            text += `\n\nSPATIAL CORRECTIONS FROM VALIDATION:\n${validation.corrections}`;
+          }
+          return { projectedPositionsText: text, validationResult: validation };
+        }),
+        step.run('concept-base-plan', async () => {
+          return await step3_conceptBasePlan(fingerprint, designJSON, orientation, imageBase64, mimeType);
+        }),
+      ]);
 
       // g. generate-render
       const renderDataUri = await step.run('generate-render', async () => {
@@ -1388,45 +1392,47 @@ export const pipelineFunction = inngest.createFunction(
         return await step5_generateRender(visualPrompt, imageBase64, mimeType, aerialImageDataUri);
       });
 
-      // h. validate-and-retry
-      const { finalRenderDataUri, retried, finalValidation } = await step.run('validate-and-retry', async () => {
-        if (!renderDataUri) {
-          return { finalRenderDataUri: null as string | null, retried: false, finalValidation: null };
-        }
+      // h1. validate-render — single Gemini call, checkpointed separately from the retry
+      const renderValidation = await step.run('validate-render', async () => {
+        if (!renderDataUri) return null;
         const generatedRaw = renderDataUri.includes(',') ? renderDataUri.split(',')[1] : renderDataUri;
-        let validation: any = null;
         try {
-          validation = await validateRender(imageBase64, mimeType, generatedRaw);
+          return await validateRender(imageBase64, mimeType, generatedRaw);
         } catch (err) {
-          console.error('[Pipeline] Validation failed:', err);
-          return { finalRenderDataUri: renderDataUri, retried: false, finalValidation: null };
+          console.error('[Pipeline] Render validation call failed — skipping retry:', err);
+          return null;
         }
+      });
 
-        const hallucinatedStructures: string[] = validation?.hallucinatedStructures || [];
-        if (!validation?.overallPass || hallucinatedStructures.length > 0) {
-          const failReasons = (validation?.failReasons || []).join('; ');
-          const hallucinationWarning = hallucinatedStructures.length > 0
-            ? `\nHALLUCINATED STRUCTURES DETECTED — REMOVE THESE COMPLETELY: ${hallucinatedStructures.join(', ')}. These do not exist in the original garden photo and must not appear in the generated image.`
-            : '';
+      // h2. retry-if-needed — only fires when hallucinated structures are detected.
+      // General overallPass failures (minor geometry issues) are not worth a full second
+      // render generation. Only hallucinated structures (invented buildings, walls etc)
+      // justify the extra 90-120s cost.
+      const { finalRenderDataUri, retried, finalValidation } = await step.run('retry-if-needed', async () => {
+        const hallucinatedStructures: string[] = renderValidation?.hallucinatedStructures || [];
+
+        if (renderDataUri && hallucinatedStructures.length > 0) {
+          const failReasons = (renderValidation?.failReasons || []).join('; ');
+          const hallucinationWarning = `\nHALLUCINATED STRUCTURES DETECTED — REMOVE THESE COMPLETELY: ${hallucinatedStructures.join(', ')}. These do not exist in the original garden photo and must not appear in the generated image.`;
           const visualPrompt = step4_buildVisualPrompt(
             fingerprint, designJSON, style, orientation, creativityLevel, projectedPositionsText,
           );
           const retryPrompt = `${visualPrompt}\n\nPREVIOUS ATTEMPT FAILED — THESE SPECIFIC ISSUES MUST BE CORRECTED:\n${failReasons}${hallucinationWarning}\nFix all of these in this new attempt. The result must pass all checks.`;
 
-          let retried_render: string | null = renderDataUri;
           try {
             const retryResult = await step5_generateRender(retryPrompt, imageBase64, mimeType);
             if (retryResult) {
-              retried_render = retryResult;
-            } else {
-              console.warn('[Pipeline] Retry render returned null — falling back to original render');
+              console.log('[Pipeline] Retry render succeeded — hallucinated structures corrected');
+              return { finalRenderDataUri: retryResult, retried: true, finalValidation: renderValidation };
             }
+            console.warn('[Pipeline] Retry render returned null — falling back to original');
           } catch (err) {
-            console.error('[Pipeline] Retry render failed — falling back to original render:', err);
+            console.error('[Pipeline] Retry render failed — falling back to original:', err);
           }
-          return { finalRenderDataUri: retried_render, retried: true, finalValidation: validation };
         }
-        return { finalRenderDataUri: renderDataUri, retried: false, finalValidation: validation };
+
+        // No hallucinated structures (or no renderDataUri) — use the first render as-is
+        return { finalRenderDataUri: renderDataUri, retried: false, finalValidation: renderValidation };
       });
 
       // i. save-results
@@ -1490,9 +1496,13 @@ export const pipelineFunction = inngest.createFunction(
       });
 
     } catch (error: any) {
+      const errMsg = error?.message
+        || (typeof error === 'string' ? error : null)
+        || JSON.stringify(error)
+        || 'Unknown error';
       await supabaseAdmin
         .from('pipeline_jobs')
-        .update({ status: 'failed', error_message: error?.message || 'Unknown error' })
+        .update({ status: 'failed', error_message: errMsg })
         .eq('id', jobId);
       throw error;
     }
