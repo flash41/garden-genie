@@ -181,7 +181,7 @@ export default function LandingPageClient({ notesTeaserSection }: LandingPageCli
         <a href="/" style={{ display: 'flex', alignItems: 'center' }}>
           <img src="/dd_logo.png" alt="Dedrab" className="site-logo-h" />
         </a>
-        <Link href="/design" className="mobile-nav-cta">Build my Action Plan</Link>
+        <Link href="/design" className="mobile-nav-cta">Build my Garden Plan</Link>
         <ul className="nav-links-hide" style={{ display: 'flex', gap: 40, listStyle: 'none', alignItems: 'center', margin: 0, padding: 0 }}>
           <li><a href="#examples" className="nav-link-item">Examples</a></li>
           <li><a href="#how" className="nav-link-item">How It Works</a></li>
@@ -189,7 +189,7 @@ export default function LandingPageClient({ notesTeaserSection }: LandingPageCli
           <li><Link href="/notes" className="nav-link-item">Notes</Link></li>
           <li>
             <Link href="/design" className="nav-link-item nav-cta-link" style={{ color: 'var(--gold-light)' }}>
-              Build my Action Plan
+              Build my Garden Plan
             </Link>
           </li>
         </ul>
@@ -252,10 +252,10 @@ export default function LandingPageClient({ notesTeaserSection }: LandingPageCli
               Most garden projects never start,<br />because the hard part is knowing where to start.<br /><em style={{ fontStyle: 'italic', color: 'var(--gold-light)' }}>This is where you start.</em>
             </h1>
             <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 21, fontWeight: 300, lineHeight: 1.75, color: 'rgba(255,255,255,0.75)', marginBottom: 48, maxWidth: 500 }}>
-              Upload a photo of your garden and get a complete Action Plan in under 4 minutes — a visual of your finished garden, a plant list, and a phased weekend guide to make it happen.
+              Upload a photo of your garden and get a complete Garden Plan in under 4 minutes — a visual of your finished garden, a plant list, and a phased weekend guide to make it happen.
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 14 }}>
-              <Link href="/design" className="btn-primary">Build my Action Plan →</Link>
+              <Link href="/design" className="btn-primary">Build my Garden Plan →</Link>
               <span style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', fontFamily: "'DM Sans', sans-serif" }}>No account needed · Takes about 4 minutes</span>
             </div>
           </div>
@@ -360,7 +360,7 @@ export default function LandingPageClient({ notesTeaserSection }: LandingPageCli
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
                   </svg>
                 ),
-                title: 'Your Action Plan is ready',
+                title: 'Your Garden Plan is ready',
                 desc: 'A visual of your finished garden. A plant list to gather. A phased weekend guide. A cost estimate. Everything you need to get started — nothing you don\'t.',
                 delay: 'delay-2',
               },
@@ -451,11 +451,11 @@ export default function LandingPageClient({ notesTeaserSection }: LandingPageCli
                 <span style={{ fontSize: 10, letterSpacing: 4, textTransform: 'uppercase', color: 'var(--gold-light)', fontFamily: "'DM Sans', sans-serif" }}>Example Plans</span>
               </div>
               <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(32px, 4vw, 52px)', fontWeight: 400, color: 'white', lineHeight: 1.2, maxWidth: 540, marginBottom: 0 }}>
-                See a real Action Plan
+                See a real Garden Plan
               </h2>
             </div>
             <Link href="/examples" style={{ fontSize: 10, letterSpacing: 2.5, textTransform: 'uppercase', color: 'var(--gold)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10, whiteSpace: 'nowrap', transition: 'gap 0.3s' }}>
-              See a real Action Plan →
+              See a real Garden Plan →
               <svg width="20" height="8" viewBox="0 0 20 8" fill="none"><line x1="0" y1="4" x2="18" y2="4" stroke="currentColor" strokeWidth="1"/><polyline points="14,1 18,4 14,7" stroke="currentColor" strokeWidth="1" fill="none"/></svg>
             </Link>
           </div>
@@ -471,9 +471,9 @@ export default function LandingPageClient({ notesTeaserSection }: LandingPageCli
       <section style={{ background: 'var(--linen)', padding: '80px 60px', textAlign: 'center', borderTop: '1px solid var(--cream-dark)' }}>
         <div style={{ maxWidth: 640, margin: '0 auto' }}>
           <div style={{ fontSize: 10, letterSpacing: 3, textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 16, fontFamily: "'DM Sans', sans-serif" }}>Example Output</div>
-          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 34, fontWeight: 400, color: 'var(--forest)', marginBottom: 16, lineHeight: 1.25 }}>See a real Action Plan</h2>
+          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 34, fontWeight: 400, color: 'var(--forest)', marginBottom: 16, lineHeight: 1.25 }}>See a real Garden Plan</h2>
           <p style={{ fontSize: 16, color: 'var(--warm-grey)', lineHeight: 1.75, marginBottom: 36, fontFamily: "'DM Sans', sans-serif" }}>
-            This is the kind of detailed Action Plan Dedrab generates for your garden — plant list, layout plan, cost estimate, and more.
+            This is the kind of detailed Garden Plan Dedrab generates for your garden — plant list, layout plan, cost estimate, and more.
           </p>
           <a href="/example-report-zen-Proposal.pdf" target="_blank" rel="noopener noreferrer" style={{
             display: 'inline-block',
@@ -487,7 +487,7 @@ export default function LandingPageClient({ notesTeaserSection }: LandingPageCli
             padding: '14px 36px',
             textDecoration: 'none',
           }}>
-            See a real Action Plan →
+            See a real Garden Plan →
           </a>
         </div>
       </section>
@@ -517,7 +517,7 @@ export default function LandingPageClient({ notesTeaserSection }: LandingPageCli
             <span style={{ fontSize: 10, letterSpacing: 4, textTransform: 'uppercase', color: 'var(--gold)', fontFamily: "'DM Sans', sans-serif" }}>What You Receive</span>
           </div>
           <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(32px, 4vw, 52px)', fontWeight: 400, color: 'var(--forest)', lineHeight: 1.2, marginBottom: 60, maxWidth: 540 }}>
-            What&apos;s in your Action Plan
+            What&apos;s in your Garden Plan
           </h2>
           <div className="features-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 2 }}>
             {[
@@ -540,8 +540,8 @@ export default function LandingPageClient({ notesTeaserSection }: LandingPageCli
               },
               {
                 icon: <svg style={{ width: 40, height: 40, color: 'var(--gold)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>,
-                title: 'Your Action Plan, Ready to Go', tag: 'PDF & Email',
-                desc: "Download your full Action Plan as a formatted PDF — or send it directly by email. Forward it to a friend, a gardener, or your local nursery. Ready to act on the moment you have it.",
+                title: 'Your Garden Plan, Ready to Go', tag: 'PDF & Email',
+                desc: "Download your full Garden Plan as a formatted PDF — or send it directly by email. Forward it to a friend, a gardener, or your local nursery. Ready to act on the moment you have it.",
                 delay: 'delay-5',
               },
             ].map((f) => (
@@ -573,14 +573,14 @@ export default function LandingPageClient({ notesTeaserSection }: LandingPageCli
             The hardest part is starting.<br /><em style={{ fontStyle: 'italic', color: 'var(--gold-light)' }}>You&apos;re already here.</em>
           </h2>
           <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 21, color: 'rgba(255,255,255,0.65)', marginBottom: 52, lineHeight: 1.65 }}>
-            Your Action Plan takes about 4 minutes. Everything you need to get going is on the other side of that button.
+            Your Garden Plan takes about 4 minutes. Everything you need to get going is on the other side of that button.
           </p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 0, marginBottom: 52, textAlign: 'left', border: '1px solid rgba(184,150,46,0.2)', background: 'rgba(184,150,46,0.04)', padding: '32px 40px' }}>
             {[
               { n: '1', title: 'Upload Your Photo', desc: 'A single photo of your garden — taken on your phone is perfectly fine.' },
               { n: '2', title: 'Pick Your Style', desc: 'Choose from 8 curated garden styles, from Cottage to Contemporary.' },
-              { n: '3', title: 'Get Your Action Plan', desc: 'A full plan: your finished garden, plant list, layout, cost estimate, and PDF.' },
+              { n: '3', title: 'Get Your Garden Plan', desc: 'A full plan: your finished garden, plant list, layout, cost estimate, and PDF.' },
             ].map((step, i) => (
               <div key={step.n} style={{ display: 'flex', alignItems: 'flex-start', gap: 20, padding: i === 0 ? '0 0 18px' : i === 2 ? '18px 0 0' : '18px 0', borderBottom: i < 2 ? '1px solid rgba(184,150,46,0.12)' : 'none' }}>
                 <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 32, fontWeight: 300, color: 'var(--gold)', lineHeight: 1, flexShrink: 0, width: 28 }}>{step.n}</span>
@@ -593,7 +593,7 @@ export default function LandingPageClient({ notesTeaserSection }: LandingPageCli
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
-            <Link href="/design" className="btn-primary">Build my Action Plan</Link>
+            <Link href="/design" className="btn-primary">Build my Garden Plan</Link>
             <span style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)' }}>No account needed · Takes about 4 minutes</span>
           </div>
         </div>

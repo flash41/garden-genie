@@ -59,7 +59,7 @@ export default function LegalPage() {
               Dedrab is a garden design visualisation tool. It allows you to upload a photograph
               of your outdoor space and receive a computer-generated visual render, planting
               suggestions, a phased implementation guide, and a materials reference — collectively
-              referred to as the &quot;Action Plan&quot;.
+              referred to as the &quot;Garden Plan&quot;.
             </p>
             <p>
               The Service is currently available on an invite-only basis. Access requires a valid
@@ -68,14 +68,14 @@ export default function LegalPage() {
 
             <h3>2. What the Service Is Not</h3>
             <p>
-              The Action Plan produced by Dedrab is a design visualisation and reference tool. It
+              The Garden Plan produced by Dedrab is a design visualisation and reference tool. It
               is not, and must not be treated as, professional landscape architecture advice,
               horticultural consultancy, structural engineering advice, or planning guidance of any
               kind.
             </p>
             <p>
               Dedrab makes no representation that any design, plant selection, material, or
-              construction suggestion in an Action Plan is appropriate for your specific site
+              construction suggestion in an Garden Plan is appropriate for your specific site
               conditions, soil type, microclimate, local planning regulations, or any other
               site-specific factor. All outputs should be reviewed by a qualified professional
               before implementation.
@@ -98,14 +98,14 @@ export default function LegalPage() {
             <p>
               <strong>Your content.</strong> You retain ownership of any photographs and content
               you upload. By uploading content, you grant Dedrab a limited, non-exclusive licence
-              to process that content solely for the purpose of delivering your Action Plan. We do
+              to process that content solely for the purpose of delivering your Garden Plan. We do
               not use your uploaded images to train models or share them with third parties, except
               where required by our infrastructure providers to deliver the Service.
             </p>
             <p>
               <strong>Our content.</strong> The Service, including all software, design, text, and
               generated outputs (except your uploaded content), is owned by or licensed to Dedrab.
-              Generated Action Plans are provided for your personal, non-commercial use only. You
+              Generated Garden Plans are provided for your personal, non-commercial use only. You
               may not resell, redistribute, or commercially exploit any output of the Service
               without our prior written consent.
             </p>
@@ -119,7 +119,7 @@ export default function LegalPage() {
             <ul>
               <li>Your use of, or inability to use, the Service;</li>
               <li>
-                Any reliance placed on the content of an Action Plan, including but not limited to
+                Any reliance placed on the content of an Garden Plan, including but not limited to
                 plant selection, design layouts, materials specifications, or implementation
                 guidance;
               </li>
@@ -202,7 +202,7 @@ export default function LegalPage() {
             <ul>
               <li>
                 <strong>Photographs and site images</strong> — uploaded by you to generate an
-                Action Plan.
+                Garden Plan.
               </li>
               <li>
                 <strong>Invite code</strong> — used to verify your access to the Service.
@@ -228,7 +228,7 @@ export default function LegalPage() {
 
             <h3>2. How We Use Your Data</h3>
             <ul>
-              <li>To deliver your Action Plan.</li>
+              <li>To deliver your Garden Plan.</li>
               <li>To manage access to the Service via invite codes.</li>
               <li>To respond to support requests submitted through our contact form.</li>
               <li>
@@ -246,7 +246,7 @@ export default function LegalPage() {
             <ul>
               <li>
                 <strong>Contract performance</strong> — processing your images and delivering the
-                Action Plan is necessary to fulfil the service you have requested.
+                Garden Plan is necessary to fulfil the service you have requested.
               </li>
               <li>
                 <strong>Legitimate interests</strong> — server logs and security monitoring are

@@ -26,7 +26,7 @@ export default function ExamplesPage() {
           From Drab to Delight
         </h1>
         <p className="text-gray-600 max-w-2xl mx-auto mb-6 text-center text-lg">
-          This isn&apos;t just a pretty picture. Every Dedrab Action Plan is a
+          This isn&apos;t just a pretty picture. Every Dedrab Garden Plan is a
           complete, personalised garden design document — ready to take
           outside and use.
         </p>
@@ -34,7 +34,7 @@ export default function ExamplesPage() {
           {[
             'A photorealistic render of your redesigned garden',
             'A full planting specification with care ratings for every plant',
-            'A phased action plan broken into manageable weekends',
+            'A phased garden plan broken into manageable weekends',
             'A materials and hardscape guide with cost estimates',
             'A shopping list to take straight to the garden centre',
             'Yours within minutes of uploading your photo',
@@ -123,7 +123,7 @@ export default function ExamplesPage() {
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 text-sm font-medium text-[#0a3d2b] border border-[#0a3d2b] px-4 py-2 rounded-lg hover:bg-[#0a3d2b] hover:text-white transition-colors mt-3 self-start"
                 >
-                  View sample Action Plan →
+                  View sample Garden Plan →
                 </a>
               ) : null}
             </div>
@@ -144,7 +144,7 @@ export default function ExamplesPage() {
         </h2>
         <p style={{ fontSize: 16, color: '#6b7280', marginBottom: 28 }}>
           Upload a photo of your garden and receive your personalised
-          Action Plan in minutes. Delight in your garden sooner rather than later.
+          Garden Plan in minutes. Delight in your garden sooner rather than later.
         </p>
         <ExamplesCTA />
       </div>

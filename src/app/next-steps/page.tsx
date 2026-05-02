@@ -526,17 +526,17 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
 
   function handleWhatsAppShare() {
     const urlToShare = renderUrl || window.location.href;
-    shareOnWhatsApp('Look what my garden could become \u2014 got my Action Plan from dedrab.com ' + urlToShare);
+    shareOnWhatsApp('Look what my garden could become \u2014 got my Garden Plan from dedrab.com ' + urlToShare);
   }
 
   function handleTelegramShare() {
     const urlToShare = renderUrl || window.location.href;
-    shareOnTelegram('Look what my garden could become \u2014 got my Action Plan from dedrab.com', urlToShare);
+    shareOnTelegram('Look what my garden could become \u2014 got my Garden Plan from dedrab.com', urlToShare);
   }
 
   const summaryBoxes = [
     {
-      label: 'YOUR ACTION PLAN',
+      label: 'YOUR GARDEN PLAN',
       title: 'Everything you need to get started',
       copy: 'Plant list, materials, implementation phases and ongoing care guide included.',
     },
@@ -591,7 +591,7 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
 
       {/* Body */}
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '48px 32px' }}>
-        <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 34, fontWeight: 400, color: '#0a3d2b', marginBottom: 8, marginTop: 0 }}>Your Action Plan is ready.</h1>
+        <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 34, fontWeight: 400, color: '#0a3d2b', marginBottom: 8, marginTop: 0 }}>Your Garden Plan is ready.</h1>
         <p style={{ fontSize: 15, color: '#8a7e6e', marginBottom: referenceNumber ? 20 : 40, marginTop: 0 }}>Here&apos;s what to do next.</p>
 
         {/* Reference number display */}
@@ -685,7 +685,7 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
             )}
             {pdfStatus === 'failed' && (
               <div style={{ fontSize: 13, color: '#8a4a2a', marginBottom: 12, padding: '12px 14px', background: '#fdf3ec', borderRadius: 8, border: '1px solid #f0cba8' }}>
-                <p style={{ margin: '0 0 4px' }}>We were unable to prepare your Action Plan document.</p>
+                <p style={{ margin: '0 0 4px' }}>We were unable to prepare your Garden Plan document.</p>
                 <p style={{ margin: '0 0 12px', fontSize: '12px', color: '#6b5e50' }}>This can happen due to a temporary connection issue.</p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
                   <button
@@ -748,7 +748,7 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
               </button>
               {emailError === 'failed' && (
                 <div style={{ fontSize: 13, color: '#8a4a2a', padding: '10px 14px', background: '#fdf3ec', borderRadius: 8, border: '1px solid #f0cba8' }}>
-                  <p style={{ margin: '0 0 8px' }}>We could not send your Action Plan by email.</p>
+                  <p style={{ margin: '0 0 8px' }}>We could not send your Garden Plan by email.</p>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                     <button
                       onClick={() => setEmailError(null)}
@@ -888,14 +888,14 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
               <p style={{ fontSize: 12, color: '#8a7e6e', marginBottom: 14, marginTop: 0 }}>{'Reference: ' + referenceNumber}</p>
             )}
             <p style={{ fontSize: 14, color: '#6b5e50', lineHeight: 1.7, marginBottom: 20, marginTop: 0 }}>
-              Prefer to hand it over? Enter your postcode and one of our landscape partners will contact you within 2 working days with a quote. Your Action Plan goes straight to them.
+              Prefer to hand it over? Enter your postcode and one of our landscape partners will contact you within 2 working days with a quote. Your Garden Plan goes straight to them.
             </p>
             {userEmail && (
               <p style={{ fontSize: 13, color: '#8a7e6e', marginBottom: 20, marginTop: 0, fontStyle: 'italic' }}>{"We'll contact you at "}{userEmail}</p>
             )}
             {quoteStatus === 'success' ? (
               <div style={{ background: '#f0f7f0', border: '1px solid #b8d4b8', borderRadius: 6, padding: '16px 18px', fontSize: 14, color: '#2d5a2d', lineHeight: 1.6 }}>
-                {"Your request has been sent. You'll hear from us within 2 working days with your "}{quotesRequested}{quotesRequested === 1 ? ' quote' : ' quotes'}{". A copy of your Action Plan has been sent to "}{userEmail}{"."}
+                {"Your request has been sent. You'll hear from us within 2 working days with your "}{quotesRequested}{quotesRequested === 1 ? ' quote' : ' quotes'}{". A copy of your Garden Plan has been sent to "}{userEmail}{"."}
               </div>
             ) : (
               <form onSubmit={handleRequestQuote} style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>

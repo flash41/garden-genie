@@ -3,7 +3,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 
 const ERROR_TYPE_LABELS: Record<string, string> = {
-  pdf_failure:      'Action Plan document could not be generated',
+  pdf_failure:      'Garden Plan document could not be generated',
   download_failure: 'Download did not complete',
   email_failure:    'Plan could not be sent by email',
   render_failure:   'Garden render did not complete',
@@ -91,7 +91,7 @@ function ReportForm() {
               Something went wrong with your plan
             </h1>
             <p style={{ fontSize: 14, color: '#6b5e50', lineHeight: 1.7, marginBottom: 24, marginTop: 0 }}>
-              We&apos;re sorry for the inconvenience. Please tell us what happened and we&apos;ll get your Action Plan to you as quickly as possible.
+              We&apos;re sorry for the inconvenience. Please tell us what happened and we&apos;ll get your Garden Plan to you as quickly as possible.
             </p>
 
             {/* Pre-populated info block */}

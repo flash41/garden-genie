@@ -194,7 +194,7 @@ const thStyle: React.CSSProperties = {
 // ── Main export ───────────────────────────────────────────────────────────────
 
 const ERROR_TYPE_LABELS: Record<string, string> = {
-  pdf_failure:      'Action Plan failed',
+  pdf_failure:      'Garden Plan failed',
   download_failure: 'Download failed',
   email_failure:    'Email failed',
   render_failure:   'Render failed',

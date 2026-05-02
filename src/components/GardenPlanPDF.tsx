@@ -250,7 +250,7 @@ const KEY_CONSIDERATION_PREPEND: Record<string, string> = {
 const PageChrome = ({ clientName, dateStr, style, referenceNumber, logoBase64 }: any) => (
   <>
     <View style={S.runHdr} fixed>
-      <Text style={S.runBrand}>dedrab.com · Action Plan</Text>
+      <Text style={S.runBrand}>dedrab.com · Garden Plan</Text>
       <Text style={S.runRight}>{clientName ? clientName + ' · ' : ''}{style}</Text>
     </View>
     <View style={S.footer} fixed>
@@ -343,8 +343,8 @@ export const GardenPlanPDF = ({ doc, plan, logoBase64, imageBase64, imageDataUrl
           </View>
           <View style={S.coverMid}>
             <Text style={S.coverStyleTag}>{style}</Text>
-            <Text style={S.coverTitle}>{coverTitle || 'Your Garden\nAction Plan'}</Text>
-            <Text style={S.coverSubtitle}>Action Plan</Text>
+            <Text style={S.coverTitle}>{coverTitle || 'Your Garden\nGarden Plan'}</Text>
+            <Text style={S.coverSubtitle}>Garden Plan</Text>
             <View style={S.coverRule} />
             <View style={S.coverMetaRow}>
               {clientName ? (

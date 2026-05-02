@@ -3,6 +3,8 @@ Living task list. Edit via Claude Code prompts.
 
 ## Now
 - [ ] Fix Gemini API delays — current priority before anything else.
+- [ ] Header hamburger menu (mobile) — add a burger nav in the site header exposing the same links currently only in the footer (Examples, How It Works, What You Get, Notes, Design Tool). Header CTA "Build my Garden Plan" stays. Apply across `/`, `/design`, `/next`, `/notes`, `/notes/[slug]`. Acceptance: mobile users can reach every footer-linked section from the top of the page without scrolling to the footer.
+- [ ] Footer text contrast on mobile — section labels (EXAMPLES, HOW IT WORKS, WHAT YOU GET, NOTES, DESIGN TOOL) are near-illegible against the dark footer background. Lift to a colour that meets WCAG AA contrast on `#0a1a0a`-ish background. Verify on a real device, not just desktop devtools.
 
 ## Next (SEO + AEO follow-through)
 - [ ] Standardise canonical hostname on `https://www.dedrab.com` — sitemap, RSS, canonicals, OG URLs, JSON-LD. (Block 2 from 30 Apr SEO fix.)
@@ -32,6 +34,7 @@ Living task list. Edit via Claude Code prompts.
 - [ ] B2B garden centre licensing — validate as a revenue channel.
 
 ## Done (recent)
+- [x] Rename "Action Plan" → "Garden Plan" across UI, PDF, legal, MDX (2 May).
 - [x] Two missing Notes articles committed and pushed (30 Apr).
 - [x] Sitemap submitted to Google Search Console (30 Apr).
 - [x] Stripe `/next` payment screen built and live (live before 30 Apr).

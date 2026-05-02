@@ -142,7 +142,7 @@ export default function NextPage() {
             lineHeight: 1.25,
           }}
         >
-          Get your Action Plan
+          Get your Garden Plan
         </h1>
         <p
           style={{
@@ -250,7 +250,7 @@ export default function NextPage() {
             marginBottom: 8,
           }}
         >
-          {checkoutLoading ? 'Redirecting to checkout…' : 'Get my Action Plan — €4.95'}
+          {checkoutLoading ? 'Redirecting to checkout…' : 'Get my Garden Plan — €4.95'}
         </button>
 
         {/* Stripe trust badge */}

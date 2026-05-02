@@ -1558,14 +1558,14 @@ export default function GardigApp() {
     "Mapping your planting zones...",
     "Selecting plants for your climate and style...",
     "Costing up your materials...",
-    "Putting your Action Plan together...",
+    "Putting your Garden Plan together...",
     "Almost there — your plan is nearly ready",
     "This can take up to 4 minutes — worth the wait \ud83c\udf3f",
     "Building your full planting schedule and cost estimate...",
     "Cross-checking plant choices against your hardiness zone...",
     "Finalising your layout and seasonal care guide...",
     "Almost there — putting the finishing touches on your plan...",
-    "Your Action Plan is nearly ready \u2728",
+    "Your Garden Plan is nearly ready \u2728",
   ];
   const [rotatingMsgIdx, setRotatingMsgIdx] = useState(0);
   const [rotatingMsgVisible, setRotatingMsgVisible] = useState(true);
@@ -2151,7 +2151,7 @@ export default function GardigApp() {
           Your garden, redesigned.
         </h1>
         <p style={{ fontFamily: C.font, fontSize: px(15), color: 'rgba(255,255,255,0.55)', margin: 0, maxWidth: 460, marginLeft: 'auto', marginRight: 'auto', lineHeight: 1.65 }}>
-          Upload a photo. Get a full action plan — plant list, layout, phased guide, and cost estimate.
+          Upload a photo. Get a full garden plan — plant list, layout, phased guide, and cost estimate.
         </p>
       </div>
 
@@ -2408,7 +2408,7 @@ export default function GardigApp() {
               letterSpacing: "0.02em",
               opacity: isFormValid() ? 1 : 0.5, transition: "all 0.2s"
             }}>
-            Build my Action Plan →
+            Build my Garden Plan →
           </button>
           <div className="dedrab-submit-meta">
             Takes around 4 minutes · Your plan will be emailed to you
@@ -2424,7 +2424,7 @@ export default function GardigApp() {
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');@keyframes spin{to{transform:rotate(360deg)}}@keyframes ellipsis{0%,20%{content:'.'}40%,60%{content:'..'}80%,100%{content:'...'}} .ellipsis::after{content:'...';display:inline-block;animation:ellipsis 1.5s steps(3,end) infinite} .rotating-msg{transition:opacity 0.4s ease}`}</style>
       <div style={{ textAlign: "center", maxWidth: 440, padding: "0 24px" }}>
         <div style={{ width: 44, height: 44, borderRadius: "50%", border: `3px solid ${C.rule}`, borderTopColor: C.accent, margin: "0 auto 24px", animation: "spin 0.75s linear infinite" }} />
-        <div style={{ fontFamily: C.fontSerif, fontSize: px(22), fontWeight: 600, color: C.ink, marginBottom: 16 }}>Building Your Action Plan</div>
+        <div style={{ fontFamily: C.fontSerif, fontSize: px(22), fontWeight: 600, color: C.ink, marginBottom: 16 }}>Building Your Garden Plan</div>
         <div className="rotating-msg" style={{ fontSize: px(16), color: C.inkMid, marginBottom: 8, minHeight: 44, opacity: rotatingMsgVisible ? 1 : 0 }}>
           {loadingMessages[rotatingMsgIdx]}
         </div>
@@ -2763,7 +2763,7 @@ export default function GardigApp() {
     }
 
     if (!docData) {
-      setSaveError('Your Action Plan data is incomplete. Please try generating your design again before proceeding.');
+      setSaveError('Your Garden Plan data is incomplete. Please try generating your design again before proceeding.');
       return;
     }
     setIsSaving(true);
