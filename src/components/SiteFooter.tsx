@@ -15,7 +15,7 @@ export function SiteFooter() {
           <li>
             <a
               href="/#examples"
-              className="text-[10px] tracking-[2px] uppercase text-white/30 hover:text-[#b8962e] transition-colors no-underline"
+              className="text-[10px] tracking-[2px] uppercase text-white/75 hover:text-[#b8962e] transition-colors no-underline"
             >
               Examples
             </a>
@@ -23,7 +23,7 @@ export function SiteFooter() {
           <li>
             <a
               href="/#how"
-              className="text-[10px] tracking-[2px] uppercase text-white/30 hover:text-[#b8962e] transition-colors no-underline"
+              className="text-[10px] tracking-[2px] uppercase text-white/75 hover:text-[#b8962e] transition-colors no-underline"
             >
               How It Works
             </a>
@@ -31,7 +31,7 @@ export function SiteFooter() {
           <li>
             <a
               href="/#features"
-              className="text-[10px] tracking-[2px] uppercase text-white/30 hover:text-[#b8962e] transition-colors no-underline"
+              className="text-[10px] tracking-[2px] uppercase text-white/75 hover:text-[#b8962e] transition-colors no-underline"
             >
               What You Get
             </a>
@@ -39,7 +39,7 @@ export function SiteFooter() {
           <li>
             <Link
               href="/notes"
-              className="text-[10px] tracking-[2px] uppercase text-white/30 hover:text-[#b8962e] transition-colors no-underline"
+              className="text-[10px] tracking-[2px] uppercase text-white/75 hover:text-[#b8962e] transition-colors no-underline"
             >
               Notes
             </Link>
@@ -47,7 +47,7 @@ export function SiteFooter() {
           <li>
             <Link
               href="/design"
-              className="text-[10px] tracking-[2px] uppercase text-white/30 hover:text-[#b8962e] transition-colors no-underline"
+              className="text-[10px] tracking-[2px] uppercase text-white/75 hover:text-[#b8962e] transition-colors no-underline"
             >
               Design Tool
             </Link>
@@ -55,14 +55,14 @@ export function SiteFooter() {
         </ul>
       </div>
       <div className="flex justify-between items-center flex-wrap gap-3.5 px-6 md:px-15 py-5">
-        <span className="text-[10px] text-white/[0.18] tracking-[1px]">
+        <span className="text-[10px] text-white/55 tracking-[1px]">
           © 2025 Dedrab. Garden inspiration powered by AI.
         </span>
         <ul className="flex gap-7 list-none m-0 p-0">
           <li>
             <a
               href="/legal#privacy"
-              className="text-[10px] tracking-[1.5px] uppercase text-white/20 hover:text-white/50 transition-colors no-underline"
+              className="text-[10px] tracking-[1.5px] uppercase text-white/60 hover:text-white/50 transition-colors no-underline"
             >
               Privacy
             </a>
@@ -70,13 +70,13 @@ export function SiteFooter() {
           <li>
             <a
               href="/legal#terms"
-              className="text-[10px] tracking-[1.5px] uppercase text-white/20 hover:text-white/50 transition-colors no-underline"
+              className="text-[10px] tracking-[1.5px] uppercase text-white/60 hover:text-white/50 transition-colors no-underline"
             >
               Terms
             </a>
           </li>
         </ul>
-        <CookiePreferencesButton className="text-[10px] tracking-[1.5px] uppercase text-white/20 hover:text-white/50 transition-colors no-underline" />
+        <CookiePreferencesButton className="text-[10px] tracking-[1.5px] uppercase text-white/60 hover:text-white/50 transition-colors no-underline" />
       </div>
     </footer>
   );

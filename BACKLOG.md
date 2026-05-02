@@ -3,8 +3,7 @@ Living task list. Edit via Claude Code prompts.
 
 ## Now
 - [ ] Fix Gemini API delays — current priority before anything else.
-- [ ] Header hamburger menu (mobile) — add a burger nav in the site header exposing the same links currently only in the footer (Examples, How It Works, What You Get, Notes, Design Tool). Header CTA "Build my Garden Plan" stays. Apply across `/`, `/design`, `/next`, `/notes`, `/notes/[slug]`. Acceptance: mobile users can reach every footer-linked section from the top of the page without scrolling to the footer.
-- [ ] Footer text contrast on mobile — section labels (EXAMPLES, HOW IT WORKS, WHAT YOU GET, NOTES, DESIGN TOOL) are near-illegible against the dark footer background. Lift to a colour that meets WCAG AA contrast on `#0a1a0a`-ish background. Verify on a real device, not just desktop devtools.
+- [ ] Migrate `/design`, `/next`, `/next-steps`, `/invite` to the shared `SiteHeader` component — they still have inline nav blocks. Replace with `<SiteHeader variant="solid" />` (or `"hero"` if they have a full-bleed hero). Confirms hamburger consistency across the whole site.
 
 ## Next (SEO + AEO follow-through)
 - [ ] Standardise canonical hostname on `https://www.dedrab.com` — sitemap, RSS, canonicals, OG URLs, JSON-LD. (Block 2 from 30 Apr SEO fix.)
@@ -13,7 +12,6 @@ Living task list. Edit via Claude Code prompts.
 - [ ] URL-inspect 9 Notes URLs in Search Console — request indexing manually.
 
 ## Notes (content + UX)
-- [ ] Add header navigation to `/notes` and `/notes/[slug]` — currently only a footer; visitors landing from Google have no way back to home or design tool. Match header style of `/`, `/design`, `/next`.
 - [ ] Notes content system (semi-automated) — admin queue → drafts → review → schedule. Build after Gemini delays + reference articles.
 
 ## Product flow
@@ -33,6 +31,8 @@ Living task list. Edit via Claude Code prompts.
 - [ ] B2B garden centre licensing — validate as a revenue channel.
 
 ## Done (recent)
+- [x] Shared `SiteHeader` with mobile hamburger menu — landing + all `/notes` pages (2 May).
+- [x] Footer text contrast lifted to WCAG AA (`white/30` → `white/75`, etc.) (2 May).
 - [x] Rename "Action Plan" → "Garden Plan" across UI, PDF, legal, MDX (2 May).
 - [x] Two missing Notes articles committed and pushed (30 Apr).
 - [x] Sitemap submitted to Google Search Console (30 Apr).

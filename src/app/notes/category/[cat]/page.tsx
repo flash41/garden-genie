@@ -4,6 +4,7 @@ import { getCategoryPosts, getCategoryParams, getNotesPosts } from '@/lib/notes'
 import { NotesGrid } from '@/components/notes/NotesGrid';
 import { CategoryFilter } from '@/components/notes/CategoryFilter';
 import { SiteFooter } from '@/components/SiteFooter';
+import { SiteHeader } from '@/components/SiteHeader';
 import { CATEGORY_LABELS } from '@/types/notes';
 import type { NotesCategory } from '@/types/notes';
 
@@ -60,7 +61,8 @@ export default async function CategoryPage({ params }: PageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <div className="min-h-screen bg-[#F8F9F8]">
+      <SiteHeader variant="solid" />
+      <div className="min-h-screen bg-[#F8F9F8] pt-20 md:pt-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
           <header className="mb-10">
             <nav aria-label="Breadcrumb" className="mb-4">

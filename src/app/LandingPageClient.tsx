@@ -3,21 +3,14 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import ExamplesCarousel from '@/components/ExamplesCarousel';
+import { SiteHeader } from '@/components/SiteHeader';
 
 interface LandingPageClientProps {
   notesTeaserSection: React.ReactNode;
 }
 
 export default function LandingPageClient({ notesTeaserSection }: LandingPageClientProps) {
-  const [scrolled, setScrolled] = useState(false);
   const [activeStyle, setActiveStyle] = useState('English Cottage');
-
-  // Scroll-based nav
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
 
   // Intersection observer for fade-in animations
   useEffect(() => {
@@ -168,32 +161,7 @@ export default function LandingPageClient({ notesTeaserSection }: LandingPageCli
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,600&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap');`}</style>
 
       {/* NAV */}
-      <nav
-        style={{
-          position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: scrolled ? '16px 60px' : '24px 60px',
-          background: scrolled ? 'rgba(10,61,43,0.97)' : 'transparent',
-          backdropFilter: scrolled ? 'blur(12px)' : 'none',
-          transition: 'background 0.4s ease, padding 0.3s ease',
-        }}
-      >
-        <a href="/" style={{ display: 'flex', alignItems: 'center' }}>
-          <img src="/dd_logo.png" alt="Dedrab" className="site-logo-h" />
-        </a>
-        <Link href="/design" className="mobile-nav-cta">Build my Garden Plan</Link>
-        <ul className="nav-links-hide" style={{ display: 'flex', gap: 40, listStyle: 'none', alignItems: 'center', margin: 0, padding: 0 }}>
-          <li><a href="#examples" className="nav-link-item">Examples</a></li>
-          <li><a href="#how" className="nav-link-item">How It Works</a></li>
-          <li><a href="#features" className="nav-link-item">What You Get</a></li>
-          <li><Link href="/notes" className="nav-link-item">Notes</Link></li>
-          <li>
-            <Link href="/design" className="nav-link-item nav-cta-link" style={{ color: 'var(--gold-light)' }}>
-              Build my Garden Plan
-            </Link>
-          </li>
-        </ul>
-      </nav>
+      <SiteHeader variant="hero" />
 
       {/* HERO */}
       <section style={{ minHeight: '100vh', background: 'var(--forest)', position: 'relative', display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
