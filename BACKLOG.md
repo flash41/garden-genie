@@ -14,7 +14,6 @@ Living task list. Edit via Claude Code prompts.
 
 ## Notes (content + UX)
 - [ ] Add header navigation to `/notes` and `/notes/[slug]` — currently only a footer; visitors landing from Google have no way back to home or design tool. Match header style of `/`, `/design`, `/next`.
-- [ ] Delete legacy duplicate at `content/notes/landscape-paralysis-why-great-gardens-dont-happen.mdx` (outside `src/`). Not breaking, just tidy-up.
 - [ ] Notes content system (semi-automated) — admin queue → drafts → review → schedule. Build after Gemini delays + reference articles.
 
 ## Product flow
