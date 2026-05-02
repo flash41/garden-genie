@@ -66,29 +66,35 @@ export function SiteHeader({ variant = 'hero' }: SiteHeaderProps) {
         /* Burger button */
         .sh-burger {
           display:none;
+          flex-direction:column;
+          align-items:center;
+          justify-content:center;
+          gap:5px;
           background:transparent;
           border:none;
           padding:8px;
           margin:0;
           cursor:pointer;
-          width:40px;
-          height:40px;
-          align-items:center;
-          justify-content:center;
+          width:44px;
+          height:44px;
           border-radius:6px;
           transition:background 0.2s;
+          flex-shrink:0;
+          position:relative;
+          z-index:201;
         }
         .sh-burger:hover { background:rgba(255,255,255,0.08); }
         .sh-burger:focus-visible { outline:2px solid #D4AF37; outline-offset:2px; }
         .sh-burger-bar {
           display:block;
-          width:22px;
+          width:24px;
           height:2px;
           background:#D4AF37;
           border-radius:1px;
+          flex-shrink:0;
           transition:transform 0.3s ease, opacity 0.2s ease;
+          transform-origin:center;
         }
-        .sh-burger-bar + .sh-burger-bar { margin-top:5px; }
         .sh-burger[data-open="true"] .sh-burger-bar:nth-child(1) { transform:translateY(7px) rotate(45deg); }
         .sh-burger[data-open="true"] .sh-burger-bar:nth-child(2) { opacity:0; }
         .sh-burger[data-open="true"] .sh-burger-bar:nth-child(3) { transform:translateY(-7px) rotate(-45deg); }
@@ -126,9 +132,9 @@ export function SiteHeader({ variant = 'hero' }: SiteHeaderProps) {
         @media (max-width:900px) {
           .sh-mobile-cta-wrap { display:inline-flex; }
         }
-        @media (max-width:380px) {
-          /* Very narrow phones: hide the header CTA, leave only logo + burger; CTA is inside the menu */
-          .sh-mobile-cta-wrap { display:none; }
+        @media (max-width:420px) {
+          /* Tighter padding & shorter CTA label space on small phones — keep CTA visible always */
+          .sh-cta-primary { padding:8px 12px; font-size:12px; }
         }
 
         /* Overlay menu */
