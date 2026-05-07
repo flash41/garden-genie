@@ -1,4 +1,4 @@
-export type NotesCategory = 'design' | 'plants' | 'how-to' | 'materials' | 'climate';
+export type NotesCategory = 'design' | 'plants' | 'how-to' | 'materials' | 'climate' | 'wildlife';
 
 export const CATEGORY_LABELS: Record<NotesCategory, string> = {
   design: 'Design',
@@ -6,6 +6,7 @@ export const CATEGORY_LABELS: Record<NotesCategory, string> = {
   'how-to': 'How-To',
   materials: 'Materials',
   climate: 'Climate',
+  wildlife: 'Wildlife',
 };
 
 export interface NotesFrontmatter {
