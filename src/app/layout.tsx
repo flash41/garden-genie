@@ -55,6 +55,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
+        suppressHydrationWarning
         className={`${geistSans.variable} ${geistMono.variable} ${playfairDisplay.variable} antialiased`}
       >
         {/* L3 — GDPR consent default: deny analytics_storage before any GA script can load */}
