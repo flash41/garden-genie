@@ -71,7 +71,7 @@ export default function RootLayout({
               '@type': 'Organization',
               name: 'Dedrab',
               url: 'https://www.dedrab.com',
-              logo: 'https://www.dedrab.com/logo.png',
+              logo: 'https://www.dedrab.com/dd_logo.png',
               description:
                 'Garden design and layout planning for self-implementing gardeners.',
             }),

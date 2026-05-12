@@ -87,12 +87,11 @@ export default async function NotesPostPage({ params }: PageProps) {
 
   const articleJsonLd = {
     '@context': 'https://schema.org',
-    '@type': 'BlogPosting',
+    '@type': 'Article',
     headline: post.title,
     description: post.description,
     datePublished: post.publishedAt,
     dateModified: post.updatedAt ?? post.publishedAt,
-    url: canonical,
     author: {
       '@type': 'Organization',
       name: 'Dedrab',
@@ -104,15 +103,17 @@ export default async function NotesPostPage({ params }: PageProps) {
       url: 'https://www.dedrab.com',
       logo: {
         '@type': 'ImageObject',
-        url: 'https://www.dedrab.com/logo.png',
+        url: 'https://www.dedrab.com/dd_logo.png',
       },
     },
     ...(ogImage && {
-      image: {
-        '@type': 'ImageObject',
-        url: ogImage.startsWith('http') ? ogImage : `https://www.dedrab.com${ogImage}`,
-      },
+      image: ogImage.startsWith('http') ? ogImage : `https://www.dedrab.com${ogImage}`,
     }),
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': canonical,
+    },
+    articleSection: post.category,
     ...(post.tags && { keywords: post.tags.join(', ') }),
   };
 

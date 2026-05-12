@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { getNotesPosts, getFeaturedPost } from '@/lib/notes';
+import { getNotesPosts } from '@/lib/notes';
 import { NotesFeatured } from '@/components/notes/NotesFeatured';
 import { NotesGrid } from '@/components/notes/NotesGrid';
 import { CategoryFilter } from '@/components/notes/CategoryFilter';
@@ -30,10 +30,7 @@ export const metadata: Metadata = {
 
 export default function NotesPage() {
   const allPosts = getNotesPosts();
-  const featured = getFeaturedPost();
-  const remainingPosts = featured
-    ? allPosts.filter((p) => p.slug !== featured.slug)
-    : allPosts;
+  const [heroPost, ...remainingPosts] = allPosts;
 
   const categories = [...new Set(allPosts.map((p) => p.category))] as NotesCategory[];
 
@@ -74,15 +71,13 @@ export default function NotesPage() {
 
           <CategoryFilter categories={categories} active={null} />
 
-          {featured && <NotesFeatured post={featured} />}
+          {heroPost && <NotesFeatured post={heroPost} />}
 
           {remainingPosts.length > 0 && (
             <section aria-label="More notes">
-              {featured && (
-                <h2 className="font-serif font-bold text-[#1A1A1A] text-2xl mb-6">
-                  More notes
-                </h2>
-              )}
+              <h2 className="font-serif font-bold text-[#1A1A1A] text-2xl mb-6">
+                More notes
+              </h2>
               <NotesGrid posts={remainingPosts} />
             </section>
           )}
