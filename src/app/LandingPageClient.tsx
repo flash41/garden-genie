@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import ExamplesCarousel from '@/components/ExamplesCarousel';
 import { SiteHeader } from '@/components/SiteHeader';
+import HeroExamplesReveal from '@/components/HeroExamplesReveal';
 
 interface LandingPageClientProps {
   notesTeaserSection: React.ReactNode;
@@ -62,9 +63,6 @@ export default function LandingPageClient({ notesTeaserSection }: LandingPageCli
           50%{transform:translateX(-50%) translateY(8px)}
         }
         .scroll-bob { animation: scrollBob 2s ease-in-out infinite; }
-
-        @keyframes pulseDot { 0%,100%{opacity:1} 50%{opacity:0.3} }
-        .pulse-dot { animation: pulseDot 2s infinite; }
 
         @keyframes leafFloat {
           0%{transform:translateY(100vh) rotate(0deg);opacity:0}
@@ -230,39 +228,7 @@ export default function LandingPageClient({ notesTeaserSection }: LandingPageCli
 
           {/* Right column — preview card */}
           <div className="hero-preview-wrap" style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-          <div style={{ width: 340, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(184,150,46,0.3)', backdropFilter: 'blur(20px)', overflow: 'hidden' }}>
-            <div style={{ width: '100%', height: 220, background: 'linear-gradient(135deg, rgba(45,80,22,0.8), rgba(10,61,43,0.9))', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
-              <svg width="280" height="180" viewBox="0 0 280 180" fill="none">
-                <rect x="0" y="140" width="280" height="40" fill="rgba(45,80,22,0.5)"/>
-                <line x1="60" y1="180" x2="60" y2="100" stroke="rgba(184,150,46,0.6)" strokeWidth="3"/>
-                <ellipse cx="60" cy="90" rx="28" ry="35" fill="rgba(45,80,22,0.7)"/>
-                <ellipse cx="48" cy="100" rx="18" ry="25" fill="rgba(26,92,63,0.6)"/>
-                <ellipse cx="120" cy="145" rx="20" ry="14" fill="rgba(45,80,22,0.8)"/>
-                <path d="M160 145 Q155 120 158 105" stroke="rgba(184,150,46,0.5)" strokeWidth="1.5" fill="none"/>
-                <path d="M165 145 Q170 118 166 100" stroke="rgba(184,150,46,0.4)" strokeWidth="1.5" fill="none"/>
-                <path d="M200 180 Q210 160 220 145 Q230 130 240 140" stroke="rgba(184,150,46,0.4)" strokeWidth="2" fill="none"/>
-                <text x="10" y="25" fill="rgba(184,150,46,0.6)" fontSize="8" letterSpacing="2" fontFamily="sans-serif">YOUR FINISHED GARDEN</text>
-                <line x1="10" y1="30" x2="100" y2="30" stroke="rgba(184,150,46,0.3)" strokeWidth="0.5"/>
-              </svg>
-              <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.5)', padding: '8px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'var(--gold-light)' }}>Building your plan...</span>
-                <div className="pulse-dot" style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ade80' }} />
-              </div>
-            </div>
-            <div style={{ padding: 20 }}>
-              <div style={{ fontSize: 10, letterSpacing: 1.5, textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 8 }}>English Cottage · Full Design Plan</div>
-              <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 16, color: 'white', marginBottom: 16 }}>The Sunlit Border Garden</div>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                {['Plant List', 'Layout Plan', 'Finished Garden', 'Cost Estimate'].map((t) => (
-                  <span key={t} style={{ fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', padding: '4px 10px', border: '1px solid rgba(184,150,46,0.3)', color: 'rgba(255,255,255,0.5)' }}>{t}</span>
-                ))}
-              </div>
-              <Link href="/design" style={{ width: '100%', height: 80, border: '1px dashed rgba(184,150,46,0.4)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 16, cursor: 'pointer', textDecoration: 'none', transition: 'all 0.3s' }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="1.5" opacity="0.6"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                <span style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)' }}>Upload your garden photo</span>
-              </Link>
-            </div>
-          </div>
+            <HeroExamplesReveal />
           </div>{/* end hero-preview-wrap */}
 
         </div>{/* end hero-grid */}
