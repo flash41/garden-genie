@@ -135,6 +135,54 @@ const [quotesRequested, setQuotesRequested] = useState<1 | 3>(3);
     if (storedPdfUrl) setPdfStatus('ready');
   }, []);
 
+  // Hydrate sessionStorage from /api/design-record when arriving fresh
+  // (e.g. from the "your plan is ready" email link, or on a new device).
+  // Without this, the page sees empty sessionStorage and the PDF fallback
+  // would produce a partial document. This effect populates the same keys
+  // the in-session pipeline would have written.
+  useEffect(() => {
+    if (!sessionId) return;
+    // If we already have the plan data in sessionStorage, no need to hydrate.
+    if (sessionStorage.getItem('garden_plan_data')) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/design-record?sessionId=' + sessionId);
+        if (!res.ok || cancelled) return;
+        const rec = await res.json();
+        if (cancelled) return;
+        if (rec.email && !sessionStorage.getItem('garden_user_email')) {
+          sessionStorage.setItem('garden_user_email', rec.email);
+          setUserEmail(rec.email);
+        }
+        if (rec.design_style && !sessionStorage.getItem('garden_design_style')) {
+          sessionStorage.setItem('garden_design_style', rec.design_style);
+          setDesignStyle(rec.design_style);
+        }
+        if (rec.reference_number && !sessionStorage.getItem('garden_reference_number')) {
+          sessionStorage.setItem('garden_reference_number', rec.reference_number);
+          setReferenceNumber(rec.reference_number);
+        }
+        if (rec.full_report) {
+          try {
+            sessionStorage.setItem('garden_plan_data', JSON.stringify(rec.full_report));
+            sessionStorage.setItem('garden_plan_data_status', 'complete');
+          } catch (e) {
+            console.warn('[next-steps] could not write garden_plan_data to sessionStorage:', e);
+          }
+        }
+        if (rec.pdf_url && !sessionStorage.getItem('garden_pdf_url')) {
+          sessionStorage.setItem('garden_pdf_url', rec.pdf_url);
+          setPdfUrl(rec.pdf_url);
+          setPdfStatus('ready');
+        }
+      } catch (e) {
+        console.warn('[next-steps] hydrate from design-record failed:', e);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [sessionId]);
+
   // Poll for render_url from the DB — the render upload is fire-and-forget in
   // design/page.tsx and may not complete before router.push fires. The hosted URL
   // is written to design_records.render_url via /api/update-design once ready.

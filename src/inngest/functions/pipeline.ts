@@ -1,8 +1,117 @@
 import { inngest } from '@/lib/inngest';
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { GoogleGenAI } from '@google/genai';
+import { Resend } from 'resend';
+import crypto from 'crypto';
 
 const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY || '' });
+
+// ─── REFERENCE NUMBER ─────────────────────────────────────────────────────────
+// Mirrors the format used in /api/save-design so plan references look the same
+// whether the user collected their plan in-session or via the email fallback.
+function generateReference(): string {
+  const year = new Date().getFullYear();
+  const month = String(new Date().getMonth() + 1).padStart(2, '0');
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const random = Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+  return 'DED-' + year + month + '-' + random;
+}
+
+// ─── PLAN-READY EMAIL ─────────────────────────────────────────────────────────
+// Sent server-side from the Inngest pipeline once the render is uploaded. The
+// guarantee here is: even if the user closes their tab mid-render, they always
+// receive a working link back to their finished plan. This is what makes the
+// €4.95 charge safe.
+const PLAN_READY_EMAIL_HTML = (params: {
+  planTitle: string;
+  designStyle: string;
+  resumeUrl: string;
+}) => `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Dedrab Garden Plan is Ready</title>
+</head>
+<body style="margin:0;padding:0;background:#F4EFE4;font-family:'Georgia',serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#F4EFE4;padding:40px 0;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+          <tr>
+            <td style="background:#0a3d2b;padding:36px 48px;text-align:center;">
+              <div style="font-family:'Georgia',serif;font-size:26px;font-weight:700;color:#ffffff;letter-spacing:4px;text-transform:uppercase;">Dedrab</div>
+              <div style="font-size:10px;color:#D4AF37;letter-spacing:4px;text-transform:uppercase;margin-top:6px;">Garden Inspiration</div>
+            </td>
+          </tr>
+          <tr><td style="height:3px;background:#b8962e;"></td></tr>
+          <tr>
+            <td style="background:#ffffff;padding:48px 48px 40px;">
+              <p style="margin:0 0 8px;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:#b8962e;">Your garden plan is ready</p>
+              <h1 style="margin:0 0 24px;font-family:'Georgia',serif;font-size:28px;font-weight:400;color:#0a3d2b;line-height:1.25;">${params.planTitle}</h1>
+              <table cellpadding="0" cellspacing="0" style="margin-bottom:28px;border-left:3px solid #b8962e;padding-left:20px;">
+                <tr><td style="font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#8a7e6e;">Design Style</td></tr>
+                <tr><td style="font-size:18px;color:#0a3d2b;font-family:'Georgia',serif;padding-top:4px;">${params.designStyle || 'Custom'}</td></tr>
+              </table>
+              <p style="margin:0 0 20px;font-size:17px;line-height:1.75;color:#4a3f32;font-family:'Georgia',serif;">
+                Thanks for your patience. Your full plan — render, planting specification, layout, costs and phased steps — is waiting for you. Click below to open it and download the PDF.
+              </p>
+              <table cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+                <tr>
+                  <td style="background:#0a3d2b;padding:0;">
+                    <a href="${params.resumeUrl}" style="display:inline-block;padding:14px 32px;font-family:'Arial',sans-serif;font-size:12px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:#b8962e;text-decoration:none;">Open Your Garden Plan</a>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin:0;font-size:13px;line-height:1.65;color:#8a7e6e;font-family:'Georgia',serif;">
+                The link stays live — open it on your phone, your laptop, or forward it to whoever is doing the work.
+              </p>
+            </td>
+          </tr>
+          <tr><td style="height:1px;background:#EDE6D3;"></td></tr>
+          <tr>
+            <td style="background:#f9f5ee;padding:28px 48px;text-align:center;">
+              <p style="margin:0 0 8px;font-family:'Georgia',serif;font-size:14px;font-weight:700;color:#0a3d2b;letter-spacing:2px;text-transform:uppercase;">Dedrab</p>
+              <p style="margin:0 0 14px;font-size:11px;color:#b8962e;letter-spacing:3px;text-transform:uppercase;">dedrab.com</p>
+              <p style="margin:0;font-size:11px;color:#8a7e6e;line-height:1.6;">
+                You received this because you asked us to put together a garden plan for you.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+`;
+
+async function sendPlanReadyEmail(params: {
+  to: string;
+  planTitle: string;
+  designStyle: string;
+  resumeUrl: string;
+}): Promise<{ ok: boolean; error?: string }> {
+  if (!process.env.RESEND_API_KEY) {
+    return { ok: false, error: 'RESEND_API_KEY missing' };
+  }
+  try {
+    const resend = new Resend(process.env.RESEND_API_KEY);
+    const { error } = await resend.emails.send({
+      from: 'Dedrab <noreply@dedrab.com>',
+      to: [params.to],
+      subject: `Your Dedrab Garden Plan is ready — ${params.planTitle}`,
+      html: PLAN_READY_EMAIL_HTML(params),
+    });
+    if (error) {
+      return { ok: false, error: error.message || 'Resend send failed' };
+    }
+    return { ok: true };
+  } catch (err: any) {
+    return { ok: false, error: err?.message || 'Unknown email send error' };
+  }
+}
 
 // ─── DESIGN SCHEMA (shared with Step 3) ────────────────────────────────────────
 
@@ -1300,6 +1409,7 @@ export const pipelineFunction = inngest.createFunction(
       creativityLevel,
       hardinessZone,
       currentRendersUsed,
+      recipientEmail,
     } = event.data as {
       jobId: string;
       inviteCode: string;
@@ -1314,6 +1424,7 @@ export const pipelineFunction = inngest.createFunction(
       creativityLevel: number;
       hardinessZone: string | null;
       currentRendersUsed: number;
+      recipientEmail: string | null;
     };
 
     try {
@@ -1493,6 +1604,107 @@ export const pipelineFunction = inngest.createFunction(
         } else {
           console.warn(`[Pipeline] Render missing for job ${jobId} — render credit NOT charged to invite ${inviteCode}`);
         }
+      });
+
+      // j. save-design-record — server-side hydration of design_records so the
+      // email link works whether or not the original browser tab is still open.
+      // This is the safety net: if the client closes mid-render, the user can
+      // still pick up their plan from the email and the /next-steps page will
+      // load it from design_records via /api/design-record.
+      const designRecord = await step.run('save-design-record', async () => {
+        // Re-read the job so we have the freshly written render_url / aerial_url.
+        const { data: job, error: jobErr } = await supabaseAdmin
+          .from('pipeline_jobs')
+          .select('id, render_url, aerial_url, design_json, status, session_id, reference_number, error_message, recipient_email')
+          .eq('id', jobId)
+          .single();
+
+        if (jobErr || !job) {
+          console.warn('[Pipeline] save-design-record: could not re-read job:', jobErr?.message);
+          return null;
+        }
+
+        // If render genuinely failed there is nothing to deliver — skip.
+        if (job.error_message) {
+          console.warn(`[Pipeline] save-design-record: render missing for job ${jobId}, skipping design_records save`);
+          return null;
+        }
+
+        // Reuse existing session_id/reference_number on retry, otherwise mint new ones.
+        const sessionId = job.session_id || crypto.randomUUID();
+        const referenceNumber = job.reference_number || generateReference();
+
+        // Resolve signed URLs the same way /api/job-status does so /next-steps
+        // can fetch the render directly.
+        let renderSignedUrl: string | null = null;
+        if (job.render_url) {
+          const { data: signed } = await supabaseAdmin.storage
+            .from('pipeline-assets')
+            .createSignedUrl(job.render_url, 60 * 60 * 24 * 30); // 30 days
+          renderSignedUrl = signed?.signedUrl ?? null;
+        }
+
+        // Upsert design_records — keyed by session_id so revisits don't duplicate.
+        const { error: drErr } = await supabaseAdmin
+          .from('design_records')
+          .upsert({
+            session_id: sessionId,
+            email: recipientEmail || '',
+            design_style: style,
+            hardiness_zone: hardinessZone || null,
+            full_report: job.design_json,
+            reference_number: referenceNumber,
+            render_url: renderSignedUrl,
+          }, { onConflict: 'session_id' });
+
+        if (drErr) {
+          console.warn('[Pipeline] save-design-record: design_records upsert failed:', drErr.message);
+        }
+
+        // Write the sessionId/reference back to the job row so future revisits
+        // and email retries reuse the same identifiers.
+        await supabaseAdmin
+          .from('pipeline_jobs')
+          .update({ session_id: sessionId, reference_number: referenceNumber })
+          .eq('id', jobId);
+
+        return { sessionId, referenceNumber, renderUrl: renderSignedUrl };
+      });
+
+      // k. email-plan-ready — fire-and-forget the completion email. Failure
+      // here must NOT fail the job — the plan is still recoverable in-session.
+      await step.run('email-plan-ready', async () => {
+        if (!recipientEmail) {
+          console.log(`[Pipeline] email-plan-ready: no recipient email for job ${jobId} — skipping`);
+          return { sent: false, reason: 'no_email' };
+        }
+        if (!designRecord) {
+          console.log(`[Pipeline] email-plan-ready: no design record for job ${jobId} — skipping`);
+          return { sent: false, reason: 'no_record' };
+        }
+
+        const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.dedrab.com').replace(/\/+$/, '');
+        const resumeUrl = `${baseUrl}/next-steps?sessionId=${encodeURIComponent(designRecord.sessionId)}`;
+
+        const result = await sendPlanReadyEmail({
+          to: recipientEmail,
+          planTitle: `Your ${style} Garden Plan`,
+          designStyle: style,
+          resumeUrl,
+        });
+
+        await supabaseAdmin
+          .from('pipeline_jobs')
+          .update({
+            email_sent_at: result.ok ? new Date().toISOString() : null,
+            email_send_error: result.ok ? null : (result.error || 'unknown'),
+          })
+          .eq('id', jobId);
+
+        if (!result.ok) {
+          console.warn(`[Pipeline] email-plan-ready: send failed for job ${jobId}: ${result.error}`);
+        }
+        return { sent: result.ok };
       });
 
     } catch (error: any) {

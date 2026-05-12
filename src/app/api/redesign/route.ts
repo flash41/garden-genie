@@ -91,13 +91,20 @@ export async function POST(request: NextRequest) {
     turnstileToken?: string;
     hardinessZone?: string | null;
     transformationLevel?: number;
+    userEmail?: string;
   };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
   }
-  const { originalImageBase64, originalImageMimeType, style, orientation, clientName, turnstileToken, hardinessZone, transformationLevel: rawTransformationLevel } = body;
+  const { originalImageBase64, originalImageMimeType, style, orientation, clientName, turnstileToken, hardinessZone, transformationLevel: rawTransformationLevel, userEmail } = body;
+
+  // Normalise email — used by the email-plan-ready Inngest step to deliver
+  // the finished plan if the user closes the tab mid-render.
+  const recipientEmail = (userEmail && /.+@.+\..+/.test(userEmail.trim()))
+    ? userEmail.trim().toLowerCase()
+    : null;
 
   // g. Validate Turnstile
   const turnstileSecret = process.env.TURNSTILE_SECRET_KEY;
@@ -187,6 +194,9 @@ export async function POST(request: NextRequest) {
       input_storage_path: storagePath,
       design_lang: style,
       country,
+      recipient_email: recipientEmail,
+      design_style: style,
+      hardiness_zone: hardinessZone || null,
     })
     .select('id')
     .single();
@@ -215,6 +225,7 @@ export async function POST(request: NextRequest) {
         creativityLevel,
         hardinessZone: hardinessZone || null,
         currentRendersUsed,
+        recipientEmail,
       },
     });
   } catch (err: any) {

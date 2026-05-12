@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
 
   const { data, error } = await supabaseAdmin
     .from('design_records')
-    .select('render_url, pdf_url, reference_number, design_style, email')
+    .select('render_url, pdf_url, reference_number, design_style, email, hardiness_zone, full_report')
     .eq('session_id', sessionId)
     .single();
 

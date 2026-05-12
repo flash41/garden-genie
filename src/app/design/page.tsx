@@ -1497,7 +1497,11 @@ function ThemePreSelector({ onTheme }: { onTheme: (label: string) => void }) {
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 
 export default function GardigApp() {
-  const [step, setStep]               = useState<"upload"|"loading"|"result">("upload");
+  const [step, setStep]               = useState<"upload"|"loading"|"result"|"emailFallback">("upload");
+  // Toggled to true after the user has been waiting >=60s on the loading
+  // screen. Once true, we surface the "we'll email you when it's ready"
+  // reassurance so impatient users know they can close the tab safely.
+  const [emailReassuranceVisible, setEmailReassuranceVisible] = useState(false);
   const [imageFile, setImageFile]     = useState<File | null>(null);
   const [imageDataUrl, setImageDataUrl] = useState<string | null>(null);
   const [designLang, setDesignLang]   = useState("Japanese Zen");
@@ -1573,6 +1577,7 @@ export default function GardigApp() {
     if (step !== "loading") return;
     setRotatingMsgIdx(0);
     setRotatingMsgVisible(true);
+    setEmailReassuranceVisible(false);
     const interval = setInterval(() => {
       setRotatingMsgVisible(false);
       setTimeout(() => {
@@ -1580,7 +1585,11 @@ export default function GardigApp() {
         setRotatingMsgVisible(true);
       }, 400);
     }, 14000);
-    return () => clearInterval(interval);
+    // After 60s, reveal the "we'll email you" reassurance so the user knows
+    // they can safely close the tab. The pipeline runs server-side and
+    // always emails the finished plan to recipientEmail when ready.
+    const reassuranceTimer = setTimeout(() => setEmailReassuranceVisible(true), 60_000);
+    return () => { clearInterval(interval); clearTimeout(reassuranceTimer); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step]);
 
@@ -1758,6 +1767,7 @@ export default function GardigApp() {
         currency: userCurrency,
         hardinessZone: hardinessZone || null,
         transformationLevel,
+        userEmail: userEmail || '',
       }),
     });
 
@@ -1979,7 +1989,19 @@ export default function GardigApp() {
         })
         .catch(() => {});
     } catch (err: any) {
-      setError(err.message);
+      // If this looks like the long-running timeout (job still running
+      // server-side but the browser gave up waiting), DO NOT throw the user
+      // back to upload — they have already paid and the pipeline is still
+      // working. Show the graceful "we'll email it to you" state instead.
+      // The server-side Inngest pipeline will email the finished plan to
+      // recipientEmail when it completes.
+      const msg = err?.message || '';
+      const looksLikeLongWait = /taking longer than expected|longer than usual/i.test(msg);
+      if (looksLikeLongWait && userEmail) {
+        setStep('emailFallback');
+        return;
+      }
+      setError(msg || 'Something went wrong. Please try again.');
       setStep("upload");
     }
   };
@@ -2421,8 +2443,8 @@ export default function GardigApp() {
   // ── LOADING SCREEN ─────────────────────────────────────────────────────────
   if (step === "loading") return (
     <div style={{ minHeight: "100vh", background: C.surface, fontFamily: C.font, display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');@keyframes spin{to{transform:rotate(360deg)}}@keyframes ellipsis{0%,20%{content:'.'}40%,60%{content:'..'}80%,100%{content:'...'}} .ellipsis::after{content:'...';display:inline-block;animation:ellipsis 1.5s steps(3,end) infinite} .rotating-msg{transition:opacity 0.4s ease}`}</style>
-      <div style={{ textAlign: "center", maxWidth: 440, padding: "0 24px" }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');@keyframes spin{to{transform:rotate(360deg)}}@keyframes ellipsis{0%,20%{content:'.'}40%,60%{content:'..'}80%,100%{content:'...'}} .ellipsis::after{content:'...';display:inline-block;animation:ellipsis 1.5s steps(3,end) infinite} .rotating-msg{transition:opacity 0.4s ease} .reassure-fade{transition:opacity 0.6s ease, max-height 0.6s ease}`}</style>
+      <div style={{ textAlign: "center", maxWidth: 460, padding: "0 24px" }}>
         <div style={{ width: 44, height: 44, borderRadius: "50%", border: `3px solid ${C.rule}`, borderTopColor: C.accent, margin: "0 auto 24px", animation: "spin 0.75s linear infinite" }} />
         <div style={{ fontFamily: C.fontSerif, fontSize: px(22), fontWeight: 600, color: C.ink, marginBottom: 16 }}>Building Your Garden Plan</div>
         <div className="rotating-msg" style={{ fontSize: px(16), color: C.inkMid, marginBottom: 8, minHeight: 44, opacity: rotatingMsgVisible ? 1 : 0 }}>
@@ -2439,6 +2461,101 @@ export default function GardigApp() {
             Please wait a moment while we build your plan<span className="ellipsis" />
           </div>
         </div>
+
+        {/* After 60s — let the user know they can safely close the tab.
+            The pipeline runs server-side and the finished plan is emailed
+            to them when ready. Only shown if we have an email to send to. */}
+        <div
+          className="reassure-fade"
+          style={{
+            marginTop: 18,
+            overflow: 'hidden',
+            opacity: emailReassuranceVisible && userEmail ? 1 : 0,
+            maxHeight: emailReassuranceVisible && userEmail ? 220 : 0,
+          }}
+        >
+          <div style={{
+            background: '#FFFFFF',
+            border: `1px solid ${C.rule}`,
+            borderTop: `2px solid ${C.accent}`,
+            borderRadius: C.r,
+            padding: "16px 20px",
+            textAlign: 'left',
+          }}>
+            <div style={{ fontSize: px(11), letterSpacing: '0.12em', textTransform: 'uppercase', color: C.accent, fontWeight: 600, marginBottom: 6 }}>
+              No need to wait around
+            </div>
+            <div style={{ fontSize: px(BASE - 1), color: C.inkMid, lineHeight: 1.6 }}>
+              We&apos;ll email your finished plan and render to <strong style={{ color: C.ink }}>{userEmail}</strong> the moment it&apos;s ready — usually within a couple of minutes. You can close this tab and check your inbox.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // ── EMAIL-FALLBACK SCREEN ─────────────────────────────────────────────────
+  // Shown when the browser-side poll has given up but the server-side pipeline
+  // is still running. NO failure language — the user has paid, the pipeline
+  // completes asynchronously, and the finished plan is emailed to them when
+  // ready. This screen replaces the old "please try again" error that risked
+  // double-charging and damaging trust.
+  if (step === "emailFallback") return (
+    <div style={{ minHeight: "100vh", background: C.surface, fontFamily: C.font, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');`}</style>
+      <div style={{ textAlign: "center", maxWidth: 480, padding: "0 24px" }}>
+        <div style={{
+          width: 56, height: 56, borderRadius: '50%',
+          background: '#FFFFFF',
+          border: `2px solid ${C.accent}`,
+          margin: "0 auto 24px",
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 28, color: C.accent,
+        }}>✓</div>
+        <div style={{ fontFamily: C.fontSerif, fontSize: px(24), fontWeight: 600, color: C.ink, marginBottom: 14 }}>
+          Your plan is on its way
+        </div>
+        <div style={{ fontSize: px(BASE), color: C.inkMid, marginBottom: 22, lineHeight: 1.65 }}>
+          Your garden plan is taking a little longer than usual to finish. No problem —
+          we&apos;ll email the finished plan, render and PDF to{' '}
+          <strong style={{ color: C.ink }}>{userEmail || 'your inbox'}</strong> the
+          moment it&apos;s ready. You can safely close this tab.
+        </div>
+        <div style={{
+          background: '#FFFFFF',
+          border: `1px solid ${C.rule}`,
+          borderLeft: `3px solid ${C.accent}`,
+          borderRadius: C.r,
+          padding: "14px 18px",
+          textAlign: 'left',
+          marginBottom: 24,
+        }}>
+          <div style={{ fontSize: px(11), letterSpacing: '0.12em', textTransform: 'uppercase', color: C.accent, fontWeight: 600, marginBottom: 6 }}>
+            What happens next
+          </div>
+          <div style={{ fontSize: px(BASE - 1), color: C.inkMid, lineHeight: 1.6 }}>
+            Your render credit has not been used until the plan delivers successfully.
+            If the email doesn&apos;t arrive within 15 minutes, drop us a note at hello@dedrab.com
+            with the time you submitted — we&apos;ll sort it.
+          </div>
+        </div>
+        <button
+          onClick={() => { setStep('upload'); setError(null); }}
+          style={{
+            background: 'transparent',
+            border: `1px solid ${C.rule}`,
+            color: C.inkMid,
+            fontSize: px(12),
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+            padding: '10px 22px',
+            borderRadius: 4,
+            cursor: 'pointer',
+            fontFamily: C.font,
+          }}
+        >
+          Back to start
+        </button>
       </div>
     </div>
   );
