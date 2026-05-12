@@ -6,16 +6,14 @@ import { createInviteCode } from '@/lib/invite-codes';
 
 export const dynamic = 'force-dynamic';
 
-// Stripe requires the raw body for signature verification —
-// Next.js must NOT parse it as JSON first.
-export const config = {
-  api: { bodyParser: false },
-};
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2026-04-22.dahlia',
-});
-const resend = new Resend(process.env.RESEND_API_KEY);
+function getStripe() {
+  return new Stripe(process.env.STRIPE_SECRET_KEY!, {
+    apiVersion: '2026-04-22.dahlia',
+  });
+}
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY);
+}
 
 export async function POST(req: NextRequest) {
   // ── Signature verification ────────────────────────────────────────────────
@@ -28,7 +26,7 @@ export async function POST(req: NextRequest) {
 
   let event: Stripe.Event;
   try {
-    event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET!);
+    event = getStripe().webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET!);
   } catch (err) {
     console.error('[webhook] Signature verification failed:', err);
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
@@ -183,7 +181,7 @@ async function sendShareCodeEmail(to: string, code: string): Promise<void> {
 </body>
 </html>`;
 
-  await resend.emails.send({
+  await getResend().emails.send({
     from: 'Dedrab <noreply@dedrab.com>',
     to: [to],
     subject: 'A gift for someone you know — your bonus invite code',

@@ -5,9 +5,11 @@ import { createInviteCode } from '@/lib/invite-codes';
 
 export const dynamic = 'force-dynamic';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2026-04-22.dahlia',
-});
+function getStripe() {
+  return new Stripe(process.env.STRIPE_SECRET_KEY!, {
+    apiVersion: '2026-04-22.dahlia',
+  });
+}
 
 const SITE_URL = 'https://www.dedrab.com';
 // 30 days in seconds — matches the existing invite cookie lifetime
@@ -37,7 +39,7 @@ export async function GET(req: NextRequest) {
     // ── Verify payment with Stripe ──────────────────────────────────────────
     let session: Stripe.Checkout.Session;
     try {
-      session = await stripe.checkout.sessions.retrieve(sessionId);
+      session = await getStripe().checkout.sessions.retrieve(sessionId);
     } catch (err) {
       console.error('[checkout/complete] Failed to retrieve Stripe session:', err);
       return NextResponse.redirect(new URL('/next?error=session', SITE_URL));

@@ -5,7 +5,9 @@ import { buildGeocodingQuery, COUNTRY_OPTIONS } from '@/lib/detectPostcodeCountr
 
 export const dynamic = 'force-dynamic';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY);
+}
 
 function normalisePostcode(raw: string): string {
   const upper = raw.toUpperCase().trim().replace(/\s+/g, ' ');
@@ -229,7 +231,7 @@ export async function POST(req: NextRequest) {
 `;
 
   try {
-    const { error: emailError } = await resend.emails.send({
+    const { error: emailError } = await getResend().emails.send({
       from: 'Dedrab <noreply@dedrab.com>',
       to: [email],
       subject,
