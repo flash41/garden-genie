@@ -1,6 +1,13 @@
+import type { Metadata } from 'next';
 import { getNotesPosts } from '@/lib/notes';
 import { NoteCard } from '@/components/notes/NoteCard';
 import LandingPageClient from './LandingPageClient';
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: 'https://www.dedrab.com',
+  },
+};
 
 export default function Page() {
   const recentPosts = getNotesPosts().slice(0, 3);
