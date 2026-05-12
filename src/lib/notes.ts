@@ -37,11 +37,12 @@ export function parseNotesPost(filename: string): NotesPost {
 }
 
 export function getNotesPosts(): NotesPost[] {
+  const now = new Date();
   const files = getNotesFiles();
   const posts = files.map(parseNotesPost);
 
   return posts
-    .filter((post) => !post.draft)
+    .filter((post) => !post.draft && new Date(post.publishedAt) <= now)
     .sort(
       (a, b) =>
         new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
@@ -58,7 +59,7 @@ export function getNotesPost(
   const { data, content } = matter(fileContents);
   const fm = data as NotesFrontmatter;
 
-  if (fm.draft) return null;
+  if (fm.draft || new Date(fm.publishedAt) > new Date()) return null;
 
   const stats = readingTime(content);
 
