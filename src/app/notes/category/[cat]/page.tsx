@@ -78,7 +78,7 @@ export default async function CategoryPage({ params }: PageProps) {
                 </li>
               </ol>
             </nav>
-            <p className="text-xs font-semibold tracking-widest uppercase text-[#b8962e] mb-2">
+            <p className="text-xs font-semibold tracking-widest uppercase text-[#8a6d14] mb-2">
               Category
             </p>
             <h1 className="font-serif font-extrabold text-[#0a3d2b] text-4xl md:text-5xl">

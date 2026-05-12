@@ -23,6 +23,7 @@
 # misc
 .DS_Store
 *.pem
+public/dd_logo-original.png
 
 # debug
 npm-debug.log*

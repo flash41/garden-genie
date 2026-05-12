@@ -60,7 +60,7 @@ export default function NotesPage() {
       <div className="min-h-screen bg-[#F8F9F8] pt-20 md:pt-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
           <header className="mb-10">
-            <p className="text-xs font-semibold tracking-widest uppercase text-[#b8962e] mb-3">
+            <p className="text-xs font-semibold tracking-widest uppercase text-[#8a6d14] mb-3">
               Dedrab
             </p>
             <h1 className="font-serif font-extrabold text-[#0a3d2b] text-4xl md:text-5xl mb-4">

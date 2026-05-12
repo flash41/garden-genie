@@ -21,6 +21,7 @@ export function NotesFeatured({ post }: NotesFeaturedProps) {
                 className="object-cover group-hover:scale-[1.02] transition-transform duration-300"
                 sizes="(max-width: 768px) 100vw, 50vw"
                 priority
+                fetchPriority="high"
               />
             )}
           </div>

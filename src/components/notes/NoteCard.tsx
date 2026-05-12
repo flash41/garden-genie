@@ -10,7 +10,7 @@ interface NoteCardProps {
 export function NoteCard({ post }: NoteCardProps) {
   return (
     <article className="group flex flex-col bg-white border border-stone-200 rounded-sm overflow-hidden hover:shadow-md transition-shadow duration-200">
-      <Link href={`/notes/${post.slug}`} className="block relative aspect-[3/2] overflow-hidden bg-stone-100">
+      <Link href={`/notes/${post.slug}`} aria-label={post.title} className="block relative aspect-[3/2] overflow-hidden bg-stone-100">
         {post.coverImage && (
           <Image
             src={post.coverImage}

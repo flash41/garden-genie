@@ -32,6 +32,12 @@
     "stripe": "^22.1.0",
     "world-countries": "^5.1.0"
   },
+  "browserslist": [
+    "Chrome >= 87",
+    "Firefox >= 78",
+    "Safari >= 14",
+    "Edge >= 88"
+  ],
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/leaflet": "^1.9.21",
