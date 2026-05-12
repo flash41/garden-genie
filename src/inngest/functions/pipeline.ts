@@ -1472,11 +1472,44 @@ export const pipelineFunction = inngest.createFunction(
         );
       });
 
+      // ── Helpers for crossing the Inngest step boundary with image bytes ─────
+      // Inngest checkpoints every step.run return value to its own storage and
+      // has a ~4MB payload limit. A Gemini-generated PNG, base64-encoded, blows
+      // that limit and silently kills the run between steps. So all image
+      // bytes are persisted to Supabase Storage inside the producing step and
+      // only the (tiny) storage path is returned as the step output. Downstream
+      // steps fetch the bytes back via supabaseAdmin.
+      const fetchStoredBase64 = async (path: string | null): Promise<string | null> => {
+        if (!path) return null;
+        const { data, error } = await supabaseAdmin.storage
+          .from('pipeline-assets')
+          .download(path);
+        if (error || !data) {
+          console.error('[Pipeline] Failed to refetch stored image at', path, error?.message);
+          return null;
+        }
+        const buf = Buffer.from(await data.arrayBuffer());
+        return `data:image/png;base64,${buf.toString('base64')}`;
+      };
+      const uploadBase64Png = async (dataUri: string | null, path: string): Promise<string | null> => {
+        if (!dataUri) return null;
+        const raw = dataUri.includes(',') ? dataUri.split(',')[1] : dataUri;
+        const buf = Buffer.from(raw, 'base64');
+        const { error } = await supabaseAdmin.storage
+          .from('pipeline-assets')
+          .upload(path, buf, { contentType: 'image/png', upsert: true });
+        if (error) {
+          console.error('[Pipeline] Image upload failed:', path, error.message);
+          return null;
+        }
+        return path;
+      };
+
       // e + f. validate-layout and concept-base-plan — run in parallel (both depend only on
       // garden-design, not on each other). Saves ~60-90s vs sequential execution.
       const [
         { projectedPositionsText, validationResult },
-        aerialImageDataUri,
+        aerialStoragePath,
       ] = await Promise.all([
         step.run('validate-layout', async () => {
           const projectedElements = projectAllElements(designJSON, fingerprint);
@@ -1491,22 +1524,29 @@ export const pipelineFunction = inngest.createFunction(
           return { projectedPositionsText: text, validationResult: validation };
         }),
         step.run('concept-base-plan', async () => {
-          return await step3_conceptBasePlan(fingerprint, designJSON, orientation, imageBase64, mimeType);
+          const dataUri = await step3_conceptBasePlan(fingerprint, designJSON, orientation, imageBase64, mimeType);
+          return await uploadBase64Png(dataUri, `${inviteCode}/${jobId}/aerial.png`);
         }),
       ]);
 
-      // g. generate-render
-      const renderDataUri = await step.run('generate-render', async () => {
+      // g. generate-render — fetches aerial from storage, generates render, uploads,
+      // returns storage path (NOT the data URI) to stay under Inngest payload size.
+      const renderStoragePath = await step.run('generate-render', async () => {
         const visualPrompt = step4_buildVisualPrompt(
           fingerprint, designJSON, style, orientation, creativityLevel, projectedPositionsText,
         );
-        return await step5_generateRender(visualPrompt, imageBase64, mimeType, aerialImageDataUri);
+        const aerialDataUri = await fetchStoredBase64(aerialStoragePath);
+        const renderDataUri = await step5_generateRender(visualPrompt, imageBase64, mimeType, aerialDataUri ?? undefined);
+        return await uploadBase64Png(renderDataUri, `${inviteCode}/${jobId}/render.png`);
       });
 
-      // h1. validate-render — single Gemini call, checkpointed separately from the retry
+      // h1. validate-render — fetches the just-uploaded render from storage so we
+      // never carry the bytes across a step boundary.
       const renderValidation = await step.run('validate-render', async () => {
+        if (!renderStoragePath) return null;
+        const renderDataUri = await fetchStoredBase64(renderStoragePath);
         if (!renderDataUri) return null;
-        const generatedRaw = renderDataUri.includes(',') ? renderDataUri.split(',')[1] : renderDataUri;
+        const generatedRaw = renderDataUri.split(',')[1];
         try {
           return await validateRender(imageBase64, mimeType, generatedRaw);
         } catch (err) {
@@ -1516,13 +1556,11 @@ export const pipelineFunction = inngest.createFunction(
       });
 
       // h2. retry-if-needed — only fires when hallucinated structures are detected.
-      // General overallPass failures (minor geometry issues) are not worth a full second
-      // render generation. Only hallucinated structures (invented buildings, walls etc)
-      // justify the extra 90-120s cost.
-      const { finalRenderDataUri, retried, finalValidation } = await step.run('retry-if-needed', async () => {
+      // Same storage-path discipline as generate-render.
+      const { finalRenderStoragePath, retried, finalValidation } = await step.run('retry-if-needed', async () => {
         const hallucinatedStructures: string[] = renderValidation?.hallucinatedStructures || [];
 
-        if (renderDataUri && hallucinatedStructures.length > 0) {
+        if (renderStoragePath && hallucinatedStructures.length > 0) {
           const failReasons = (renderValidation?.failReasons || []).join('; ');
           const hallucinationWarning = `\nHALLUCINATED STRUCTURES DETECTED — REMOVE THESE COMPLETELY: ${hallucinatedStructures.join(', ')}. These do not exist in the original garden photo and must not appear in the generated image.`;
           const visualPrompt = step4_buildVisualPrompt(
@@ -1533,8 +1571,11 @@ export const pipelineFunction = inngest.createFunction(
           try {
             const retryResult = await step5_generateRender(retryPrompt, imageBase64, mimeType);
             if (retryResult) {
-              console.log('[Pipeline] Retry render succeeded — hallucinated structures corrected');
-              return { finalRenderDataUri: retryResult, retried: true, finalValidation: renderValidation };
+              const retriedPath = await uploadBase64Png(retryResult, `${inviteCode}/${jobId}/render.png`);
+              if (retriedPath) {
+                console.log('[Pipeline] Retry render succeeded — hallucinated structures corrected');
+                return { finalRenderStoragePath: retriedPath, retried: true, finalValidation: renderValidation };
+              }
             }
             console.warn('[Pipeline] Retry render returned null — falling back to original');
           } catch (err) {
@@ -1542,47 +1583,18 @@ export const pipelineFunction = inngest.createFunction(
           }
         }
 
-        // No hallucinated structures (or no renderDataUri) — use the first render as-is
-        return { finalRenderDataUri: renderDataUri, retried: false, finalValidation: renderValidation };
+        // No hallucinated structures (or no renderStoragePath) — use the first render as-is
+        return { finalRenderStoragePath: renderStoragePath, retried: false, finalValidation: renderValidation };
       });
 
-      // i. save-results
+      // i. save-results — images are already in storage, just write the DB row.
       await step.run('save-results', async () => {
-        let renderStoragePath: string | null = null;
-        let aerialStoragePath: string | null = null;
-
-        if (finalRenderDataUri) {
-          const rawRender = finalRenderDataUri.includes(',') ? finalRenderDataUri.split(',')[1] : finalRenderDataUri;
-          const renderBuffer = Buffer.from(rawRender, 'base64');
-          renderStoragePath = `${inviteCode}/${jobId}/render.png`;
-          const { error } = await supabaseAdmin.storage
-            .from('pipeline-assets')
-            .upload(renderStoragePath, renderBuffer, { contentType: 'image/png', upsert: false });
-          if (error) {
-            console.error('[Pipeline] Render upload failed:', error.message);
-            renderStoragePath = null;
-          }
-        }
-
-        if (aerialImageDataUri) {
-          const rawAerial = aerialImageDataUri.includes(',') ? aerialImageDataUri.split(',')[1] : aerialImageDataUri;
-          const aerialBuffer = Buffer.from(rawAerial, 'base64');
-          aerialStoragePath = `${inviteCode}/${jobId}/aerial.png`;
-          const { error } = await supabaseAdmin.storage
-            .from('pipeline-assets')
-            .upload(aerialStoragePath, aerialBuffer, { contentType: 'image/png', upsert: false });
-          if (error) {
-            console.error('[Pipeline] Aerial upload failed:', error.message);
-            aerialStoragePath = null;
-          }
-        }
-
-        const renderMissing = !renderStoragePath;
+        const renderMissing = !finalRenderStoragePath;
 
         await supabaseAdmin.from('pipeline_jobs').update({
           status: 'complete',
           design_json: designJSON,
-          render_url: renderStoragePath,
+          render_url: finalRenderStoragePath,
           aerial_url: aerialStoragePath,
           fingerprint,
           control_points: controlPoints,
