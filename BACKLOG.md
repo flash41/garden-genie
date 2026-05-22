@@ -2,6 +2,7 @@
 Living task list. Edit via Claude Code prompts.
 
 ## Now
+- [ ] **Canonical hostname fix — URGENT (promoted from Next on 22 May).** Search Console Pages tab shows the hardiness pillar indexed twice (`dedrab.com/...` 29 imps + `www.dedrab.com/...` 18 imps = 47 split across two URLs). Every Notes article will split this way until canonical is enforced. Fix: standardise on `https://www.dedrab.com` across sitemap, RSS, canonicals, OG URLs, JSON-LD; add a Vercel/Cloudflare 301 from apex → www. Expected lift: pillar consolidates from ~position 28 toward page 2 with no new content.
 - [ ] **Pipeline health canary (NEXT)**. Phase 1a's Inngest outage was hidden for a week because nothing alerted when the function stopped firing. Build a heartbeat: 1-min scheduled Inngest function writes `last_seen_at` to a `pipeline_health` row; a Vercel cron hits `/api/health/inngest` every 5 min and emails `steen.gordon@gmail.com` if `last_seen_at` is stale > 5 min. Also: add a circuit-breaker to `/api/redesign` that refuses new submissions if heartbeat is stale, so we never take payment for a job the pipeline can't deliver.
 - [ ] **Phase 1b — Progressive reveal**. Now that 1a is live, ship the conversion win: route users to `/next-steps` the moment `designJSON` is ready (~90 s in) rather than waiting for the render, with a placeholder render panel that fills in when the image lands. Adds a stage-keyed progress panel keyed to pipeline phase (`analysing → designing → rendering → finalising`), and a refine-while-waiting capture panel (kids/pets, maintenance hours) to turn dead time into product data.
 
@@ -28,10 +29,34 @@ Living task list. Edit via Claude Code prompts.
 - [ ] Once GA is collecting again, add a synthetic monitor or weekly check that GA event count > 0 over a 7-day window. Silent failure mode shouldn't recur undetected.
 
 ## Next (SEO + AEO follow-through)
-- [ ] Standardise canonical hostname on `https://www.dedrab.com` — sitemap, RSS, canonicals, OG URLs, JSON-LD. (Block 2 from 30 Apr SEO fix.)
+- [x] ~~Standardise canonical hostname on `https://www.dedrab.com`~~ — **promoted to Now on 22 May, see top of file.**
 - [ ] Cloudflare robots.txt → Content Signals Policy — unblock GPTBot, Google-Extended, Applebot-Extended for AEO traffic.
 - [ ] Bing Webmaster Tools setup — import from Google Search Console, submit sitemap. ChatGPT search runs on Bing.
-- [ ] URL-inspect 9 Notes URLs in Search Console — request indexing manually.
+- [ ] URL-inspect 9 Notes URLs in Search Console — request indexing manually (after canonical fix lands, so we don't re-submit split URLs).
+
+## SEO content strategy (locked 22 May)
+Google Search Console at 22 May shows site impressions = 63/wk, avg position 28.6. Strongest existing signal is a cluster of hardiness queries (rhs hardiness ratings, h4/h5 hardiness, hardiness scale, ireland growing zone) all mapping to `plant-hardiness-zones-ireland-beginners-guide.mdx`. Second-strongest is "ask a landscaper" (6 impressions). Strategy: build topical clusters around proven signals, not chase competitive head terms.
+
+**Three rules now in force for all Notes work:**
+1. Every new Notes article links inline to 2–3 existing related pieces. Standalone islands are not acceptable.
+2. When publishing a new article in a cluster, retro-patch the existing siblings to link back. Same PR.
+3. Every article ends with a soft, in-context CTA into the dedrab tool (no pop-ups, no hard sells).
+
+### Hardiness Cluster — beginner-friendly, UK & Ireland led
+Publishing cadence + queue tracked in `docs/publishing-schedule.md`. One article per week on Tuesdays; pillar refresh shipped immediately as it's an existing-URL edit, not a new piece.
+
+- [x] **Pillar refresh** (drafted 22 May, awaiting commit) — `plant-hardiness-zones-ireland-beginners-guide.mdx`. Added "Why This Matters in Your Back Garden" opener after intro. Added inline link to `plants-that-earn-their-keep-temperate-garden` in opener. Added inline link to `low-maintenance-garden-ideas-by-climate` in the drainage section. Added "A Note on a Shifting Climate" closing block, Related Notes list, and soft dedrab CTA. Existing `publishedAt` (2026-05-08) preserved — refresh, not new article.
+- [x] **Satellite 4a (viral hook, Irish)** (drafted 22 May, scheduled 2026-05-26) — `your-own-irish-vineyard.mdx`. Real Irish vineyard examples (David Llewellyn / Lusca in Lusk; Thomas Walk in Kinsale; Lyrath Estate in Kilkenny). Met Éireann + Teagasc citations. Inline links to pillar (×2), `landscape-paralysis-why-great-gardens-dont-happen`, British vineyard companion. Hero image prompt included as MDX comment.
+- [x] **Satellite 4b (viral hook, British)** (drafted 22 May, scheduled 2026-06-02) — `your-own-british-vineyard.mdx`. Real UK vineyard examples (Nyetimber, Chapel Down, Gusbourne, Camel Valley, Halfpenny Green, Renishaw Hall). Met Office Central England Temperature + WineGB citations. Inline links to pillar (×2), `low-maintenance-garden-ideas-by-climate`, Irish vineyard companion. Hero image prompt included as MDX comment.
+- [ ] **Satellite 1** (scheduled 2026-06-09) — "What Do the Symbols on Your Plant Label Actually Mean?" Beginner-friendly decoder of plant pot labels (hardiness ratings, sun/shade icons, planting depth, spacing). Links to pillar.
+- [ ] **Satellite 2** (scheduled 2026-06-16) — "RHS Hardiness vs USDA Zones: A Quick Translator for British, Irish and American Gardeners." Conversion table + plain-language explainer. Links to pillar + Satellite 1.
+- [ ] **Satellite 3** (scheduled 2026-06-23) — "Why the Plants in Your Grandmother's Garden Don't Always Survive Anymore." Climate-shift hook, emotional. Sets up the vineyard pieces. Links to pillar + vineyard pieces.
+
+### Conversion content — "Ask a Landscaper"
+Reframed 22 May based on Search Console Pages data — `before-you-hire-a-landscaper.mdx` is already pulling 13 impressions, so it's the natural existing home for landscaper-intent traffic. Refresh the existing piece FIRST to claim "ask a landscaper" explicitly; build the dedicated landing page as a complement, not a replacement.
+
+- [ ] **Refresh `before-you-hire-a-landscaper.mdx`** (priority — quick win). Add "ask a landscaper" phrasing into the intro and an FAQ block titled "What should I ask a landscaper?" Add internal links to the hardiness pillar and to the dedrab tool. Add Related Notes footer. Goal: capture the existing 13-impression signal and convert it.
+- [ ] **Dedicated `/ask-a-landscaper` landing page** (queued for 2026-06-30 per publishing schedule). Content + tool hybrid. Title: "Ask a Landscaper — Get Garden Design Advice Online | Dedrab". Explains what people typically ask, lists common questions, funnels straight into the dedrab tool as the answer. Links back to `before-you-hire-a-landscaper` for the longer-read version.
 
 ## Notes (content + UX)
 - [ ] **PARKED 7 May** — Notes content system (semi-automated). Spec done at `docs/specs/notes-admin-system.md` for when revisited. ~1 week build deemed poor ROI at current article volume; MDX-in-repo workflow is functional. Revisit when content cadence increases or someone other than Steen needs to publish.

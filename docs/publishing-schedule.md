@@ -1,0 +1,109 @@
+# Dedrab Notes — Publishing Schedule
+
+A living document. Update whenever an article is queued, drafted, scheduled, or published. Commit changes in the same PR as the article work.
+
+---
+
+## Why Cadence Matters
+
+Dumping content onto the site does three things wrong:
+
+1. **Crawl budget.** Google indexes new URLs over time. A flood gets partially indexed, partially queued, partially skipped — the slowest pieces can wait weeks for first impression.
+2. **Quality signals.** Sudden bursts look like content farming to algorithmic quality signals; steady cadence reads as a healthy, maintained site.
+3. **Feedback loop.** Each article needs 2–4 weeks in Search Console before we know what's working. Slow shipping means we learn from each piece before writing the next.
+
+The strategy is: **build by cluster, ship by week.** A cluster might have five articles in it, but they go live one Tuesday at a time, not in a batch.
+
+---
+
+## The Cadence Rule
+
+**One Notes article per week. Tuesdays. Maximum two in any seven-day window** (and only when the second is a tightly related sibling and the first piece's audience benefits from immediate cross-referral).
+
+If a cluster needs more pieces than that allows, we queue and stagger. Cluster articles published in batch dilute the topical signal; staggered, they reinforce each other as Google sees the site returning to the same theme repeatedly.
+
+### Publishing Day
+
+**Tuesdays.** Best balance of weekly traffic peaks and indexer attention. We do not publish on weekends — weekend search traffic is hobbyist and casual; weekday traffic carries intent and converts.
+
+### Refreshes vs new articles
+
+Refreshing an existing article (the pillar refresh, for example) does **not** consume a Tuesday slot. Refreshes can ship any day — they keep the original `publishedAt` so the URL doesn't re-enter the index as new content.
+
+---
+
+## How to Update This Document
+
+Whenever an article moves stage:
+
+- **Planned** → add to "Queued" with working title and target publish date.
+- **Drafted** → move to "In draft" with the file path.
+- **Scheduled** → keep in "In draft" with confirmed publish date.
+- **Published** → move to "Published log" with live URL and date.
+
+Every change to this document is committed in the same PR as the article work it relates to.
+
+---
+
+## Cadence Calendar
+
+| Date | Slot | Article | Status |
+|------|------|---------|--------|
+| 2026-05-22 (Fri) | Refresh | Plant hardiness pillar — added beginner-friendly opener, internal links, dedrab CTA | Drafted |
+| 2026-05-26 (Tue) | New | Your Own Irish Vineyard — climate change hook (Satellite 4a) | Drafted |
+| 2026-06-02 (Tue) | New | Your Own British Vineyard — climate change hook (Satellite 4b) | Drafted |
+| 2026-06-09 (Tue) | New | What Do the Symbols on Your Plant Label Actually Mean? (Satellite 1) | Queued |
+| 2026-06-16 (Tue) | New | RHS Hardiness vs USDA Zones — A Quick Translator (Satellite 2) | Queued |
+| 2026-06-23 (Tue) | New | Why the Plants in Your Grandmother's Garden Don't Always Survive Anymore (Satellite 3) | Queued |
+| 2026-06-30 (Tue) | Landing | `/ask-a-landscaper` page (sits outside `/notes`, not in Notes index) | Queued |
+
+---
+
+## Active Cluster: Hardiness
+
+**Pillar:** `plant-hardiness-zones-ireland-beginners-guide.mdx` (existing, refreshed 22 May 2026)
+
+**Satellites — in publishing order:**
+
+1. Your Own Irish Vineyard (climate-change viral hook, Irish-fronted)
+2. Your Own British Vineyard (climate-change viral hook, UK-fronted)
+3. What Do the Symbols on Your Plant Label Actually Mean? (beginner-friendly label decoder)
+4. RHS Hardiness vs USDA Zones (cross-market translator)
+5. Why the Plants in Your Grandmother's Garden Don't Always Survive Anymore (emotional climate-shift hook)
+
+Every satellite links inline to the pillar at least twice. When each satellite ships, the pillar is patched to add the new sibling to its Related Notes footer — same PR.
+
+---
+
+## Future Cluster Ideas
+
+Hold off building these until Search Console gives a signal that the underlying theme is worth chasing. Adding here so we don't lose the thought.
+
+- **Garden cost cluster** — built around existing `garden-design-cost-breakdown-2026.mdx` and `real-cost-of-redoing-a-small-garden.mdx`. Possible satellites: "What does a garden designer actually charge?", "Where the money goes in a £10k garden", "Cheap garden ideas that don't look cheap".
+- **Small garden cluster** — built around existing `making-small-gardens-feel-generous.mdx` and `small-irish-garden-design-guide.mdx`. Possible satellites: "How to fake space in a courtyard garden", "Small garden mistakes that make spaces feel smaller", "Designing a 5x5m garden".
+- **First-time garden owner cluster** — built around existing `where-to-begin-garden-redesign.mdx` and `landscape-paralysis-why-great-gardens-dont-happen.mdx`. Possible satellites: "What to do with a garden you just inherited", "Reading your garden before you change it", "The first thing to plant in a new garden".
+
+Activation rule: a cluster gets promoted from "Future" to "Active" when one of its existing articles starts pulling 5+ impressions per week on at least two related queries in Search Console.
+
+---
+
+## Published Log
+
+Most recent first. The log lives here so we can scan cadence at a glance without opening every MDX file.
+
+| Publish Date | Title | URL |
+|--------------|-------|-----|
+| 2026-05-22 | DIY Garden Makeover Plan | /notes/diy-garden-makeover-plan |
+| 2026-05-15 | Low Maintenance Garden Ideas by Climate Zone | /notes/low-maintenance-garden-ideas-by-climate |
+| 2026-05-08 | Plant Hardiness in Ireland: A Beginner's Guide | /notes/plant-hardiness-zones-ireland-beginners-guide |
+| 2026-05-07 | 8 Features That Turn a Garden Into a Pollinator Haven | /notes/pollinator-haven-garden-features |
+| 2026-05-06 | How Would I Get Me Garden From Drab to Fab? | /notes/garden-drab-to-fab-weekend |
+| (earlier) | Other articles in `/src/content/notes/` | |
+
+---
+
+## Notes on the Strategy Itself
+
+- This document is reviewed at the end of each completed cluster. If a cluster underperforms in Search Console after 6 weeks of all satellites live, we change tack rather than push more articles into a dead theme.
+- The "ask a landscaper" page is intentionally outside the `/notes` index — it's a conversion landing page, not a Notes article. It still follows the publishing schedule discipline because it competes for crawl budget the same way.
+- If a topical opportunity appears that's too time-sensitive to wait for its Tuesday slot (e.g. an article tied to a specific event), we can break the cadence rule but only with a written reason in the commit message. Default is: hold the line.
