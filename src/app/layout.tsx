@@ -22,6 +22,11 @@ const playfairDisplay = Playfair_Display({
 });
 
 export const metadata: Metadata = {
+  // Canonical hostname. Every relative URL in metadata (per-page OG images,
+  // canonical alternates, etc.) resolves against this. Set explicitly so we
+  // never accidentally generate apex-host links anywhere — see
+  // BACKLOG.md "Canonical hostname fix — URGENT (22 May)".
+  metadataBase: new URL('https://www.dedrab.com'),
   title: {
     default: 'Dedrab — Garden Design & Layout Planning',
     template: '%s · Dedrab',

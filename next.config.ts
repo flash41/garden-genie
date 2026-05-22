@@ -39,6 +39,18 @@ const nextConfig: NextConfig = {
   // due to interaction with Suspense boundary around ThemePreSelector in React 19
   async redirects() {
     return [
+      // Canonical hostname enforcement — 301 apex (dedrab.com) → www.dedrab.com
+      // for every path. Belt-and-braces alongside any platform-level redirect
+      // configured in Vercel/Cloudflare. Without this, Google indexes both
+      // hostnames separately and splits ranking signal across the same URL
+      // (confirmed in Search Console 22 May 2026). The `has` condition matches
+      // the Host header, so requests that already arrive on www are untouched.
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'dedrab.com' }],
+        destination: 'https://www.dedrab.com/:path*',
+        permanent: true,
+      },
       {
         source: '/invite',
         destination: '/next',
