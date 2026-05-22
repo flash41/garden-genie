@@ -42,6 +42,8 @@ Google Search Console at 22 May shows site impressions = 63/wk, avg position 28.
 2. When publishing a new article in a cluster, retro-patch the existing siblings to link back. Same PR.
 3. Every article ends with a soft, in-context CTA into the dedrab tool (no pop-ups, no hard sells).
 
+**Retro-link sweep across pre-existing library — DONE 22 May 2026.** All 12 articles published before the 22 May cluster work now carry Related Notes footers (4 cluster + cross-cluster links each), at least 1 inline contextual link in body prose to a related article, and a soft dedrab CTA. Hyphen / em-dash rule applied to new prose I added only; existing prose left as written. From this date forward the rules above apply at creation time, so no future bulk sweep should be needed.
+
 ### Hardiness Cluster — beginner-friendly, UK & Ireland led
 Publishing cadence + queue tracked in `docs/publishing-schedule.md`. One article per week on Tuesdays; refreshes ship immediately (no cadence slot).
 
