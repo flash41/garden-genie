@@ -49,29 +49,37 @@ Every change to this document is committed in the same PR as the article work it
 
 | Date | Slot | Article | Status |
 |------|------|---------|--------|
-| 2026-05-22 (Fri) | Refresh | Plant hardiness pillar — added beginner-friendly opener, internal links, dedrab CTA | Drafted |
+| 2026-05-22 (Fri) | Refresh | Plant hardiness pillar — beginner-friendly opener, internal links, dedrab CTA, Related Notes patched twice | Live |
+| 2026-05-22 (Fri) | Refresh | Before You Hire a Landscaper — "ask a landscaper" keyword + FAQ + internal links + dedrab CTA | Drafted |
 | 2026-05-26 (Tue) | New | Your Own Irish Vineyard — climate change hook (Satellite 4a) | Drafted |
 | 2026-06-02 (Tue) | New | Your Own British Vineyard — climate change hook (Satellite 4b) | Drafted |
-| 2026-06-09 (Tue) | New | What Do the Symbols on Your Plant Label Actually Mean? (Satellite 1) | Queued |
-| 2026-06-16 (Tue) | New | RHS Hardiness vs USDA Zones — A Quick Translator (Satellite 2) | Queued |
-| 2026-06-23 (Tue) | New | Why the Plants in Your Grandmother's Garden Don't Always Survive Anymore (Satellite 3) | Queued |
-| 2026-06-30 (Tue) | Landing | `/ask-a-landscaper` page (sits outside `/notes`, not in Notes index) | Queued |
+| 2026-06-09 (Tue) | New | What Do the Symbols on Your Plant Label Actually Mean? (Satellite 1) | Drafted |
+| 2026-06-16 (Tue) | New | RHS Hardiness vs USDA Zones — A Quick Translator (Satellite 2) | Drafted |
+| 2026-06-23 (Tue) | New | Why the Plants in Your Grandmother's Garden Don't Always Survive Anymore (Satellite 3) | **Held — write after vineyard data lands** |
+| 2026-06-30 (Tue) | Landing | `/ask-a-landscaper` landing page (sits outside `/notes`, not in Notes index) | **Held — refresh shipped first, wait on Search Console signal** |
 
 ---
 
 ## Active Cluster: Hardiness
 
-**Pillar:** `plant-hardiness-zones-ireland-beginners-guide.mdx` (existing, refreshed 22 May 2026)
+**Pillar:** `plant-hardiness-zones-ireland-beginners-guide.mdx` (refreshed 22 May 2026, Related Notes patched twice in 22 May commits)
 
 **Satellites — in publishing order:**
 
-1. Your Own Irish Vineyard (climate-change viral hook, Irish-fronted)
-2. Your Own British Vineyard (climate-change viral hook, UK-fronted)
-3. What Do the Symbols on Your Plant Label Actually Mean? (beginner-friendly label decoder)
-4. RHS Hardiness vs USDA Zones (cross-market translator)
-5. Why the Plants in Your Grandmother's Garden Don't Always Survive Anymore (emotional climate-shift hook)
+1. Your Own Irish Vineyard (climate-change viral hook, Irish-fronted) — **drafted, scheduled 26 May**
+2. Your Own British Vineyard (climate-change viral hook, UK-fronted) — **drafted, scheduled 2 June**
+3. What Do the Symbols on Your Plant Label Actually Mean? (beginner-friendly label decoder) — **drafted, scheduled 9 June**
+4. RHS Hardiness vs USDA Zones (cross-market translator) — **drafted, scheduled 16 June**
+5. Why the Plants in Your Grandmother's Garden Don't Always Survive Anymore (emotional climate-shift hook) — **held**, write after vineyard pieces have 2+ weeks of Search Console data
 
-Every satellite links inline to the pillar at least twice. When each satellite ships, the pillar is patched to add the new sibling to its Related Notes footer — same PR.
+Every satellite links inline to the pillar at least twice. The pillar's Related Notes footer was patched on 22 May to include all four currently-drafted satellites so cluster cross-links resolve when each goes live.
+
+## Active Cluster: Landscaper / Conversion
+
+Triggered by Search Console signal — `before-you-hire-a-landscaper.mdx` was pulling 13 impressions/week with no optimisation. Strategy: refresh existing piece first, build dedicated landing page only if data warrants it.
+
+- `before-you-hire-a-landscaper.mdx` refresh — **drafted 22 May**, ships immediately as a refresh (not a cadence slot).
+- `/ask-a-landscaper` landing page — **held**, wait 2–3 weeks after refresh ships to see whether the existing article alone captures the intent, before deciding whether the landing page is additive or duplicative.
 
 ---
 
