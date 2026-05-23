@@ -4,7 +4,7 @@ import { supabaseAdmin } from '@/lib/supabase-server';
 
 export const dynamic = 'force-dynamic';
 
-// External canary watcher. Hit by Vercel cron every 5 minutes.
+// External canary watcher. Hit by Vercel cron daily at 09:00 UTC.
 //
 // Reads the singleton `pipeline_health` row, decides whether the Inngest
 // heartbeat is fresh, and emails Steen on the FIRST detection of a stale
