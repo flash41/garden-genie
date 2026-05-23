@@ -167,6 +167,36 @@ export async function POST(request: NextRequest) {
 
   const effectiveCurrency = currencyFromCountry(country);
 
+  // i.5. Pipeline-health circuit breaker — refuse new submissions when the
+  // Inngest heartbeat is stale. Prevents the user from sitting on the
+  // loading screen waiting for a render that will never come. Threshold
+  // is wider than the alert threshold (10 min vs 5 min) so a single
+  // missed beat doesn't trip the breaker.
+  try {
+    const { data: health } = await supabaseAdmin
+      .from('pipeline_health')
+      .select('last_seen_at')
+      .eq('id', 'singleton')
+      .maybeSingle();
+    const lastSeen = health?.last_seen_at ? new Date(health.last_seen_at).getTime() : 0;
+    if (!lastSeen || (Date.now() - lastSeen) > 10 * 60 * 1000) {
+      console.warn('[redesign] Refusing submission — pipeline heartbeat stale');
+      return NextResponse.json(
+        {
+          error: 'pipeline_unavailable',
+          message:
+            "Our garden plan service is temporarily unavailable while we restore it. " +
+            "Please try again in a few minutes — your invite code has not been used.",
+        },
+        { status: 503 },
+      );
+    }
+  } catch (err: any) {
+    // If the health check itself throws, log but don't block — failing closed
+    // here would punish users for an issue unrelated to the pipeline.
+    console.error('[redesign] Heartbeat check failed (allowing submission):', err?.message);
+  }
+
   // j. Upload original image to Supabase Storage
   const base64Data = originalImageBase64.includes(',') ? originalImageBase64.split(',')[1] : originalImageBase64;
   const imageBuffer = Buffer.from(base64Data, 'base64');

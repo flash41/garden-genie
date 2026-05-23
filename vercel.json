@@ -17,6 +17,18 @@
     },
     "src/app/api/upload-pdf/route.ts": {
       "maxDuration": 60
+    },
+    "src/app/api/cron/heartbeat-check/route.ts": {
+      "maxDuration": 30
+    },
+    "src/app/api/health/inngest/route.ts": {
+      "maxDuration": 10
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/heartbeat-check",
+      "schedule": "*/5 * * * *"
+    }
+  ]
 }
