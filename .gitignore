@@ -41,3 +41,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .claude/
+
+# Personal build log — Steen's private session journal, never push.
+docs/build-log.md
