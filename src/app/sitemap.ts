@@ -3,6 +3,10 @@ import { getNotesPosts, getCategoryParams } from '@/lib/notes';
 
 const BASE_URL = 'https://www.dedrab.com';
 
+// ISR: regenerate sitemap hourly so newly-published articles appear in
+// /sitemap.xml within ~1 hour of their publishedAt date passing.
+export const revalidate = 3600;
+
 export default function sitemap(): MetadataRoute.Sitemap {
   let posts: ReturnType<typeof getNotesPosts> = [];
   let categories: ReturnType<typeof getCategoryParams> = [];

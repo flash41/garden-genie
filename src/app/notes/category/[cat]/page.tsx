@@ -8,6 +8,9 @@ import { SiteHeader } from '@/components/SiteHeader';
 import { CATEGORY_LABELS } from '@/types/notes';
 import type { NotesCategory } from '@/types/notes';
 
+// ISR: revalidate hourly so category pages reflect newly-published articles.
+export const revalidate = 3600;
+
 interface PageProps {
   params: Promise<{ cat: string }>;
 }

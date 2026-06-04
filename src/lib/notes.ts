@@ -82,7 +82,18 @@ export function getFeaturedPost(): NotesPost | null {
 }
 
 export function getNotesSlugParams(): { slug: string }[] {
-  return getNotesPosts().map((post) => ({ slug: post.slug }));
+  // Return ALL non-draft slugs, including future-dated ones, so that Next.js
+  // generateStaticParams pre-registers the routes at build time. Per-page
+  // `getNotesPost(slug)` still returns null for future-dated posts, which the
+  // page handler converts into a 404 — meaning future articles 404 until their
+  // publishedAt arrives, then ISR (export const revalidate = 3600) regenerates
+  // them on the next request. Without this, future-dated articles 404
+  // permanently because their routes never enter the static route table.
+  const files = getNotesFiles();
+  const posts = files.map(parseNotesPost);
+  return posts
+    .filter((post) => !post.draft)
+    .map((post) => ({ slug: post.slug }));
 }
 
 export function getCategoryParams(): { cat: NotesCategory }[] {

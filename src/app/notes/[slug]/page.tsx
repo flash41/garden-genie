@@ -15,6 +15,11 @@ import { StepList, Step } from '@/components/notes/StepList';
 import { ImageComparison } from '@/components/notes/ImageComparison';
 import { MaterialSwatch } from '@/components/notes/MaterialSwatch';
 
+// ISR: revalidate every hour so future-dated articles begin serving 200 within
+// ~1 hour of their publishedAt arriving, without requiring a fresh deploy.
+// See getNotesSlugParams() in src/lib/notes.ts for the full mechanism.
+export const revalidate = 3600;
+
 interface PageProps {
   params: Promise<{ slug: string }>;
 }

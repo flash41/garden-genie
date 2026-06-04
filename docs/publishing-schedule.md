@@ -49,14 +49,24 @@ Every change to this document is committed in the same PR as the article work it
 
 | Date | Slot | Article | Status |
 |------|------|---------|--------|
-| 2026-05-22 (Fri) | Refresh | Plant hardiness pillar — beginner-friendly opener, internal links, dedrab CTA, Related Notes patched twice | Live |
-| 2026-05-22 (Fri) | Refresh | Before You Hire a Landscaper — "ask a landscaper" keyword + FAQ + internal links + dedrab CTA | Drafted |
-| 2026-05-26 (Tue) | New | Your Own Irish Vineyard — climate change hook (Satellite 4a) | Drafted |
-| 2026-06-02 (Tue) | New | Your Own British Vineyard — climate change hook (Satellite 4b) | Drafted |
-| 2026-06-09 (Tue) | New | What Do the Symbols on Your Plant Label Actually Mean? (Satellite 1) | Drafted |
-| 2026-06-16 (Tue) | New | RHS Hardiness vs USDA Zones — A Quick Translator (Satellite 2) | Drafted |
+| 2026-05-22 (Fri) | Refresh | Plant hardiness pillar | Live since 22 May |
+| 2026-05-22 (Fri) | Refresh | Before You Hire a Landscaper | Live since 22 May |
+| 2026-06-02 (Tue) | New | Your Own British Vineyard (Satellite 4b) | **Live after 4 June deploy** (2 days late — build-time stale, fixed via ISR same deploy) |
+| 2026-06-04 (Thu) | New | Your Own Irish Vineyard (Satellite 4a) | **Live after 4 June deploy** (originally 26 May; date bumped to 4 June because the build-time gate stranded it for 9 days — see ISR fix below) |
+| 2026-06-09 (Tue) | New | What Do the Symbols on Your Plant Label Actually Mean? (Satellite 1) | Drafted — will auto-publish on schedule via ISR |
+| 2026-06-16 (Tue) | New | RHS Hardiness vs USDA Zones — A Quick Translator (Satellite 2) | Drafted — will auto-publish on schedule via ISR |
 | 2026-06-23 (Tue) | New | Why the Plants in Your Grandmother's Garden Don't Always Survive Anymore (Satellite 3) | **Held — write after vineyard data lands** |
 | 2026-06-30 (Tue) | Landing | `/ask-a-landscaper` landing page (sits outside `/notes`, not in Notes index) | **Held — refresh shipped first, wait on Search Console signal** |
+
+### ISR fix — 4 June 2026
+
+The original date-gating was build-time only — future-dated articles never had their static routes generated and stayed 404 even after their `publishedAt` arrived. Audit on 4 June found both vineyards stranded (Irish 9 days late, British 2 days late). Fix shipped same day:
+
+- `getNotesSlugParams()` in `src/lib/notes.ts` now returns all non-draft slugs regardless of date, so future articles enter the static route table at build time.
+- Per-page `getNotesPost(slug)` still returns null for future-dated posts, so the page handler renders 404 until the date passes.
+- `export const revalidate = 3600` added to `[slug]/page.tsx`, `notes/page.tsx`, `notes/category/[cat]/page.tsx`, and `sitemap.ts`. Future articles auto-promote from 404 to 200 within ~1 hour of their `publishedAt` arriving.
+
+From here on the cadence rule's "auto-publish on date" promise actually holds without manual redeploys.
 
 ---
 
@@ -101,11 +111,14 @@ Most recent first. The log lives here so we can scan cadence at a glance without
 
 | Publish Date | Title | URL |
 |--------------|-------|-----|
+| 2026-06-04 | Your Own Irish Vineyard | /notes/your-own-irish-vineyard |
+| 2026-06-02 | Your Own British Vineyard | /notes/your-own-british-vineyard |
 | 2026-05-22 | DIY Garden Makeover Plan | /notes/diy-garden-makeover-plan |
 | 2026-05-15 | Low Maintenance Garden Ideas by Climate Zone | /notes/low-maintenance-garden-ideas-by-climate |
 | 2026-05-08 | Plant Hardiness in Ireland: A Beginner's Guide | /notes/plant-hardiness-zones-ireland-beginners-guide |
 | 2026-05-07 | 8 Features That Turn a Garden Into a Pollinator Haven | /notes/pollinator-haven-garden-features |
 | 2026-05-06 | How Would I Get Me Garden From Drab to Fab? | /notes/garden-drab-to-fab-weekend |
+| 2026-05-01 | Before You Hire a Landscaper | /notes/before-you-hire-a-landscaper |
 | (earlier) | Other articles in `/src/content/notes/` | |
 
 ---

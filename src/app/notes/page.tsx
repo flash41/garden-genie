@@ -7,6 +7,10 @@ import { SiteFooter } from '@/components/SiteFooter';
 import { SiteHeader } from '@/components/SiteHeader';
 import type { NotesCategory } from '@/types/notes';
 
+// ISR: revalidate hourly so the index picks up newly-published articles when
+// their publishedAt date arrives, without a fresh deploy.
+export const revalidate = 3600;
+
 export const metadata: Metadata = {
   title: 'Notes',
   description:
