@@ -123,3 +123,50 @@ export function extractHeadings(
 
   return headings;
 }
+
+/**
+ * Extract structured Q&A pairs from a Notes article's FAQ section, ready for
+ * FAQPage JSON-LD schema emission. Called from src/app/notes/[slug]/page.tsx
+ * when the article's frontmatter has `hasFaq: true`.
+ *
+ * Recognises either of two H2 section headers as the start of an FAQ block:
+ *   - "## Frequently Asked Questions"
+ *   - "## Questions to Ask ..."
+ *
+ * Inside the section, every `### Question` heading and its following body
+ * (up to the next `###` or end of section) becomes one Q&A pair. Common
+ * markdown (links, bold, italic, inline code, line breaks) is stripped from
+ * the answer text so it serialises cleanly into JSON.
+ *
+ * Returns an empty array if no recognisable FAQ section is found, so the
+ * caller can safely skip schema emission.
+ */
+export function extractFaq(
+  content: string
+): { question: string; answer: string }[] {
+  const sectionRegex =
+    /##\s+(?:Frequently Asked Questions|Questions to Ask[^\n]*)\n([\s\S]*?)(?=\n##\s|$)/;
+  const sectionMatch = content.match(sectionRegex);
+  if (!sectionMatch) return [];
+
+  const faqSection = sectionMatch[1];
+  const qaRegex = /###\s+(.+?)\n+([\s\S]*?)(?=\n###\s|$)/g;
+  const faqs: { question: string; answer: string }[] = [];
+
+  let match: RegExpExecArray | null;
+  while ((match = qaRegex.exec(faqSection)) !== null) {
+    const question = match[1].trim();
+    const answer = match[2]
+      .trim()
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+      .replace(/\*\*([^*]+)\*\*/g, '$1')
+      .replace(/\*([^*]+)\*/g, '$1')
+      .replace(/`([^`]+)`/g, '$1')
+      .replace(/\n+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (question && answer) faqs.push({ question, answer });
+  }
+
+  return faqs;
+}

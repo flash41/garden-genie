@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { MDXRemote } from 'next-mdx-remote/rsc';
 import remarkGfm from 'remark-gfm';
-import { getNotesPost, getNotesSlugParams, extractHeadings } from '@/lib/notes';
+import { getNotesPost, getNotesSlugParams, extractHeadings, extractFaq } from '@/lib/notes';
 import { NotesHero } from '@/components/notes/NotesHero';
 import { TableOfContents } from '@/components/notes/TableOfContents';
 import { NotesCta } from '@/components/notes/NotesCta';
@@ -138,6 +138,29 @@ export default async function NotesPostPage({ params }: PageProps) {
     ],
   };
 
+  // FAQPage JSON-LD — emitted when the article's frontmatter sets hasFaq: true
+  // AND extractFaq() finds a recognisable FAQ section in the MDX body. Lets
+  // Google render rich FAQ snippets in SERPs and improves the chance of being
+  // cited by AI Overview when synthesising answers.
+  const faqJsonLd = post.hasFaq
+    ? (() => {
+        const faqs = extractFaq(content);
+        if (faqs.length === 0) return null;
+        return {
+          '@context': 'https://schema.org',
+          '@type': 'FAQPage',
+          mainEntity: faqs.map(({ question, answer }) => ({
+            '@type': 'Question',
+            name: question,
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: answer,
+            },
+          })),
+        };
+      })()
+    : null;
+
   return (
     <>
       <script
@@ -148,6 +171,12 @@ export default async function NotesPostPage({ params }: PageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
+      {faqJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        />
+      )}
 
       <SiteHeader variant="solid" />
       <div className="min-h-screen bg-[#F8F9F8] pt-20 md:pt-24">
