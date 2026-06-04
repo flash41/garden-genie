@@ -68,6 +68,10 @@ The original date-gating was build-time only — future-dated articles never had
 
 From here on the cadence rule's "auto-publish on date" promise actually holds without manual redeploys.
 
+### Cadence exception — Bord Bia Bloom commentary, 4 June 2026
+
+`your-own-show-garden-bord-bia-bloom-2026.mdx` ships out of normal Tuesday cadence (published Thu 4 June rather than Tue 9 June). Per the published exception rule, this is a time-sensitive event piece: Bord Bia Bloom 2026 wrapped on 1 June, search interest peaks in the week after, and waiting until Tue 9 June would catch the tail of that wave instead of the crest. Plant label decoder (Satellite 1) remains on its 9 June slot unchanged — that's two articles in a 5-day window, allowed by the cadence rule when the second is reinforcing a separate signal. Going forward, normal Tuesday cadence resumes.
+
 ---
 
 ## Active Cluster: Hardiness
@@ -111,6 +115,7 @@ Most recent first. The log lives here so we can scan cadence at a glance without
 
 | Publish Date | Title | URL |
 |--------------|-------|-----|
+| 2026-06-04 | Your Own Show Garden: How to Steal the Best Ideas From Bord Bia Bloom 2026 | /notes/your-own-show-garden-bord-bia-bloom-2026 |
 | 2026-06-04 | Your Own Irish Vineyard | /notes/your-own-irish-vineyard |
 | 2026-06-02 | Your Own British Vineyard | /notes/your-own-british-vineyard |
 | 2026-05-22 | DIY Garden Makeover Plan | /notes/diy-garden-makeover-plan |
