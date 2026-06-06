@@ -1,12 +1,14 @@
 'use client';
 import { useState } from 'react';
 
+const PAYMENTS_ENABLED = process.env.NEXT_PUBLIC_PAYMENTS_ENABLED === 'true';
+
 export default function NextPage() {
   // ── Stripe payment state ────────────────────────────────────────────────
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [checkoutError, setCheckoutError] = useState('');
 
-  // ── Invite code bypass state ────────────────────────────────────────────
+  // ── Invite code state ───────────────────────────────────────────────────
   const [showCodeInput, setShowCodeInput] = useState(false);
   const [code, setCode] = useState('');
   const [codeLoading, setCodeLoading] = useState(false);
@@ -62,7 +64,7 @@ export default function NextPage() {
         window.location.href = '/design';
       } else {
         setCodeError(
-          'That code doesn’t appear to be valid — it may be unknown or already used. If this is a mistake, get in touch.',
+          'That code doesn’t appear to be valid. It may be unknown or already used. If this is a mistake, get in touch.',
         );
       }
     } catch {
@@ -93,6 +95,7 @@ export default function NextPage() {
         @media (max-width:640px) { .site-logo-h { height: 32px; } }
         .checkout-btn:hover:not(:disabled) { background: #0a5c3f !important; }
         .code-toggle:hover { color: #0a3d2b !important; }
+        .code-primary-btn:hover:not(:disabled) { background: #0a5c3f !important; }
       `}</style>
 
       {/* Logo */}
@@ -142,7 +145,7 @@ export default function NextPage() {
             lineHeight: 1.25,
           }}
         >
-          Get your Garden Plan
+          {PAYMENTS_ENABLED ? 'Get your Garden Plan' : 'Get your Action Plan'}
         </h1>
         <p
           style={{
@@ -153,9 +156,9 @@ export default function NextPage() {
             marginBottom: 28,
           }}
         >
-          Upload a photo of your garden and receive a personalised design proposal — a
-          full planting spec, spatial layout, and phased plan you can hand straight to a
-          gardener.
+          {PAYMENTS_ENABLED
+            ? 'Upload a photo of your garden and receive a personalised design proposal — a full planting spec, spatial layout, and phased plan you can hand straight to a gardener.'
+            : 'Enter your code below to run your Action Plan. You’ll get a full planting spec, a spatial layout, and a phased plan you can hand straight to a gardener.'}
         </p>
 
         {/* What you get */}
@@ -168,13 +171,22 @@ export default function NextPage() {
             marginBottom: 24,
           }}
         >
-          {[
-            'AI-generated garden redesign render',
-            'Full planting specification',
-            'Spatial layout and proportions',
-            'Phased implementation plan',
-            'Downloadable PDF to keep',
-          ].map(item => (
+          {(PAYMENTS_ENABLED
+            ? [
+                'AI-generated garden redesign render',
+                'Full planting specification',
+                'Spatial layout and proportions',
+                'Phased implementation plan',
+                'Downloadable PDF to keep',
+              ]
+            : [
+                'Garden redesign render',
+                'Full planting specification',
+                'Spatial layout and proportions',
+                'Phased implementation plan',
+                'A downloadable plan to keep',
+              ]
+          ).map(item => (
             <div
               key={item}
               style={{
@@ -212,8 +224,8 @@ export default function NextPage() {
           </p>
         )}
 
-        {/* Checkout error */}
-        {checkoutError && (
+        {/* Checkout error (paid mode only) */}
+        {PAYMENTS_ENABLED && checkoutError && (
           <p
             style={{
               fontSize: 13,
@@ -229,79 +241,167 @@ export default function NextPage() {
           </p>
         )}
 
-        {/* Primary CTA — Stripe Checkout */}
-        <button
-          className="checkout-btn"
-          onClick={handleCheckout}
-          disabled={checkoutLoading}
-          style={{
-            width: '100%',
-            padding: '14px 0',
-            background: checkoutLoading ? '#d4aa4a' : '#b8962e',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 6,
-            fontWeight: 700,
-            fontSize: 15,
-            cursor: checkoutLoading ? 'not-allowed' : 'pointer',
-            fontFamily: 'inherit',
-            letterSpacing: '0.04em',
-            transition: 'background 0.15s',
-            marginBottom: 8,
-          }}
-        >
-          {checkoutLoading ? 'Redirecting to checkout…' : 'Get my Garden Plan — €4.95'}
-        </button>
+        {/* Primary CTA — Stripe Checkout (only when payments enabled) */}
+        {PAYMENTS_ENABLED && (
+          <>
+            <button
+              className="checkout-btn"
+              onClick={handleCheckout}
+              disabled={checkoutLoading}
+              style={{
+                width: '100%',
+                padding: '14px 0',
+                background: checkoutLoading ? '#d4aa4a' : '#b8962e',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 6,
+                fontWeight: 700,
+                fontSize: 15,
+                cursor: checkoutLoading ? 'not-allowed' : 'pointer',
+                fontFamily: 'inherit',
+                letterSpacing: '0.04em',
+                transition: 'background 0.15s',
+                marginBottom: 8,
+              }}
+            >
+              {checkoutLoading ? 'Redirecting to checkout…' : 'Get my Garden Plan — €4.95'}
+            </button>
 
-        {/* Stripe trust badge */}
-        <p
-          style={{
-            fontSize: 11,
-            color: '#b0a898',
-            textAlign: 'center',
-            margin: '0 0 20px',
-          }}
-        >
-          Secure payment by Stripe &middot; One-time charge &middot; No subscription
-        </p>
+            {/* Stripe trust badge */}
+            <p
+              style={{
+                fontSize: 11,
+                color: '#b0a898',
+                textAlign: 'center',
+                margin: '0 0 20px',
+              }}
+            >
+              Secure payment by Stripe &middot; One-time charge &middot; No subscription
+            </p>
 
-        {/* Divider */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-            marginBottom: 16,
-          }}
-        >
-          <div style={{ flex: 1, height: 1, background: '#e5ddd0' }} />
-          <span style={{ fontSize: 11, color: '#b0a898', letterSpacing: '0.06em' }}>or</span>
-          <div style={{ flex: 1, height: 1, background: '#e5ddd0' }} />
-        </div>
+            {/* Divider */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                marginBottom: 16,
+              }}
+            >
+              <div style={{ flex: 1, height: 1, background: '#e5ddd0' }} />
+              <span style={{ fontSize: 11, color: '#b0a898', letterSpacing: '0.06em' }}>or</span>
+              <div style={{ flex: 1, height: 1, background: '#e5ddd0' }} />
+            </div>
+          </>
+        )}
 
-        {/* Invite code bypass — subtle secondary */}
-        {!showCodeInput ? (
-          <button
-            className="code-toggle"
-            onClick={() => setShowCodeInput(true)}
-            style={{
-              width: '100%',
-              background: 'none',
-              border: '1px solid #e5ddd0',
-              borderRadius: 6,
-              padding: '11px 0',
-              fontSize: 13,
-              color: '#8a7e6e',
-              cursor: 'pointer',
-              fontFamily: 'inherit',
-              transition: 'color 0.15s',
-            }}
-          >
-            I have an invite code
-          </button>
+        {/* Code entry: secondary when payments on, primary when payments off */}
+        {PAYMENTS_ENABLED ? (
+          !showCodeInput ? (
+            <button
+              className="code-toggle"
+              onClick={() => setShowCodeInput(true)}
+              style={{
+                width: '100%',
+                background: 'none',
+                border: '1px solid #e5ddd0',
+                borderRadius: 6,
+                padding: '11px 0',
+                fontSize: 13,
+                color: '#8a7e6e',
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                transition: 'color 0.15s',
+              }}
+            >
+              I have an invite code
+            </button>
+          ) : (
+            <form onSubmit={handleCodeSubmit}>
+              <label
+                style={{
+                  display: 'block',
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: '#4a3f32',
+                  marginBottom: 6,
+                  letterSpacing: '0.1em',
+                  textTransform: 'uppercase',
+                }}
+              >
+                Invite code
+              </label>
+              <input
+                id="invite-code-input"
+                type="text"
+                required
+                value={code}
+                onChange={e => setCode(e.target.value)}
+                placeholder="e.g. KPX847"
+                autoFocus
+                autoComplete="off"
+                spellCheck={false}
+                style={{
+                  width: '100%',
+                  padding: '11px 12px',
+                  border: '1px solid #d4c9b8',
+                  borderRadius: 6,
+                  fontSize: 17,
+                  fontFamily: 'monospace',
+                  fontWeight: 600,
+                  letterSpacing: '0.12em',
+                  marginBottom: 10,
+                  boxSizing: 'border-box',
+                  color: '#0a3d2b',
+                  backgroundColor: '#fff',
+                  outline: 'none',
+                }}
+              />
+
+              {codeError && (
+                <p
+                  style={{
+                    fontSize: 13,
+                    color: '#c0392b',
+                    background: '#fdf3f2',
+                    border: '1px solid #f5c6c0',
+                    borderRadius: 4,
+                    padding: '10px 12px',
+                    marginBottom: 10,
+                    marginTop: 0,
+                  }}
+                >
+                  {codeError}
+                </p>
+              )}
+
+              <button
+                type="submit"
+                disabled={codeLoading}
+                style={{
+                  width: '100%',
+                  padding: '11px 0',
+                  background: codeLoading ? '#d4c9b8' : '#0a3d2b',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 6,
+                  fontWeight: 700,
+                  fontSize: 14,
+                  cursor: codeLoading ? 'not-allowed' : 'pointer',
+                  fontFamily: 'inherit',
+                  letterSpacing: '0.04em',
+                  transition: 'background 0.15s',
+                }}
+              >
+                {codeLoading ? 'Checking…' : 'Continue with code'}
+              </button>
+            </form>
+          )
         ) : (
+          // ─── Code entry as the primary, complete path ───
           <form onSubmit={handleCodeSubmit}>
             <label
+              htmlFor="invite-code-input"
               style={{
                 display: 'block',
                 fontSize: 11,
@@ -312,7 +412,7 @@ export default function NextPage() {
                 textTransform: 'uppercase',
               }}
             >
-              Invite code
+              Your code
             </label>
             <input
               id="invite-code-input"
@@ -326,14 +426,14 @@ export default function NextPage() {
               spellCheck={false}
               style={{
                 width: '100%',
-                padding: '11px 12px',
+                padding: '13px 14px',
                 border: '1px solid #d4c9b8',
                 borderRadius: 6,
-                fontSize: 17,
+                fontSize: 18,
                 fontFamily: 'monospace',
                 fontWeight: 600,
-                letterSpacing: '0.12em',
-                marginBottom: 10,
+                letterSpacing: '0.14em',
+                marginBottom: 12,
                 boxSizing: 'border-box',
                 color: '#0a3d2b',
                 backgroundColor: '#fff',
@@ -350,7 +450,7 @@ export default function NextPage() {
                   border: '1px solid #f5c6c0',
                   borderRadius: 4,
                   padding: '10px 12px',
-                  marginBottom: 10,
+                  marginBottom: 12,
                   marginTop: 0,
                 }}
               >
@@ -360,24 +460,37 @@ export default function NextPage() {
 
             <button
               type="submit"
+              className="code-primary-btn"
               disabled={codeLoading}
               style={{
                 width: '100%',
-                padding: '11px 0',
-                background: codeLoading ? '#d4c9b8' : '#0a3d2b',
+                padding: '14px 0',
+                background: codeLoading ? '#4a6855' : '#0a3d2b',
                 color: '#fff',
                 border: 'none',
                 borderRadius: 6,
                 fontWeight: 700,
-                fontSize: 14,
+                fontSize: 15,
                 cursor: codeLoading ? 'not-allowed' : 'pointer',
                 fontFamily: 'inherit',
                 letterSpacing: '0.04em',
                 transition: 'background 0.15s',
               }}
             >
-              {codeLoading ? 'Checking…' : 'Continue with code'}
+              {codeLoading ? 'Checking your code…' : 'Run my Action Plan'}
             </button>
+
+            <p
+              style={{
+                fontSize: 12,
+                color: '#8a7e6e',
+                textAlign: 'center',
+                margin: '14px 0 0',
+                lineHeight: 1.5,
+              }}
+            >
+              Your selections are kept safe while we run your plan.
+            </p>
           </form>
         )}
       </div>

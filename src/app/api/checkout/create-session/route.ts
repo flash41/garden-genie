@@ -6,6 +6,17 @@ export const dynamic = 'force-dynamic';
 const SITE_URL = 'https://www.dedrab.com';
 
 export async function POST() {
+  // Feature flag: payments are disabled unless explicitly enabled.
+  // This protects against a stale client triggering Stripe even when the UI
+  // button is hidden. Unset or any value other than "true" = disabled.
+  if (process.env.NEXT_PUBLIC_PAYMENTS_ENABLED !== 'true') {
+    console.log('[create-session] Payments disabled by feature flag');
+    return NextResponse.json(
+      { error: 'Checkout is currently unavailable.' },
+      { status: 503 },
+    );
+  }
+
   // Fail fast with a clear log if env vars are missing — helps diagnose
   // Vercel environment misconfiguration (e.g. vars scoped to Production only)
   const stripeKey = process.env.STRIPE_SECRET_KEY;
