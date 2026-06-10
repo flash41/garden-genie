@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     template: '%s · Dedrab',
   },
   description:
-    'Transform your outdoor space with a personalised garden design and layout plan. Upload a photo and receive a detailed planting guide, materials list, and phased weekend plan.',
+    'Not sure where to start with your garden? Upload a photo and get a personalised design, planting plan and a phased weekend build, ready in minutes.',
   openGraph: {
     type: 'website',
     locale: 'en_IE',
