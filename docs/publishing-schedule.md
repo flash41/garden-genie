@@ -55,8 +55,9 @@ Every change to this document is committed in the same PR as the article work it
 | 2026-06-04 (Thu) | New | Your Own Irish Vineyard (Satellite 4a) | **Live after 4 June deploy** (originally 26 May; date bumped to 4 June because the build-time gate stranded it for 9 days — see ISR fix below) |
 | 2026-06-09 (Tue) | New | What Do the Symbols on Your Plant Label Actually Mean? (Satellite 1) | Drafted — will auto-publish on schedule via ISR |
 | 2026-06-16 (Tue) | New | RHS Hardiness vs USDA Zones — A Quick Translator (Satellite 2) | Drafted — will auto-publish on schedule via ISR |
-| 2026-06-23 (Tue) | New | Why the Plants in Your Grandmother's Garden Don't Always Survive Anymore (Satellite 3) | **Held — write after vineyard data lands** |
+| 2026-06-23 (Tue) | New | Why the Plants in Your Grandmother's Garden Don't Always Survive Anymore (Satellite 3) | **Held — still overdue, bumped again by the UK pillar exception below** |
 | 2026-06-30 (Tue) | Landing | `/ask-a-landscaper` landing page (sits outside `/notes`, not in Notes index) | **Held — refresh shipped first, wait on Search Console signal** |
+| 2026-07-07 (Tue) | New | What Planting Zone Is the UK In? RHS H3 to H7 Explained (head-term pillar) | **Live 7 July** — jumped the queue ahead of Satellite 3, see exception note below |
 
 ### ISR fix — 4 June 2026
 
@@ -72,11 +73,15 @@ From here on the cadence rule's "auto-publish on date" promise actually holds wi
 
 `your-own-show-garden-bord-bia-bloom-2026.mdx` ships out of normal Tuesday cadence (published Thu 4 June rather than Tue 9 June). Per the published exception rule, this is a time-sensitive event piece: Bord Bia Bloom 2026 wrapped on 1 June, search interest peaks in the week after, and waiting until Tue 9 June would catch the tail of that wave instead of the crest. Plant label decoder (Satellite 1) remains on its 9 June slot unchanged — that's two articles in a 5-day window, allowed by the cadence rule when the second is reinforcing a separate signal. Going forward, normal Tuesday cadence resumes.
 
+### Cadence exception — UK hardiness pillar jumps the queue, 6 July 2026
+
+Head-term strategy session (6 July, see `BACKLOG.md` SEO content strategy section) confirmed the single biggest gap in Search Console: Ireland pulls 1,207 impressions at position 8.9, the UK (our stated first market) pulls only 193 at position 15.1, and no UK-equivalent pillar exists. With the site's overall impressions about to cross the ~400/wk head-term threshold, this gap was judged too costly to leave queued behind Satellite 3, which has already slipped twice (26 May → 4 June → held) and has no confirmed publish window. Decision: `what-planting-zone-is-the-uk-in.mdx` takes the 7 July Tuesday slot outright. Satellite 3 (grandmother's garden) stays held with no new target date — it gets written once the UK pillar and its cross-links have had 2–3 weeks in Search Console. Normal Tuesday cadence resumes after 7 July.
+
 ---
 
 ## Active Cluster: Hardiness
 
-**Pillar:** `plant-hardiness-zones-ireland-beginners-guide.mdx` (refreshed 22 May 2026, Related Notes patched twice in 22 May commits)
+**Pillars:** `plant-hardiness-zones-ireland-beginners-guide.mdx` (Ireland, refreshed 22 May 2026) and `what-planting-zone-is-the-uk-in.mdx` (UK, live 7 July 2026 — second pillar in the cluster, added to close the UK impressions gap identified in the 6 July strategy session)
 
 **Satellites — in publishing order:**
 
@@ -84,9 +89,9 @@ From here on the cadence rule's "auto-publish on date" promise actually holds wi
 2. Your Own British Vineyard (climate-change viral hook, UK-fronted) — **drafted, scheduled 2 June**
 3. What Do the Symbols on Your Plant Label Actually Mean? (beginner-friendly label decoder) — **drafted, scheduled 9 June**
 4. RHS Hardiness vs USDA Zones (cross-market translator) — **drafted, scheduled 16 June**
-5. Why the Plants in Your Grandmother's Garden Don't Always Survive Anymore (emotional climate-shift hook) — **held**, write after vineyard pieces have 2+ weeks of Search Console data
+5. Why the Plants in Your Grandmother's Garden Don't Always Survive Anymore (emotional climate-shift hook) — **held, no target date**, bumped twice by the Bord Bia Bloom exception and the UK pillar exception; write once the UK pillar has 2–3 weeks of Search Console data
 
-Every satellite links inline to the pillar at least twice. The pillar's Related Notes footer was patched on 22 May to include all four currently-drafted satellites so cluster cross-links resolve when each goes live.
+Every satellite links inline to both pillars. The UK pillar cross-links to the Ireland pillar, the British vineyard piece, and the RHS-vs-USDA translator; all three of those were retro-patched on 6 July to link back to the UK pillar in the same commit, per the internal linking rule.
 
 ## Active Cluster: Landscaper / Conversion
 
@@ -115,6 +120,7 @@ Most recent first. The log lives here so we can scan cadence at a glance without
 
 | Publish Date | Title | URL |
 |--------------|-------|-----|
+| 2026-07-07 | What Planting Zone Is the UK In? RHS H3 to H7 Explained | /notes/what-planting-zone-is-the-uk-in |
 | 2026-06-04 | Your Own Show Garden: How to Steal the Best Ideas From Bord Bia Bloom 2026 | /notes/your-own-show-garden-bord-bia-bloom-2026 |
 | 2026-06-04 | Your Own Irish Vineyard | /notes/your-own-irish-vineyard |
 | 2026-06-02 | Your Own British Vineyard | /notes/your-own-british-vineyard |
