@@ -58,6 +58,7 @@ Every change to this document is committed in the same PR as the article work it
 | 2026-06-23 (Tue) | New | Why the Plants in Your Grandmother's Garden Don't Always Survive Anymore (Satellite 3) | **Held — still overdue, bumped again by the UK pillar exception below** |
 | 2026-06-30 (Tue) | Landing | `/ask-a-landscaper` landing page (sits outside `/notes`, not in Notes index) | **Held — refresh shipped first, wait on Search Console signal** |
 | 2026-07-07 (Tue) | New | What Planting Zone Is the UK In? RHS H3 to H7 Explained (head-term pillar) | **Live 7 July** — jumped the queue ahead of Satellite 3, see exception note below |
+| 2026-07-14 (Tue) | New | Designing a Garden You Can Actually Maintain in Under an Hour a Week | **Drafted 6 July** — time-budget companion to the low-maintenance-by-climate piece, normal cadence slot, no exception needed |
 
 ### ISR fix — 4 June 2026
 
@@ -93,6 +94,10 @@ Head-term strategy session (6 July, see `BACKLOG.md` SEO content strategy sectio
 
 Every satellite links inline to both pillars. The UK pillar cross-links to the Ireland pillar, the British vineyard piece, and the RHS-vs-USDA translator; all three of those were retro-patched on 6 July to link back to the UK pillar in the same commit, per the internal linking rule.
 
+## Active Cluster: Low Maintenance (time-budget companion)
+
+`low-maintenance-garden-ideas-by-climate.mdx` (live 15 May) already covers the plant and structural choices by climate zone. `low-maintenance-garden-under-an-hour-a-week.mdx` (drafted 6 July, scheduled 14 July) approaches the same underlying problem from a different angle: a concrete weekly time budget instead of a climate lens, with an honest breakdown of what actually costs time and what doesn't fit the budget regardless of design. The two pieces cross-link each other and both link to `garden-drab-to-fab-weekend.mdx` and `diy-garden-makeover-plan.mdx`, which were retro-patched in the same commit.
+
 ## Active Cluster: Landscaper / Conversion
 
 Triggered by Search Console signal — `before-you-hire-a-landscaper.mdx` was pulling 13 impressions/week with no optimisation. Strategy: refresh existing piece first, build dedicated landing page only if data warrants it.
@@ -121,6 +126,8 @@ Most recent first. The log lives here so we can scan cadence at a glance without
 | Publish Date | Title | URL |
 |--------------|-------|-----|
 | 2026-07-07 | What Planting Zone Is the UK In? RHS H3 to H7 Explained | /notes/what-planting-zone-is-the-uk-in |
+| 2026-06-16 | RHS Hardiness vs USDA Zones: A Quick Translator | /notes/rhs-hardiness-vs-usda-zones |
+| 2026-06-09 | What Do the Symbols on Your Plant Label Actually Mean? | /notes/what-do-plant-label-symbols-mean |
 | 2026-06-04 | Your Own Show Garden: How to Steal the Best Ideas From Bord Bia Bloom 2026 | /notes/your-own-show-garden-bord-bia-bloom-2026 |
 | 2026-06-04 | Your Own Irish Vineyard | /notes/your-own-irish-vineyard |
 | 2026-06-02 | Your Own British Vineyard | /notes/your-own-british-vineyard |
