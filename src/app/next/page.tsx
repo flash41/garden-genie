@@ -14,6 +14,11 @@ export default function NextPage() {
   const [codeLoading, setCodeLoading] = useState(false);
   const [codeError, setCodeError] = useState('');
 
+  // ── Waitlist state ───────────────────────────────────────────────────────
+  const [waitlistEmail, setWaitlistEmail] = useState('');
+  const [waitlistStatus, setWaitlistStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [waitlistError, setWaitlistError] = useState('');
+
   // ── URL error params (from failed /complete redirects) ──────────────────
   const urlError =
     typeof window !== 'undefined'
@@ -34,6 +39,29 @@ export default function NextPage() {
       console.error('[next/page] Checkout error:', err);
       setCheckoutError('Something went wrong starting checkout. Please try again.');
       setCheckoutLoading(false);
+    }
+  }
+
+  async function handleWaitlistSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setWaitlistStatus('loading');
+    setWaitlistError('');
+    try {
+      const res = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: waitlistEmail }),
+      });
+      if (res.ok) {
+        setWaitlistStatus('success');
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setWaitlistError((data as { error?: string }).error ?? 'Something went wrong. Please try again.');
+        setWaitlistStatus('error');
+      }
+    } catch {
+      setWaitlistError('Network error. Please try again.');
+      setWaitlistStatus('error');
     }
   }
 
@@ -203,6 +231,101 @@ export default function NextPage() {
               <span>{item}</span>
             </div>
           ))}
+        </div>
+
+        {/* Beta notice + waitlist signup */}
+        <div
+          style={{
+            background: '#f9f5ee',
+            border: '1px solid #e5ddd0',
+            borderRadius: 6,
+            padding: '16px 18px',
+            marginBottom: 20,
+          }}
+        >
+          <p
+            style={{
+              margin: '0 0 12px',
+              fontSize: 13,
+              color: '#4a3f32',
+              lineHeight: 1.65,
+            }}
+          >
+            We&apos;re in beta, testing to make sure this is the best it can be before we open it up
+            properly. Don&apos;t have a code? Register below and we&apos;ll send you a discounted
+            launch code the day we&apos;re ready.
+          </p>
+          {waitlistStatus === 'success' ? (
+            <p style={{ margin: 0, fontSize: 13, color: '#0a3d2b', fontWeight: 600 }}>
+              You&apos;re on the list. Watch your inbox for your launch code.
+            </p>
+          ) : (
+            <form
+              onSubmit={handleWaitlistSubmit}
+              style={{ display: 'flex', gap: 8 }}
+            >
+              <input
+                type="email"
+                required
+                placeholder="your@email.com"
+                value={waitlistEmail}
+                onChange={e => setWaitlistEmail(e.target.value)}
+                disabled={waitlistStatus === 'loading'}
+                style={{
+                  flex: 1,
+                  padding: '9px 11px',
+                  border: '1px solid #d4c9b8',
+                  borderRadius: 6,
+                  fontSize: 13,
+                  fontFamily: 'inherit',
+                  color: '#0a3d2b',
+                  background: '#fff',
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                  minWidth: 0,
+                }}
+              />
+              <button
+                type="submit"
+                disabled={waitlistStatus === 'loading'}
+                style={{
+                  padding: '9px 14px',
+                  background: waitlistStatus === 'loading' ? '#d4aa4a' : '#b8962e',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 6,
+                  fontWeight: 700,
+                  fontSize: 13,
+                  cursor: waitlistStatus === 'loading' ? 'not-allowed' : 'pointer',
+                  fontFamily: 'inherit',
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0,
+                  transition: 'background 0.15s',
+                }}
+              >
+                {waitlistStatus === 'loading' ? 'Saving…' : 'Join waitlist'}
+              </button>
+            </form>
+          )}
+          {waitlistStatus === 'error' && (
+            <p style={{ margin: '8px 0 0', fontSize: 12, color: '#c0392b' }}>
+              {waitlistError}
+            </p>
+          )}
+        </div>
+
+        {/* Divider between beta block and code entry */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            marginBottom: 20,
+          }}
+        >
+          <div style={{ flex: 1, height: 1, background: '#e5ddd0' }} />
+          <span style={{ fontSize: 11, color: '#b0a898', letterSpacing: '0.06em' }}>or</span>
+          <div style={{ flex: 1, height: 1, background: '#e5ddd0' }} />
         </div>
 
         {/* URL error (from failed /complete redirect) */}
