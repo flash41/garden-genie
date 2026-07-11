@@ -59,10 +59,10 @@ Every change to this document is committed in the same PR as the article work it
 | 2026-06-30 (Tue) | Landing | `/ask-a-landscaper` landing page (sits outside `/notes`, not in Notes index) | **Held — refresh shipped first, wait on Search Console signal** |
 | 2026-07-07 (Tue) | New | What Planting Zone Is the UK In? RHS H3 to H7 Explained (head-term pillar) | **Live 7 July** — jumped the queue ahead of Satellite 3, see exception note below |
 | 2026-07-14 (Tue) | New | Designing a Garden You Can Actually Maintain in Under an Hour a Week | **Drafted 6 July** — time-budget companion to the low-maintenance-by-climate piece, normal cadence slot, no exception needed |
-| 2026-07-21 (Tue) | New | Where the Money Actually Goes in a Mid-Size Garden Renovation (Garden Cost satellite) | **Queued 11 July** — see cadence note below, competes for this slot with Satellite 3 |
-| 2026-07-28 (Tue) | New | Cheap Garden Ideas That Don't Look Cheap (Garden Cost satellite) | **Queued 11 July** |
-| 2026-08-04 (Tue) | New | What Would My Garden Actually Look Like? Seeing Before You Spend (First-Time Garden Owner satellite) | **Queued 11 July** |
-| 2026-08-11 (Tue) | New | DIY or Hire a Landscaper? How to Actually Decide (First-Time Garden Owner satellite) | **Queued 11 July** |
+| 2026-07-21 (Tue) | New | Where the Money Actually Goes in a Mid-Size Garden Renovation (Garden Cost satellite) | **Drafted 11 July** — will auto-publish on schedule via ISR, see cadence note below re: Satellite 3 slot conflict |
+| 2026-07-28 (Tue) | New | Cheap Garden Ideas That Don't Look Cheap (Garden Cost satellite) | **Drafted 11 July** — will auto-publish on schedule via ISR |
+| 2026-08-04 (Tue) | New | What Would My Garden Actually Look Like? Seeing Before You Spend (First-Time Garden Owner satellite) | **Drafted 11 July** — will auto-publish on schedule via ISR |
+| 2026-08-11 (Tue) | New | DIY or Hire a Landscaper? How to Actually Decide (First-Time Garden Owner satellite) | **Drafted 11 July** — will auto-publish on schedule via ISR |
 
 ### ISR fix — 4 June 2026
 
@@ -121,8 +121,8 @@ Triggered by Search Console signal — `before-you-hire-a-landscaper.mdx` was pu
 
 **Satellites — in publishing order:**
 
-1. Where the Money Actually Goes in a Mid-Size Garden Renovation (single worked example, percentage-of-budget breakdown so it stays market-neutral) — **queued 21 July**
-2. Cheap Garden Ideas That Don't Look Cheap (budget-conscious, design-led, Pinterest-friendly) — **queued 28 July**
+1. Where the Money Actually Goes in a Mid-Size Garden Renovation (single worked example, percentage-of-budget breakdown so it stays market-neutral) — **drafted 11 July, scheduled 21 July**
+2. Cheap Garden Ideas That Don't Look Cheap (budget-conscious, design-led, Pinterest-friendly) — **drafted 11 July, scheduled 28 July**
 
 Both satellites link inline to both pillars and to `before-you-hire-a-landscaper.mdx` / `diy-garden-makeover-plan.mdx` where relevant. Both pillars get retro-patched with links to the new satellites in the same commit each ships, per the internal linking rule. Full briefs (search intent, internal links, CTA, hero image direction) live in `BACKLOG.md` under "Garden Cost Cluster".
 
@@ -132,8 +132,8 @@ Both satellites link inline to both pillars and to `before-you-hire-a-landscaper
 
 **Satellites — in publishing order:**
 
-1. What Would My Garden Actually Look Like? Seeing Before You Spend (visualisation angle, closest content-to-product mapping in the library) — **queued 4 August**
-2. DIY or Hire a Landscaper? How to Actually Decide (decision framework, bridges DIY / Landscaper / First-Time clusters) — **queued 11 August**
+1. What Would My Garden Actually Look Like? Seeing Before You Spend (visualisation angle, closest content-to-product mapping in the library) — **drafted 11 July, scheduled 4 August**
+2. DIY or Hire a Landscaper? How to Actually Decide (decision framework, bridges DIY / Landscaper / First-Time clusters) — **drafted 11 July, scheduled 11 August**
 
 Satellite 1 also links to `garden-drab-to-fab-weekend.mdx`; Satellite 2 also links to `diy-garden-makeover-plan.mdx`, `before-you-hire-a-landscaper.mdx`, and `garden-design-cost-breakdown-2026.mdx`. All linked pillars and siblings get retro-patched in the same commit each satellite ships. Full briefs live in `BACKLOG.md` under "First-Time Garden Owner Cluster".
 

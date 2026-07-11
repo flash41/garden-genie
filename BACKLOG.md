@@ -77,7 +77,7 @@ Reframed 22 May based on Search Console Pages data — `before-you-hire-a-landsc
 ### Garden Cost Cluster — conversion-first (promoted from Future 11 July)
 Builds on the two cost pieces already live (`garden-design-cost-breakdown-2026.mdx`, `real-cost-of-redoing-a-small-garden.mdx`), which both give banded ranges. These two satellites take a different shape (a single worked example, and a design-not-spend angle) so they don't cannibalise the existing pieces. Cadence tracked in `docs/publishing-schedule.md`.
 
-- [ ] **Satellite — "Where the Money Actually Goes in a Mid-Size Garden Renovation"** — queued for 2026-07-21 (Tue). Slug: `where-the-money-goes-in-a-garden-renovation`. Category: `how-to`.
+- [x] **Satellite — "Where the Money Actually Goes in a Mid-Size Garden Renovation"** — drafted 11 July, scheduled 2026-07-21 (Tue), `where-the-money-goes-in-a-garden-renovation.mdx`. Slug: `where-the-money-goes-in-a-garden-renovation`. Category: `how-to`.
   - **Search intent:** bottom-funnel. Someone who already has a rough figure in their head and wants to see it spent, line by line, on one realistic project, rather than the banded ranges the two existing pieces give. More concrete, more shareable, closer to a decision.
   - **Title note:** the original Future-list phrasing was "Where the money goes in a £10k garden" — renamed to drop the single currency per the market-neutral rule (UK/Ireland/US, avoid £/€/$ unless the piece is explicitly market-targeted). Structure the worked example as a percentage-of-budget breakdown so it translates across all three markets without a currency in the title.
   - **Internal links (inline):** `garden-design-cost-breakdown-2026.mdx`, `real-cost-of-redoing-a-small-garden.mdx`, `before-you-hire-a-landscaper.mdx`.
@@ -85,7 +85,7 @@ Builds on the two cost pieces already live (`garden-design-cost-breakdown-2026.m
   - **CTA:** the worked example is a guess dressed up as a number until it's priced against an actual site, a Dedrab Garden Action Plan turns the guess into a costed breakdown for the reader's own garden.
   - **Hero image direction:** overhead flat lay, a notepad with a running cost tally beside a hand-drawn garden plan sketch, pencil and a coffee ring, warm side light, consistent with the existing cost breakdown hero.
 
-- [ ] **Satellite — "Cheap Garden Ideas That Don't Look Cheap"** — queued for 2026-07-28 (Tue). Slug: `cheap-garden-ideas-that-dont-look-cheap`. Category: `design`.
+- [x] **Satellite — "Cheap Garden Ideas That Don't Look Cheap"** — drafted 11 July, scheduled 2026-07-28 (Tue), `cheap-garden-ideas-that-dont-look-cheap.mdx`. Slug: `cheap-garden-ideas-that-dont-look-cheap`. Category: `design`.
   - **Search intent:** budget-conscious homeowner who wants visual payoff without a full renovation spend. Higher-volume, more shareable (Pinterest-friendly), still commercial because it funnels into "get a plan that puts a small budget where it shows".
   - **Internal links (inline):** `making-small-gardens-feel-generous.mdx`, `garden-design-cost-breakdown-2026.mdx`, `real-cost-of-redoing-a-small-garden.mdx`, `diy-garden-makeover-plan.mdx`.
   - **Retro-patch (same PR):** add to Related Notes footers of `making-small-gardens-feel-generous.mdx` and both cost pieces.
@@ -95,7 +95,7 @@ Builds on the two cost pieces already live (`garden-design-cost-breakdown-2026.m
 ### First-Time Garden Owner Cluster — conversion bridge (promoted from Future 11 July)
 Builds on `landscape-paralysis-why-great-gardens-dont-happen.mdx` and `where-to-begin-garden-redesign.mdx`. These two satellites are the natural next step after "why you're stuck" and "how to start": one solves not being able to picture the result, the other solves not being able to choose a path. Cadence tracked in `docs/publishing-schedule.md`.
 
-- [ ] **Satellite — "What Would My Garden Actually Look Like? Seeing Before You Spend"** — queued for 2026-08-04 (Tue). Slug: `what-would-my-garden-actually-look-like`. Category: `design`.
+- [x] **Satellite — "What Would My Garden Actually Look Like? Seeing Before You Spend"** — drafted 11 July, scheduled 2026-08-04 (Tue), `what-would-my-garden-actually-look-like.mdx`. Slug: `what-would-my-garden-actually-look-like`. Category: `design`.
   - **Search intent:** the reader has moved past total paralysis but still can't picture the end result, wants reassurance before committing money or a weekend. This is the closest search intent in the whole library to the tool's actual mechanic (a photo in, a redesign render out), the gap between what someone's searching for and what Dedrab does is close to zero here.
   - **Internal links (inline):** `landscape-paralysis-why-great-gardens-dont-happen.mdx`, `where-to-begin-garden-redesign.mdx`, `garden-drab-to-fab-weekend.mdx`.
   - **Retro-patch (same PR):** add this satellite to Related Notes footers of all three.
@@ -103,7 +103,7 @@ Builds on `landscape-paralysis-why-great-gardens-dont-happen.mdx` and `where-to-
   - **Product tie-in (not a dependency):** the parked Before/After comparison slider (see Phase 2 backlog) would pair well with this piece once built, worth a mention when it ships, not required to publish this article.
   - **Hero image direction:** a diagonal wipe or side-by-side of an ordinary garden becoming a realised one, soft directional morning light, Forest & Gold palette.
 
-- [ ] **Satellite — "DIY or Hire a Landscaper? How to Actually Decide"** — queued for 2026-08-11 (Tue). Slug: `diy-or-hire-a-landscaper`. Category: `how-to`.
+- [x] **Satellite — "DIY or Hire a Landscaper? How to Actually Decide"** — drafted 11 July, scheduled 2026-08-11 (Tue), `diy-or-hire-a-landscaper.mdx`. Slug: `diy-or-hire-a-landscaper`. Category: `how-to`.
   - **Search intent:** decision-stage homeowner weighing effort, cost, and skill, wants a framework, not a sales pitch either way. Bridges three existing clusters (DIY, Landscaper/Conversion, First-Time Garden Owner) rather than sitting in just one.
   - **Internal links (inline):** `diy-garden-makeover-plan.mdx`, `before-you-hire-a-landscaper.mdx`, `where-to-begin-garden-redesign.mdx`, `garden-design-cost-breakdown-2026.mdx`.
   - **Retro-patch (same PR):** add to Related Notes footers of all four.
