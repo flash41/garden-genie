@@ -59,6 +59,10 @@ Every change to this document is committed in the same PR as the article work it
 | 2026-06-30 (Tue) | Landing | `/ask-a-landscaper` landing page (sits outside `/notes`, not in Notes index) | **Held — refresh shipped first, wait on Search Console signal** |
 | 2026-07-07 (Tue) | New | What Planting Zone Is the UK In? RHS H3 to H7 Explained (head-term pillar) | **Live 7 July** — jumped the queue ahead of Satellite 3, see exception note below |
 | 2026-07-14 (Tue) | New | Designing a Garden You Can Actually Maintain in Under an Hour a Week | **Drafted 6 July** — time-budget companion to the low-maintenance-by-climate piece, normal cadence slot, no exception needed |
+| 2026-07-21 (Tue) | New | Where the Money Actually Goes in a Mid-Size Garden Renovation (Garden Cost satellite) | **Queued 11 July** — see cadence note below, competes for this slot with Satellite 3 |
+| 2026-07-28 (Tue) | New | Cheap Garden Ideas That Don't Look Cheap (Garden Cost satellite) | **Queued 11 July** |
+| 2026-08-04 (Tue) | New | What Would My Garden Actually Look Like? Seeing Before You Spend (First-Time Garden Owner satellite) | **Queued 11 July** |
+| 2026-08-11 (Tue) | New | DIY or Hire a Landscaper? How to Actually Decide (First-Time Garden Owner satellite) | **Queued 11 July** |
 
 ### ISR fix — 4 June 2026
 
@@ -77,6 +81,12 @@ From here on the cadence rule's "auto-publish on date" promise actually holds wi
 ### Cadence exception — UK hardiness pillar jumps the queue, 6 July 2026
 
 Head-term strategy session (6 July, see `BACKLOG.md` SEO content strategy section) confirmed the single biggest gap in Search Console: Ireland pulls 1,207 impressions at position 8.9, the UK (our stated first market) pulls only 193 at position 15.1, and no UK-equivalent pillar exists. With the site's overall impressions about to cross the ~400/wk head-term threshold, this gap was judged too costly to leave queued behind Satellite 3, which has already slipped twice (26 May → 4 June → held) and has no confirmed publish window. Decision: `what-planting-zone-is-the-uk-in.mdx` takes the 7 July Tuesday slot outright. Satellite 3 (grandmother's garden) stays held with no new target date — it gets written once the UK pillar and its cross-links have had 2–3 weeks in Search Console. Normal Tuesday cadence resumes after 7 July.
+
+### Cadence note — Garden Cost and First-Time Garden Owner clusters promoted, 11 July 2026
+
+Conversion-first content session (see `BACKLOG.md` SEO content strategy section) concluded that "plant hardiness zones ireland", the site's strongest ranking signal, is a poor conversion audience, top-of-funnel research traffic rather than someone about to touch the tool. Four satellites agreed across two clusters that were sitting in "Future Cluster Ideas" below, both promoted to Active here on conversion-intent grounds rather than the stated Search Console activation trigger (neither cluster has hit 5+ impressions/week on 2+ queries yet), flagged explicitly as a deliberate override, not a quiet rule change. They take the 21 & 28 July and 4 & 11 August Tuesday slots.
+
+This creates a scheduling conflict: Satellite 3 (grandmother's garden, Hardiness cluster) was provisionally eligible for the 21 or 28 July slot once the UK pillar had 2–3 weeks of Search Console data. Defaulting to the Garden Cost satellites taking those two slots, since better conversion is the explicit reason this work was commissioned, but Steen should resequence if Satellite 3 should jump back in front of the queue.
 
 ---
 
@@ -105,17 +115,37 @@ Triggered by Search Console signal — `before-you-hire-a-landscaper.mdx` was pu
 - `before-you-hire-a-landscaper.mdx` refresh — **drafted 22 May**, ships immediately as a refresh (not a cadence slot).
 - `/ask-a-landscaper` landing page — **held**, wait 2–3 weeks after refresh ships to see whether the existing article alone captures the intent, before deciding whether the landing page is additive or duplicative.
 
+## Active Cluster: Garden Cost (conversion-first, promoted 11 July)
+
+**Pillars:** `garden-design-cost-breakdown-2026.mdx` (live 12 May, multi-market banded ranges) and `real-cost-of-redoing-a-small-garden.mdx` (live 28 April, cost-buckets framework).
+
+**Satellites — in publishing order:**
+
+1. Where the Money Actually Goes in a Mid-Size Garden Renovation (single worked example, percentage-of-budget breakdown so it stays market-neutral) — **queued 21 July**
+2. Cheap Garden Ideas That Don't Look Cheap (budget-conscious, design-led, Pinterest-friendly) — **queued 28 July**
+
+Both satellites link inline to both pillars and to `before-you-hire-a-landscaper.mdx` / `diy-garden-makeover-plan.mdx` where relevant. Both pillars get retro-patched with links to the new satellites in the same commit each ships, per the internal linking rule. Full briefs (search intent, internal links, CTA, hero image direction) live in `BACKLOG.md` under "Garden Cost Cluster".
+
+## Active Cluster: First-Time Garden Owner (conversion bridge, promoted 11 July)
+
+**Pillars:** `landscape-paralysis-why-great-gardens-dont-happen.mdx` (live 26 April, names the decision-paralysis problem) and `where-to-begin-garden-redesign.mdx` (live 28 April, gives a starting framework).
+
+**Satellites — in publishing order:**
+
+1. What Would My Garden Actually Look Like? Seeing Before You Spend (visualisation angle, closest content-to-product mapping in the library) — **queued 4 August**
+2. DIY or Hire a Landscaper? How to Actually Decide (decision framework, bridges DIY / Landscaper / First-Time clusters) — **queued 11 August**
+
+Satellite 1 also links to `garden-drab-to-fab-weekend.mdx`; Satellite 2 also links to `diy-garden-makeover-plan.mdx`, `before-you-hire-a-landscaper.mdx`, and `garden-design-cost-breakdown-2026.mdx`. All linked pillars and siblings get retro-patched in the same commit each satellite ships. Full briefs live in `BACKLOG.md` under "First-Time Garden Owner Cluster".
+
 ---
 
 ## Future Cluster Ideas
 
-Hold off building these until Search Console gives a signal that the underlying theme is worth chasing. Adding here so we don't lose the thought.
+Hold off building these until Search Console gives a signal that the underlying theme is worth chasing, or until a future conversion-first session promotes it early the way the Garden Cost and First-Time Garden Owner clusters were promoted on 11 July. Adding here so we don't lose the thought.
 
-- **Garden cost cluster** — built around existing `garden-design-cost-breakdown-2026.mdx` and `real-cost-of-redoing-a-small-garden.mdx`. Possible satellites: "What does a garden designer actually charge?", "Where the money goes in a £10k garden", "Cheap garden ideas that don't look cheap".
 - **Small garden cluster** — built around existing `making-small-gardens-feel-generous.mdx` and `small-irish-garden-design-guide.mdx`. Possible satellites: "How to fake space in a courtyard garden", "Small garden mistakes that make spaces feel smaller", "Designing a 5x5m garden".
-- **First-time garden owner cluster** — built around existing `where-to-begin-garden-redesign.mdx` and `landscape-paralysis-why-great-gardens-dont-happen.mdx`. Possible satellites: "What to do with a garden you just inherited", "Reading your garden before you change it", "The first thing to plant in a new garden".
 
-Activation rule: a cluster gets promoted from "Future" to "Active" when one of its existing articles starts pulling 5+ impressions per week on at least two related queries in Search Console.
+Activation rule: a cluster gets promoted from "Future" to "Active" when one of its existing articles starts pulling 5+ impressions per week on at least two related queries in Search Console, or when a conversion-first strategy session promotes it early with a written reason (see 11 July precedent above).
 
 ---
 
