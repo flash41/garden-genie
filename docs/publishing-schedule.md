@@ -58,11 +58,13 @@ Every change to this document is committed in the same PR as the article work it
 | 2026-06-23 (Tue) | New | Why the Plants in Your Grandmother's Garden Don't Always Survive Anymore (Satellite 3) | **Held — still overdue, bumped again by the UK pillar exception below** |
 | 2026-06-30 (Tue) | Landing | `/ask-a-landscaper` landing page (sits outside `/notes`, not in Notes index) | **Held — refresh shipped first, wait on Search Console signal** |
 | 2026-07-07 (Tue) | New | What Planting Zone Is the UK In? RHS H3 to H7 Explained (head-term pillar) | **Live 7 July** — jumped the queue ahead of Satellite 3, see exception note below |
-| 2026-07-14 (Tue) | New | Designing a Garden You Can Actually Maintain in Under an Hour a Week | **Drafted 6 July** — time-budget companion to the low-maintenance-by-climate piece, normal cadence slot, no exception needed |
-| 2026-07-21 (Tue) | New | Where the Money Actually Goes in a Mid-Size Garden Renovation (Garden Cost satellite) | **Drafted 11 July** — will auto-publish on schedule via ISR, see cadence note below re: Satellite 3 slot conflict |
-| 2026-07-28 (Tue) | New | Cheap Garden Ideas That Don't Look Cheap (Garden Cost satellite) | **Drafted 11 July** — will auto-publish on schedule via ISR |
-| 2026-08-04 (Tue) | New | What Would My Garden Actually Look Like? Seeing Before You Spend (First-Time Garden Owner satellite) | **Drafted 11 July** — will auto-publish on schedule via ISR |
-| 2026-08-11 (Tue) | New | DIY or Hire a Landscaper? How to Actually Decide (First-Time Garden Owner satellite) | **Drafted 11 July** — will auto-publish on schedule via ISR |
+| 2026-07-14 (Tue) | New | Designing a Garden You Can Actually Maintain in Under an Hour a Week | **Live 14 July** — time-budget companion to the low-maintenance-by-climate piece, normal cadence slot, no exception needed |
+| 2026-07-21 (Tue) | New | Where the Money Actually Goes in a Mid-Size Garden Renovation (Garden Cost satellite) | **Live 21 July** — see cadence note below re: Satellite 3 slot conflict |
+| 2026-07-27 (Mon) | New | Surviving a Hosepipe Ban: What Actually Works When You Can't Water the Garden (Drought/Heatwave, piece 1 of 2) | **Drafted 26 July, scheduled 27 July** — jumps the queue outright, see cadence exception below |
+| 2026-07-30 (Thu) | New | Reviving Your Garden After a Hosepipe Ban: What Needs Help and What Doesn't (Drought/Heatwave, piece 2 of 2) | **Drafted 26 July, scheduled 30 July** — tightly related sibling to the 27 July piece, allowed within the same window per the cadence rule |
+| 2026-08-04 (Tue) | New | Cheap Garden Ideas That Don't Look Cheap (Garden Cost satellite) | **Drafted 11 July** — bumped back one week from 28 July to make room for the drought pair, will auto-publish on schedule via ISR |
+| 2026-08-11 (Tue) | New | What Would My Garden Actually Look Like? Seeing Before You Spend (First-Time Garden Owner satellite) | **Drafted 11 July** — bumped back one week from 4 August, will auto-publish on schedule via ISR |
+| 2026-08-18 (Tue) | New | DIY or Hire a Landscaper? How to Actually Decide (First-Time Garden Owner satellite) | **Drafted 11 July** — bumped back one week from 11 August, will auto-publish on schedule via ISR |
 
 ### ISR fix — 4 June 2026
 
@@ -87,6 +89,12 @@ Head-term strategy session (6 July, see `BACKLOG.md` SEO content strategy sectio
 Conversion-first content session (see `BACKLOG.md` SEO content strategy section) concluded that "plant hardiness zones ireland", the site's strongest ranking signal, is a poor conversion audience, top-of-funnel research traffic rather than someone about to touch the tool. Four satellites agreed across two clusters that were sitting in "Future Cluster Ideas" below, both promoted to Active here on conversion-intent grounds rather than the stated Search Console activation trigger (neither cluster has hit 5+ impressions/week on 2+ queries yet), flagged explicitly as a deliberate override, not a quiet rule change. They take the 21 & 28 July and 4 & 11 August Tuesday slots.
 
 This creates a scheduling conflict: Satellite 3 (grandmother's garden, Hardiness cluster) was provisionally eligible for the 21 or 28 July slot once the UK pillar had 2–3 weeks of Search Console data. Defaulting to the Garden Cost satellites taking those two slots, since better conversion is the explicit reason this work was commissioned, but Steen should resequence if Satellite 3 should jump back in front of the queue.
+
+### Cadence exception — hosepipe ban drought pair jumps the queue, 26 July 2026
+
+Genuinely live news, not a manufactured hook: as of 23 July, eight UK water companies (covering Kent, Hampshire and the Isle of Wight, East Anglia, Devon, Cambridgeshire, London and the Thames Valley, Affinity's Central region, and parts of west Wales) have a Temporary Use Ban in force, and Uisce Éireann extended its Water Conservation Order nationwide from 24 July to 26 August. Search interest in hosepipe bans, watering restrictions and drought garden care is at its peak right now, not in two or three weeks when the next normal cadence slot would come round. Per the same exception rule used for Bord Bia Bloom (4 June) and the UK pillar (7 July): this is judged too time-sensitive to queue behind the Garden Cost cluster.
+
+Two new pieces, `surviving-a-hosepipe-ban.mdx` and `reviving-your-garden-after-a-hosepipe-ban.mdx`, ship 27 and 30 July, a 3-day gap mirroring the Bord Bia Bloom precedent of an event piece followed shortly by a tightly related sibling. That's two articles in a window that would otherwise also contain the already-queued Cheap Garden Ideas satellite (28 July) — three in seven days breaches the cadence rule outright, so rather than stack all three, the three remaining queued satellites (Cheap Garden Ideas, What Would My Garden Actually Look Like, DIY or Hire a Landscaper) each slide back exactly one week. Normal Tuesday cadence resumes 4 August.
 
 ---
 
@@ -126,6 +134,17 @@ Triggered by Search Console signal — `before-you-hire-a-landscaper.mdx` was pu
 
 Both satellites link inline to both pillars and to `before-you-hire-a-landscaper.mdx` / `diy-garden-makeover-plan.mdx` where relevant. Both pillars get retro-patched with links to the new satellites in the same commit each ships, per the internal linking rule. Full briefs (search intent, internal links, CTA, hero image direction) live in `BACKLOG.md` under "Garden Cost Cluster".
 
+## Active Cluster: Drought / Heatwave (event-driven, added 26 July)
+
+No dedicated pillar yet — this cluster opened reactively off live water-restriction news rather than a planned pillar-and-satellite build, unlike every other Active cluster above. Revisit after both pieces have had 2–3 weeks in Search Console: if "hosepipe ban" / "watering restrictions" terms sustain traffic beyond this news cycle, promote to a proper pillar; if it was a one-event spike, leave as a two-piece pair and archive the learning in `BACKLOG.md`.
+
+**Pieces — in publishing order:**
+
+1. Surviving a Hosepipe Ban: What Actually Works When You Can't Water the Garden (during-the-restriction triage: priority watering order, greywater safety, UK/IE/US/AU terminology) — **drafted 26 July, scheduled 27 July**
+2. Reviving Your Garden After a Hosepipe Ban: What Needs Help and What Doesn't (after-the-restriction recovery: dormant vs dead, lawn reseeding, deep watering) — **drafted 26 July, scheduled 30 July**
+
+Both pieces cross-link each other and link out to `low-maintenance-garden-ideas-by-climate.mdx`, `low-maintenance-garden-under-an-hour-a-week.mdx`, and both Hardiness pillars (`plant-hardiness-zones-ireland-beginners-guide.mdx`, `what-planting-zone-is-the-uk-in.mdx`). Those four get retro-patched to link back to the drought pair in the same commit, per the internal linking rule.
+
 ## Active Cluster: First-Time Garden Owner (conversion bridge, promoted 11 July)
 
 **Pillars:** `landscape-paralysis-why-great-gardens-dont-happen.mdx` (live 26 April, names the decision-paralysis problem) and `where-to-begin-garden-redesign.mdx` (live 28 April, gives a starting framework).
@@ -155,6 +174,8 @@ Most recent first. The log lives here so we can scan cadence at a glance without
 
 | Publish Date | Title | URL |
 |--------------|-------|-----|
+| 2026-07-21 | Where the Money Actually Goes in a Mid-Size Garden Renovation | /notes/where-the-money-goes-in-a-garden-renovation |
+| 2026-07-14 | Designing a Garden You Can Actually Maintain in Under an Hour a Week | /notes/low-maintenance-garden-under-an-hour-a-week |
 | 2026-07-07 | What Planting Zone Is the UK In? RHS H3 to H7 Explained | /notes/what-planting-zone-is-the-uk-in |
 | 2026-06-16 | RHS Hardiness vs USDA Zones: A Quick Translator | /notes/rhs-hardiness-vs-usda-zones |
 | 2026-06-09 | What Do the Symbols on Your Plant Label Actually Mean? | /notes/what-do-plant-label-symbols-mean |
