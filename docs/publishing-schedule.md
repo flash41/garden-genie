@@ -65,6 +65,17 @@ Every change to this document is committed in the same PR as the article work it
 | 2026-08-04 (Tue) | New | Cheap Garden Ideas That Don't Look Cheap (Garden Cost satellite) | **Drafted 11 July** — bumped back one week from 28 July to make room for the drought pair, will auto-publish on schedule via ISR |
 | 2026-08-11 (Tue) | New | What Would My Garden Actually Look Like? Seeing Before You Spend (First-Time Garden Owner satellite) | **Drafted 11 July** — bumped back one week from 4 August, will auto-publish on schedule via ISR |
 | 2026-08-18 (Tue) | New | DIY or Hire a Landscaper? How to Actually Decide (First-Time Garden Owner satellite) | **Drafted 11 July** — bumped back one week from 11 August, will auto-publish on schedule via ISR |
+| 2026-08-25 (Tue) | New | Drought-Tolerant and Water-Wise Planting (Drought/Heatwave cluster, evergreen pillar candidate) | **Queued 5 Aug** — target date, not yet drafted |
+| 2026-09-01 (Tue) | New | Microclimates in Your Garden (Hardiness satellite) | **Queued 5 Aug** — target date, not yet drafted |
+| 2026-09-08 (Tue) | New | Gravel vs Decking vs Paving (Comparison cluster) | **Queued 5 Aug** — target date, not yet drafted |
+| 2026-09-15 (Tue) | New | Boggy or Waterlogged Garden — What to Do (Problem-solving cluster) | **Queued 5 Aug** — target date, not yet drafted |
+| 2026-09-22 (Tue) | New | Last Frost Dates and How to Use Them for Planting Timing (Hardiness satellite) | **Queued 5 Aug** — target date, not yet drafted |
+| 2026-09-29 (Tue) | New | Native vs Non-Native Planting (Comparison cluster) | **Queued 5 Aug** — target date, not yet drafted |
+| 2026-10-06 (Tue) | New | What Will Actually Grow in a North-Facing Garden (Problem-solving cluster) | **Queued 5 Aug** — target date, not yet drafted |
+| 2026-10-13 (Tue) | New | Coastal and Exposed Garden Planting (Hardiness satellite) | **Queued 5 Aug** — target date, not yet drafted |
+| 2026-10-20 (Tue) | New | Raised Beds vs In-Ground Beds (Comparison cluster) | **Queued 5 Aug** — target date, not yet drafted |
+| 2026-10-27 (Tue) | New | Clay Soil vs Sandy Soil — What'll Grow (Problem-solving cluster) | **Queued 5 Aug** — target date, not yet drafted |
+| 2026-11-03 (Tue) | New | Landscaping a Sloped Garden (Problem-solving cluster) | **Queued 5 Aug** — target date, not yet drafted |
 
 ### ISR fix — 4 June 2026
 
@@ -162,7 +173,33 @@ Satellite 1 also links to `garden-drab-to-fab-weekend.mdx`; Satellite 2 also lin
 
 Hold off building these until Search Console gives a signal that the underlying theme is worth chasing, or until a future conversion-first session promotes it early the way the Garden Cost and First-Time Garden Owner clusters were promoted on 11 July. Adding here so we don't lose the thought.
 
-- **Small garden cluster** — built around existing `making-small-gardens-feel-generous.mdx` and `small-irish-garden-design-guide.mdx`. Possible satellites: "How to fake space in a courtyard garden", "Small garden mistakes that make spaces feel smaller", "Designing a 5x5m garden".
+- **Small garden cluster** — built around existing `making-small-gardens-feel-generous.mdx` and `small-irish-garden-design-guide.mdx`. Possible satellites: "How to fake space in a courtyard garden", "Small garden mistakes that make spaces feel smaller", "Designing a 5x5m garden". **Action flagged 5 Aug:** `small-irish-garden-design-guide.mdx` is only pulling 17 impressions and its title/URL breaks the market-neutral rule — rename to drop "Irish" when this cluster is built rather than spin up a competing piece.
+
+### Queued from GSC pages review, 5 August 2026
+
+Search Console's top-pages report confirms the Hardiness cluster is the strongest performer and that comparison-format ("X vs Y") and practical-problem articles convert impressions to clicks at a better rate than pure guides. These now have provisional target dates in the Cadence Calendar (25 Aug – 3 Nov), deliberately interleaved across clusters rather than run back to back, same "build by cluster, ship by week" logic as everything above. Order and dates are provisional, not commitments — they'll slip the same way everything else in this document has slipped for genuinely time-sensitive work (events, refreshes, higher-priority conversion pieces).
+
+Sequencing logic: drought-tolerant planting goes first (25 Aug) to catch residual search interest from the hosepipe ban news cycle before it fades; Hardiness satellites are spaced every 4 weeks to reinforce the strongest-performing cluster without diluting it; comparison and problem-solving pieces fill the gaps between.
+
+- **Hardiness cluster — climate/microclimate satellites** (extends the existing pillars, no new cluster needed):
+  - Microclimates in Your Garden — frost pockets, sun traps, why two spots in the same garden behave differently
+  - Last Frost Dates and How to Use Them for Planting Timing
+  - Coastal and Exposed Garden Planting — wind and salt tolerance
+
+- **Drought/Heatwave cluster — evergreen pillar candidate:** Drought-Tolerant and Water-Wise Planting. This is the non-event-tied companion to the hosepipe ban pair — per the cluster's own note above, if "hosepipe ban"/"watering restrictions" traffic sustains past this news cycle, this is the piece to promote the cluster with, rather than leaving it as a two-piece event pair.
+
+- **New cluster idea — Comparison format** (`hard-landscaping-vs-soft-landscaping.mdx` already shows this format holds attention; worth building out deliberately):
+  - Gravel vs Decking vs Paving
+  - Native vs Non-Native Planting
+  - Raised Beds vs In-Ground Beds
+
+  Note: "DIY vs hire a landscaper" is already covered — that's the First-Time Garden Owner cluster's Satellite 2, scheduled 11 August. No duplicate needed.
+
+- **New cluster idea — Practical problem-solving** (same intent shape as the hosepipe ban pieces: a reader with a specific garden headache, not browsing):
+  - Boggy or Waterlogged Garden — What to Do
+  - What Will Actually Grow in a North-Facing Garden
+  - Clay Soil vs Sandy Soil — What'll Grow
+  - Landscaping a Sloped Garden
 
 Activation rule: a cluster gets promoted from "Future" to "Active" when one of its existing articles starts pulling 5+ impressions per week on at least two related queries in Search Console, or when a conversion-first strategy session promotes it early with a written reason (see 11 July precedent above).
 

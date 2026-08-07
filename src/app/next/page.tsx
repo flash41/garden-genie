@@ -16,6 +16,7 @@ export default function NextPage() {
 
   // ── Waitlist state ───────────────────────────────────────────────────────
   const [waitlistEmail, setWaitlistEmail] = useState('');
+  const [waitlistFeedback, setWaitlistFeedback] = useState('');
   const [waitlistStatus, setWaitlistStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [waitlistError, setWaitlistError] = useState('');
 
@@ -50,7 +51,10 @@ export default function NextPage() {
       const res = await fetch('/api/waitlist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: waitlistEmail }),
+        body: JSON.stringify({
+          email: waitlistEmail,
+          feedback: waitlistFeedback.trim() || undefined,
+        }),
       });
       if (res.ok) {
         setWaitlistStatus('success');
@@ -251,28 +255,30 @@ export default function NextPage() {
               lineHeight: 1.65,
             }}
           >
-            We&apos;re in beta, testing to make sure this is the best it can be before we open it up
-            properly. Don&apos;t have a code? Register below and we&apos;ll send you a discounted
-            launch code the day we&apos;re ready.
+            We are in the final development stages and carrying out testing to make sure the tool
+            is the best it can be before we open it up properly. Feel free to leave feedback on
+            your impressions &amp; what you would like to see in the tool below. Or simply
+            register to be notified when we release and we&apos;ll send you a discounted launch
+            code the day we&apos;re ready.
           </p>
           {waitlistStatus === 'success' ? (
             <p style={{ margin: 0, fontSize: 13, color: '#0a3d2b', fontWeight: 600 }}>
-              You&apos;re on the list. Watch your inbox for your launch code.
+              You&apos;re on the list. Watch your inbox for your launch code — and thanks for the
+              feedback if you left any.
             </p>
           ) : (
             <form
               onSubmit={handleWaitlistSubmit}
-              style={{ display: 'flex', gap: 8 }}
+              style={{ display: 'flex', flexDirection: 'column', gap: 8 }}
             >
-              <input
-                type="email"
-                required
-                placeholder="your@email.com"
-                value={waitlistEmail}
-                onChange={e => setWaitlistEmail(e.target.value)}
+              <textarea
+                placeholder="Feature requests or thoughts on the tool so far (optional)"
+                value={waitlistFeedback}
+                onChange={e => setWaitlistFeedback(e.target.value)}
                 disabled={waitlistStatus === 'loading'}
+                rows={3}
                 style={{
-                  flex: 1,
+                  width: '100%',
                   padding: '9px 11px',
                   border: '1px solid #d4c9b8',
                   borderRadius: 6,
@@ -282,29 +288,52 @@ export default function NextPage() {
                   background: '#fff',
                   outline: 'none',
                   boxSizing: 'border-box',
-                  minWidth: 0,
+                  resize: 'vertical',
                 }}
               />
-              <button
-                type="submit"
-                disabled={waitlistStatus === 'loading'}
-                style={{
-                  padding: '9px 14px',
-                  background: waitlistStatus === 'loading' ? '#d4aa4a' : '#b8962e',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: 6,
-                  fontWeight: 700,
-                  fontSize: 13,
-                  cursor: waitlistStatus === 'loading' ? 'not-allowed' : 'pointer',
-                  fontFamily: 'inherit',
-                  whiteSpace: 'nowrap',
-                  flexShrink: 0,
-                  transition: 'background 0.15s',
-                }}
-              >
-                {waitlistStatus === 'loading' ? 'Saving…' : 'Join waitlist'}
-              </button>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <input
+                  type="email"
+                  required
+                  placeholder="your@email.com"
+                  value={waitlistEmail}
+                  onChange={e => setWaitlistEmail(e.target.value)}
+                  disabled={waitlistStatus === 'loading'}
+                  style={{
+                    flex: 1,
+                    padding: '9px 11px',
+                    border: '1px solid #d4c9b8',
+                    borderRadius: 6,
+                    fontSize: 13,
+                    fontFamily: 'inherit',
+                    color: '#0a3d2b',
+                    background: '#fff',
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                    minWidth: 0,
+                  }}
+                />
+                <button
+                  type="submit"
+                  disabled={waitlistStatus === 'loading'}
+                  style={{
+                    padding: '9px 14px',
+                    background: waitlistStatus === 'loading' ? '#d4aa4a' : '#b8962e',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: 6,
+                    fontWeight: 700,
+                    fontSize: 13,
+                    cursor: waitlistStatus === 'loading' ? 'not-allowed' : 'pointer',
+                    fontFamily: 'inherit',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0,
+                    transition: 'background 0.15s',
+                  }}
+                >
+                  {waitlistStatus === 'loading' ? 'Saving…' : 'Join waitlist'}
+                </button>
+              </div>
             </form>
           )}
           {waitlistStatus === 'error' && (
