@@ -15,7 +15,7 @@ import { supabaseAdmin } from '@/lib/supabase-server';
 // Vercel cron at /api/cron/heartbeat-check.
 
 export const heartbeatFunction = inngest.createFunction(
-  { id: 'pipeline-heartbeat', name: 'Pipeline Heartbeat', triggers: [{ cron: '* * * * *' }] },
+  { id: 'pipeline-heartbeat', name: 'Pipeline Heartbeat', triggers: [{ cron: '0 */3 * * *' }] },
   async ({ step }) => {
     return await step.run('write-heartbeat', async () => {
       const now = new Date().toISOString();

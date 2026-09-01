@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
 // heartbeat. Subsequent alerts are suppressed for ALERT_COOLDOWN_MS to
 // avoid an alert storm. Counter is reset on recovery.
 
-const STALE_THRESHOLD_MS = 5 * 60 * 1000;          // 5 min
+const STALE_THRESHOLD_MS = 4 * 60 * 60 * 1000;     // 4 hours
 const ALERT_COOLDOWN_MS  = 30 * 60 * 1000;         // 30 min
 const ALERT_RECIPIENT    = 'steen.gordon@gmail.com';
 
@@ -29,7 +29,7 @@ function alertEmailHtml(params: {
     <tr><td>
       <p style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#b91c1c;margin:0 0 8px;">Pipeline Down</p>
       <h1 style="font-size:24px;color:#0a3d2b;margin:0 0 20px;">Dedrab Inngest heartbeat is stale</h1>
-      <p style="line-height:1.7;">The Inngest pipeline heartbeat hasn't fired in <strong>${params.ageSeconds}s</strong>. Threshold is 300s.</p>
+      <p style="line-height:1.7;">The Inngest pipeline heartbeat hasn't fired in <strong>${params.ageSeconds}s</strong>. Threshold is 4h (14400s).</p>
       <table cellpadding="6" cellspacing="0" style="font-size:14px;margin:16px 0;border-collapse:collapse;">
         <tr><td style="color:#8a7e6e;">Last beat</td><td style="font-family:monospace;">${params.lastSeen}</td></tr>
         <tr><td style="color:#8a7e6e;">Consecutive misses</td><td style="font-family:monospace;">${params.consecutiveFailures}</td></tr>
