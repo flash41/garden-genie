@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Script from 'next/script';
 
 const GA_MEASUREMENT_ID = 'G-532QK8PLBH';
+const GA_MEASUREMENT_ID_2 = 'G-TV8VD0X6CY';
 const CONSENT_COOKIE = 'dedrab_analytics_consent';
 const CONSENT_MAX_AGE_DAYS = 365;
 
@@ -86,6 +87,7 @@ export default function AnalyticsConsent() {
               function gtag(){dataLayer.push(arguments);}
               gtag('js', new Date());
               gtag('config', '${GA_MEASUREMENT_ID}', { anonymize_ip: true });
+              gtag('config', '${GA_MEASUREMENT_ID_2}', { anonymize_ip: true });
               gtag('consent', 'update', { analytics_storage: 'granted' });
             `}
           </Script>
