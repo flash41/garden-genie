@@ -48,12 +48,27 @@ export default function NextPage() {
     setWaitlistStatus('loading');
     setWaitlistError('');
     try {
+      let source: string | undefined;
+      try {
+        const ref = document.referrer;
+        const utmSource = new URLSearchParams(window.location.search).get('utm_source');
+        let base = '';
+        if (ref) {
+          const u = new URL(ref);
+          base = u.origin === window.location.origin ? u.pathname : u.hostname;
+        }
+        const utmPart = utmSource ? ` | utm:${utmSource}` : '';
+        const combined = `${base}${utmPart}`.trim().slice(0, 200);
+        if (combined) source = combined;
+      } catch { /* ignore */ }
+
       const res = await fetch('/api/waitlist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: waitlistEmail,
           feedback: waitlistFeedback.trim() || undefined,
+          ...(source ? { source } : {}),
         }),
       });
       if (res.ok) {
