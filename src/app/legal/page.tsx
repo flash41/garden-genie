@@ -221,6 +221,11 @@ export default function LegalPage() {
                 information is passed to Google Analytics.
               </li>
               <li>
+                <strong>Page view counts</strong> — we count page views and button clicks without
+                cookies, recording only the page, the referring website and any campaign tags in the
+                link. No IP address or device details are stored.
+              </li>
+              <li>
                 <strong>Technical data</strong> — standard server logs including IP addresses,
                 browser type, and access timestamps. Used for security purposes only.
               </li>
