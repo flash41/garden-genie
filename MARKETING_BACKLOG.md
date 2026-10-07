@@ -34,7 +34,7 @@ not yet agreed — accept, reshape, or bin.
 
 These are the standing rules any content or distribution work has to pass:
 
-1. **Markets, in order: UK first, Ireland second, US third** (AUS + rest-of-world welcome).
+1. **Markets, in order: UK first, Ireland second, US third** (AUS + rest-of-world welcome). *(Updated 7 Oct 2026: see `docs/content-standards.md` — go narrow on places where the answer varies; keep generic titles neutral but carry a regional breakdown.)*
    Keep everything market-neutral — no region-specific pricing, currency symbols, legislation
    or plant zones in titles or framing unless a piece is explicitly market-targeted. Where
    regional flavour is unavoidable, frame it as observation, not prescription.
