@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { isAuthenticatedAdmin } from '@/lib/admin-session';
 import AdminLeadsContent from '@/components/admin/LeadsMap';
+import FunnelStats from '@/components/admin/FunnelStats';
 import type { LeadRow, ErrorReport } from '@/components/admin/LeadsMap';
 
 export default async function AdminLeadsPage() {
@@ -62,6 +63,7 @@ export default async function AdminLeadsPage() {
         <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13 }}>Quote Leads</span>
       </div>
 
+      <FunnelStats />
       <AdminLeadsContent initialLeads={leads} initialErrorReports={errorReports} newReportCount={newReportCount} />
     </div>
   );

@@ -41,7 +41,7 @@ async function sendWaitlistNotification(email: string, feedback: string): Promis
 const MAX_FEEDBACK_LENGTH = 2000;
 
 export async function POST(req: NextRequest) {
-  let body: { email?: unknown; feedback?: unknown };
+  let body: { email?: unknown; feedback?: unknown; source?: unknown };
   try {
     body = await req.json();
   } catch {
@@ -56,6 +56,9 @@ export async function POST(req: NextRequest) {
   const feedback =
     typeof body.feedback === 'string' ? body.feedback.trim().slice(0, MAX_FEEDBACK_LENGTH) : '';
 
+  const source =
+    typeof body.source === 'string' ? body.source.trim().slice(0, 200) : '';
+
   // Upsert without ignoreDuplicates so a returning visitor's feedback still gets saved
   // against their existing row, and we can always tell whether the row was new.
   const { data: existing } = await supabaseAdmin
@@ -64,16 +67,24 @@ export async function POST(req: NextRequest) {
     .eq('email', email)
     .maybeSingle();
 
+  const isNewSignup = !existing;
+
   const { error } = await supabaseAdmin
     .from('waitlist_signups')
-    .upsert({ email, ...(feedback ? { feedback } : {}) }, { onConflict: 'email' });
+    .upsert(
+      {
+        email,
+        ...(feedback ? { feedback } : {}),
+        ...(isNewSignup && source ? { source } : {}),
+      },
+      { onConflict: 'email' }
+    );
 
   if (error) {
     console.error('[waitlist] upsert error:', error);
     return NextResponse.json({ error: 'Could not save your email. Please try again.' }, { status: 500 });
   }
 
-  const isNewSignup = !existing;
   if (isNewSignup || feedback) {
     // Fire-and-forget: a notification failure shouldn't fail the user's signup.
     void sendWaitlistNotification(email, feedback);
