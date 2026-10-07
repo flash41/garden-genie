@@ -51,6 +51,12 @@ const nextConfig: NextConfig = {
         destination: 'https://www.dedrab.com/:path*',
         permanent: true,
       },
+      // Market-neutral rename (Oct 2026): drop "irish" from the small-garden guide URL.
+      {
+        source: '/notes/small-irish-garden-design-guide',
+        destination: '/notes/small-garden-design-guide',
+        permanent: true,
+      },
       {
         source: '/invite',
         destination: '/next',

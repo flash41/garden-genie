@@ -62,20 +62,46 @@ Every change to this document is committed in the same PR as the article work it
 | 2026-07-21 (Tue) | New | Where the Money Actually Goes in a Mid-Size Garden Renovation (Garden Cost satellite) | **Live 21 July** — see cadence note below re: Satellite 3 slot conflict |
 | 2026-07-27 (Mon) | New | Surviving a Hosepipe Ban: What Actually Works When You Can't Water the Garden (Drought/Heatwave, piece 1 of 2) | **Drafted 26 July, scheduled 27 July** — jumps the queue outright, see cadence exception below |
 | 2026-07-30 (Thu) | New | Reviving Your Garden After a Hosepipe Ban: What Needs Help and What Doesn't (Drought/Heatwave, piece 2 of 2) | **Drafted 26 July, scheduled 30 July** — tightly related sibling to the 27 July piece, allowed within the same window per the cadence rule |
-| 2026-08-04 (Tue) | New | Cheap Garden Ideas That Don't Look Cheap (Garden Cost satellite) | **Drafted 11 July** — bumped back one week from 28 July to make room for the drought pair, will auto-publish on schedule via ISR |
-| 2026-08-11 (Tue) | New | What Would My Garden Actually Look Like? Seeing Before You Spend (First-Time Garden Owner satellite) | **Drafted 11 July** — bumped back one week from 4 August, will auto-publish on schedule via ISR |
-| 2026-08-18 (Tue) | New | DIY or Hire a Landscaper? How to Actually Decide (First-Time Garden Owner satellite) | **Drafted 11 July** — bumped back one week from 11 August, will auto-publish on schedule via ISR |
-| 2026-08-25 (Tue) | New | Drought-Tolerant and Water-Wise Planting (Drought/Heatwave cluster, evergreen pillar candidate) | **Queued 5 Aug** — target date, not yet drafted |
-| 2026-09-01 (Tue) | New | Microclimates in Your Garden (Hardiness satellite) | **Queued 5 Aug** — target date, not yet drafted |
-| 2026-09-08 (Tue) | New | Gravel vs Decking vs Paving (Comparison cluster) | **Queued 5 Aug** — target date, not yet drafted |
-| 2026-09-15 (Tue) | New | Boggy or Waterlogged Garden — What to Do (Problem-solving cluster) | **Queued 5 Aug** — target date, not yet drafted |
-| 2026-09-22 (Tue) | New | Last Frost Dates and How to Use Them for Planting Timing (Hardiness satellite) | **Queued 5 Aug** — target date, not yet drafted |
-| 2026-09-29 (Tue) | New | Native vs Non-Native Planting (Comparison cluster) | **Queued 5 Aug** — target date, not yet drafted |
-| 2026-10-06 (Tue) | New | What Will Actually Grow in a North-Facing Garden (Problem-solving cluster) | **Queued 5 Aug** — target date, not yet drafted |
-| 2026-10-13 (Tue) | New | Coastal and Exposed Garden Planting (Hardiness satellite) | **Queued 5 Aug** — target date, not yet drafted |
-| 2026-10-20 (Tue) | New | Raised Beds vs In-Ground Beds (Comparison cluster) | **Queued 5 Aug** — target date, not yet drafted |
-| 2026-10-27 (Tue) | New | Clay Soil vs Sandy Soil — What'll Grow (Problem-solving cluster) | **Queued 5 Aug** — target date, not yet drafted |
+| 2026-07-28 (Tue) | New | Cheap Garden Ideas That Don't Look Cheap (Garden Cost satellite) | **Live 28 July** (repo `publishedAt`; earlier plan said 4 Aug) |
+| 2026-08-04 (Tue) | New | What Would My Garden Actually Look Like? Seeing Before You Spend (First-Time Garden Owner satellite) | **Live 4 August** (earlier plan said 11 Aug) |
+| 2026-08-11 (Tue) | New | DIY or Hire a Landscaper? How to Actually Decide (First-Time Garden Owner satellite) | **Live 11 August** (earlier plan said 18 Aug) |
 | 2026-11-03 (Tue) | New | Landscaping a Sloped Garden (Problem-solving cluster) | **Queued 5 Aug** — target date, not yet drafted |
+| 2026-08-18 → 2026-10-06 | — | **Slipped.** Seven Tuesday slots (25 Aug – 6 Oct) were queued but never drafted; nothing published 12 Aug – 7 Oct | Reset below |
+| 2026-10-13 (Tue) | New | What Will Actually Grow in a North-Facing Garden (Problem-solving) | **Drafted 7 Oct** — `what-will-grow-in-a-north-facing-garden.mdx`, auto-publishes via ISR |
+| 2026-10-20 (Tue) | New | Boggy or Waterlogged Garden: What to Do (Problem-solving) | **Drafted 7 Oct** — `boggy-waterlogged-garden-what-to-do.mdx` |
+| 2026-10-27 (Tue) | New | Microclimates in Your Garden (Hardiness satellite) | **Drafted 7 Oct** — `microclimates-in-your-garden.mdx` |
+| 2026-11-03 (Tue) | New | Right Plant, Right Place: Planting for Your Garden's Orientation (Hardiness satellite; strongest tool CTA) | **Drafted 7 Oct** — `right-plant-right-place-garden-orientation.mdx` |
+| 2026-11-10 (Tue) | New | Clay Soil vs Sandy Soil: What Will Actually Grow (Problem-solving) | **Drafted 7 Oct** — `clay-soil-vs-sandy-soil-what-will-grow.mdx` |
+| 2026-11-17 (Tue) | New | Landscaping a Sloped Garden (Problem-solving) | **Drafted 7 Oct** — `landscaping-a-sloped-garden.mdx` |
+| 2026-11-24 (Tue) | New | Drought-Tolerant and Water-Wise Planting (Drought/Heatwave evergreen pillar candidate) | **Drafted 7 Oct** — `drought-tolerant-water-wise-planting.mdx` |
+| 2026-12-01 (Tue) | New | Raised Beds vs In-Ground Beds (Comparison) | **Drafted 7 Oct** — `raised-beds-vs-in-ground-beds.mdx` |
+| 2026-12-08 (Tue) | New | Coastal and Exposed Gardens (Hardiness satellite) | **Drafted 7 Oct** — `coastal-and-exposed-garden-planting.mdx` |
+| 2026-12-15 (Tue) | New | Native vs Non-Native Planting (Comparison) | **Drafted 7 Oct** — `native-vs-non-native-planting.mdx` |
+| 2026-12-22 / 29 | — | No publish (holiday dip) | Planned gap |
+| 2027-01-05 (Tue) | New | Last Frost Dates and How to Use Them for Planting Timing (Hardiness satellite) | **Drafted 7 Oct** — `last-frost-dates-and-planting-timing.mdx` |
+| 2027-01-12 (Tue) | New | Gravel vs Decking vs Paving (Comparison) | **Drafted 7 Oct** — `gravel-vs-decking-vs-paving.mdx` |
+| 2027-01-19 (Tue) | New | Why the Plants in Your Grandmother's Garden Don't Always Survive Anymore (Satellite 3) | **HELD** — drafted with `draft: true`; un-draft only if UK pillar data supports it |
+
+### Reset — 7 October 2026
+
+Audit on 7 Oct found the last article went live 11 Aug; the seven queued slots from 25 Aug to 6 Oct were never drafted, so the "auto-publish" promise had nothing to publish. Thirteen articles were drafted on 7 Oct (12 scheduled 13 Oct – 12 Jan, plus held Satellite 3) with future `publishedAt` dates, so ISR releases each on its Tuesday with no further action.
+
+**New standing rules**
+1. **Always keep 3 articles drafted ahead.** If fewer than three future-dated, non-draft articles exist in `src/content/notes/`, drafting is the next job — before anything else content-related.
+2. **Check at each publish.** Run the per-article checklist below on publish day (or the day before).
+3. **Cover images are required before the pre-push check will pass** — see the cover-image note in the checklist.
+4. Cluster pieces still ship one per Tuesday; two in a week only for tightly related siblings.
+
+### Per-article publish checklist
+
+- [ ] `publishedAt` is the Tuesday; `draft: false`; description 150–160 chars; FAQ heading `## Frequently Asked Questions`.
+- [ ] Cover image added (`coverImage` + `coverImageAlt`, file in `public/images/notes/`), 16:9 style matching the library.
+- [ ] 4+ real references, each fetched and read; no unverified figures.
+- [ ] 2–3 inline links to related articles; **retro-links** added to older articles per `docs/retro-link-queue.md` on or after publish day (never before — future URLs 404).
+- [ ] Soft CTA to the tool present.
+- [ ] Pin set from `docs/pins/<slug>.md` created in Pinterest, on/after publish day; spread pins over the week.
+- [ ] Live check: URL returns 200, appears in `/notes`, in `sitemap.xml`; then request indexing in Search Console.
+- [ ] Move the row to the Published Log below.
 
 ### ISR fix — 4 June 2026
 
@@ -173,7 +199,7 @@ Satellite 1 also links to `garden-drab-to-fab-weekend.mdx`; Satellite 2 also lin
 
 Hold off building these until Search Console gives a signal that the underlying theme is worth chasing, or until a future conversion-first session promotes it early the way the Garden Cost and First-Time Garden Owner clusters were promoted on 11 July. Adding here so we don't lose the thought.
 
-- **Small garden cluster** — built around existing `making-small-gardens-feel-generous.mdx` and `small-irish-garden-design-guide.mdx`. Possible satellites: "How to fake space in a courtyard garden", "Small garden mistakes that make spaces feel smaller", "Designing a 5x5m garden". **Action flagged 5 Aug:** `small-irish-garden-design-guide.mdx` is only pulling 17 impressions and its title/URL breaks the market-neutral rule — rename to drop "Irish" when this cluster is built rather than spin up a competing piece.
+- **Small garden cluster** — built around existing `making-small-gardens-feel-generous.mdx` and `small-irish-garden-design-guide.mdx`. Possible satellites: "How to fake space in a courtyard garden", "Small garden mistakes that make spaces feel smaller", "Designing a 5x5m garden". **Action flagged 5 Aug:** `small-irish-garden-design-guide.mdx` is only pulling 17 impressions and its title/URL breaks the market-neutral rule — **Done 7 Oct 2026:** renamed to `small-garden-design-guide.mdx`, with a permanent redirect from the old URL in `next.config.ts`.
 
 ### Queued from GSC pages review, 5 August 2026
 
@@ -185,6 +211,7 @@ Sequencing logic: drought-tolerant planting goes first (25 Aug) to catch residua
   - Microclimates in Your Garden — frost pockets, sun traps, why two spots in the same garden behave differently
   - Last Frost Dates and How to Use Them for Planting Timing
   - Coastal and Exposed Garden Planting — wind and salt tolerance
+  - Right Plant, Right Place: Planting for Your Garden's Orientation — how the aspect a garden faces (N/S/E/W) drives sun/shade mapping across the day and seasons, and what thrives where. Scheduled 10 Nov (next free slot). Pairs with the North-Facing (6 Oct) and Microclimates (1 Sep) pieces; strongest natural CTA into the tool, since translating orientation into a planting plan is exactly what Dedrab does. Cross-link inline to both Hardiness pillars, North-Facing, and Microclimates; retro-patch those to link back in the same PR.
 
 - **Drought/Heatwave cluster — evergreen pillar candidate:** Drought-Tolerant and Water-Wise Planting. This is the non-event-tied companion to the hosepipe ban pair — per the cluster's own note above, if "hosepipe ban"/"watering restrictions" traffic sustains past this news cycle, this is the piece to promote the cluster with, rather than leaving it as a two-piece event pair.
 
@@ -211,6 +238,11 @@ Most recent first. The log lives here so we can scan cadence at a glance without
 
 | Publish Date | Title | URL |
 |--------------|-------|-----|
+| 2026-08-11 | DIY or Hire a Landscaper? How to Actually Decide | /notes/diy-or-hire-a-landscaper |
+| 2026-08-04 | What Would My Garden Actually Look Like? Seeing Before You Spend | /notes/what-would-my-garden-actually-look-like |
+| 2026-07-30 | Reviving Your Garden After a Hosepipe Ban | /notes/reviving-your-garden-after-a-hosepipe-ban |
+| 2026-07-28 | Cheap Garden Ideas That Don't Look Cheap | /notes/cheap-garden-ideas-that-dont-look-cheap |
+| 2026-07-27 | Surviving a Hosepipe Ban | /notes/surviving-a-hosepipe-ban |
 | 2026-07-21 | Where the Money Actually Goes in a Mid-Size Garden Renovation | /notes/where-the-money-goes-in-a-garden-renovation |
 | 2026-07-14 | Designing a Garden You Can Actually Maintain in Under an Hour a Week | /notes/low-maintenance-garden-under-an-hour-a-week |
 | 2026-07-07 | What Planting Zone Is the UK In? RHS H3 to H7 Explained | /notes/what-planting-zone-is-the-uk-in |
