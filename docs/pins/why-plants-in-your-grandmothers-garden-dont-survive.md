@@ -4,7 +4,7 @@ Article URL: https://www.dedrab.com/notes/why-plants-in-your-grandmothers-garden
 Status: HELD. Do not pin until the article is un-drafted (draft: true removed) and live.
 
 ## Pin 1
-- Title: Why Nan's Plants Thrived and Yours Sulk (It's Not Your Fault)
+- Title: Why Don't Your Grandmother's Plants Survive in Your Garden?
 - Description: Loved a plant in a relative's garden, then lost it in yours? Wetter winters, different soil, shelter, new pests and a changing climate all play a part. Here's what's really going on.
 - Image concept (2:3): Warm-toned old cottage garden border on top half, a bare patch of soil with one wilted plant below; serif overlay "Same plant. Different garden."
 - Board: Problem Solving

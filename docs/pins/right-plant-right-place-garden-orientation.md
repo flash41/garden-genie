@@ -1,4 +1,4 @@
-# Pins: Right Plant, Right Place: Planting for Your Garden's Orientation
+# Pins: What Should You Plant in a North, South, East or West-Facing Garden?
 
 Article URL: https://www.dedrab.com/notes/right-plant-right-place-garden-orientation
 Pin on or after the publish date (2026-11-03).

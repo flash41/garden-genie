@@ -5,7 +5,7 @@ Pin on/after: 2027-01-12
 
 ## Pin 1
 - Title: Gravel, decking or paving? How to choose the right garden surface
-- Description: Not sure which surface suits your garden? We compare gravel, decking and paving on upkeep, slip risk, drainage and slopes, so you can choose with confidence before you spend a penny.
+- Description: For most gardens, paving suits the seating area and gravel the paths. We compare gravel, decking and paving on upkeep, slip risk, drainage and slopes, so you can choose with confidence before you spend a penny.
 - Image concept (2:3 portrait): Three-panel vertical collage of the same garden corner in gravel, timber deck and stone paving, soft natural light, small serif label under each.
 - Board: Comparisons
 

@@ -1,4 +1,4 @@
-# Pins: Boggy or Waterlogged Garden: What to Do (and What to Plant)
+# Pins: How Do You Fix a Boggy or Waterlogged Garden?
 
 Article URL: https://www.dedrab.com/notes/boggy-waterlogged-garden-what-to-do
 Publish date: 2026-10-20. Pin on or after this date.

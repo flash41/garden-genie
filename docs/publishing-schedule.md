@@ -94,6 +94,7 @@ Audit on 7 Oct found the last article went live 11 Aug; the seven queued slots f
 
 ### Per-article publish checklist
 
+- [ ] Follows `docs/content-standards.md`: question title with a definite answer, narrow on places, standard layout (quick answer → body → by region → FAQ → related → references → tool CTA last).
 - [ ] `publishedAt` is the Tuesday; `draft: false`; description 150–160 chars; FAQ heading `## Frequently Asked Questions`.
 - [ ] Cover image added (`coverImage` + `coverImageAlt`, file in `public/images/notes/`), 16:9 style matching the library.
 - [ ] 4+ real references, each fetched and read; no unverified figures.

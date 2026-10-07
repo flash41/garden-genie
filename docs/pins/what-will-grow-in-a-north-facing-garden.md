@@ -1,10 +1,10 @@
-# Pins: What Will Actually Grow in a North-Facing Garden
+# Pins: What Will Grow in a North-Facing Garden
 
 Article URL: https://www.dedrab.com/notes/what-will-grow-in-a-north-facing-garden
 Pin on or after the publish date (2026-10-13).
 
 ## Pin 1
-- Title: What Will Actually Grow in a North-Facing Garden (It's More Than You Think)
+- Title: What Will Grow in a North-Facing Garden? Ferns, Hostas, Bulbs and More
 - Description: Shady border that never quite works? Learn how to read your shade, dry or damp, deep or dappled, then pick ferns, ground cover and flowers that genuinely cope. Plus a note for Australian gardens.
 - Image concept (2:3): Lush shady border along a house wall, ferns and hostas in soft light, bold serif overlay "North-facing? Plant this."
 - Board: Problem Solving

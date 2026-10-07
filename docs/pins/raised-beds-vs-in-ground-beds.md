@@ -4,8 +4,8 @@ URL: https://www.dedrab.com/notes/raised-beds-vs-in-ground-beds
 Pin on or after: 2026-12-01
 
 ## Pin 1
-- Title: Raised Beds vs In-Ground Beds: Which Is Right for Your Garden?
-- Description: Not sure whether to build raised beds or dig into the lawn? Here's an honest side-by-side on cost, drainage, watering and back-friendliness, so you can choose what actually suits your garden.
+- Title: Are Raised Beds Better Than In-Ground Beds?
+- Description: Usually yes on poor, wet or sore-back sites, but not everywhere. A plain-English comparison of cost, drainage and watering, with how the answer changes in the UK, Ireland, US and Australia.
 - Image concept (2:3 portrait): Two beds side by side in soft morning light, a tidy timber raised bed of salad leaves on the left and a dug in-ground border on the right, simple serif headline overlay.
 - Board: Comparisons
 
