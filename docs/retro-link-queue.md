@@ -16,4 +16,4 @@ New articles are future-dated, so older live articles must **not** link to them 
 | native-vs-non-native-planting (15 Dec) | pollinator-haven-garden-features, plant-hardiness-zones-ireland-beginners-guide |
 | last-frost-dates-and-planting-timing (5 Jan) | rhs-hardiness-vs-usda-zones, what-planting-zone-is-the-uk-in, microclimates-in-your-garden |
 | gravel-vs-decking-vs-paving (12 Jan) | hard-landscaping-vs-soft-landscaping, garden-design-cost-breakdown-2026, real-cost-of-redoing-a-small-garden |
-| why-plants-in-your-grandmothers-garden-dont-survive (HELD) | your-own-british-vineyard, your-own-irish-vineyard, what-planting-zone-is-the-uk-in (only if un-drafted) |
+| why-plants-in-your-grandmothers-garden-dont-survive (19 Jan 2027) | your-own-british-vineyard, your-own-irish-vineyard, what-planting-zone-is-the-uk-in |

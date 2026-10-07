@@ -80,7 +80,7 @@ Every change to this document is committed in the same PR as the article work it
 | 2026-12-22 / 29 | — | No publish (holiday dip) | Planned gap |
 | 2027-01-05 (Tue) | New | Last Frost Dates and How to Use Them for Planting Timing (Hardiness satellite) | **Drafted 7 Oct** — `last-frost-dates-and-planting-timing.mdx` |
 | 2027-01-12 (Tue) | New | Gravel vs Decking vs Paving (Comparison) | **Drafted 7 Oct** — `gravel-vs-decking-vs-paving.mdx` |
-| 2027-01-19 (Tue) | New | Why the Plants in Your Grandmother's Garden Don't Always Survive Anymore (Satellite 3) | **HELD** — drafted with `draft: true`; un-draft only if UK pillar data supports it |
+| 2027-01-19 (Tue) | New | Why the Plants in Your Grandmother's Garden Don't Always Survive Anymore (Satellite 3) | **Drafted 7 Oct** — `why-plants-in-your-grandmothers-garden-dont-survive.mdx`; `draft: false`; publishes 2027-01-19 via ISR |
 
 ### Reset — 7 October 2026
 
@@ -146,7 +146,7 @@ Two new pieces, `surviving-a-hosepipe-ban.mdx` and `reviving-your-garden-after-a
 2. Your Own British Vineyard (climate-change viral hook, UK-fronted) — **drafted, scheduled 2 June**
 3. What Do the Symbols on Your Plant Label Actually Mean? (beginner-friendly label decoder) — **drafted, scheduled 9 June**
 4. RHS Hardiness vs USDA Zones (cross-market translator) — **drafted, scheduled 16 June**
-5. Why the Plants in Your Grandmother's Garden Don't Always Survive Anymore (emotional climate-shift hook) — **held, no target date**, bumped twice by the Bord Bia Bloom exception and the UK pillar exception; write once the UK pillar has 2–3 weeks of Search Console data
+5. Why the Plants in Your Grandmother's Garden Don't Always Survive Anymore (emotional climate-shift hook) — **drafted 7 Oct, scheduled 2027-01-19**; un-drafted 7 Oct after UK pillar had 3+ months of Search Console data
 
 Every satellite links inline to both pillars. The UK pillar cross-links to the Ireland pillar, the British vineyard piece, and the RHS-vs-USDA translator; all three of those were retro-patched on 6 July to link back to the UK pillar in the same commit, per the internal linking rule.
 
