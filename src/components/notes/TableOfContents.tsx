@@ -43,13 +43,11 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
         Contents
       </p>
       <ul className="space-y-1 border-l-2 border-stone-200 pl-4">
-        {headings.map(({ id, text, level }) => (
+        {headings.map(({ id, text }) => (
           <li key={id}>
             <a
               href={`#${id}`}
               className={`block text-sm leading-snug py-1 transition-colors ${
-                level === 3 ? 'pl-3 text-xs' : ''
-              } ${
                 activeId === id
                   ? 'text-[#0a3d2b] font-semibold'
                   : 'text-stone-500 hover:text-[#0a3d2b]'

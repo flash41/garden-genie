@@ -102,6 +102,15 @@ export function getCategoryParams(): { cat: NotesCategory }[] {
   return categories.map((cat) => ({ cat }));
 }
 
+export function slugifyHeading(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
 export function extractHeadings(
   content: string
 ): { id: string; text: string; level: 2 | 3 }[] {
@@ -112,12 +121,7 @@ export function extractHeadings(
   while ((match = headingRegex.exec(content)) !== null) {
     const level = match[1].length as 2 | 3;
     const text = match[2].trim();
-    const id = text
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '');
+    const id = slugifyHeading(text);
     headings.push({ id, text, level });
   }
 

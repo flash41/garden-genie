@@ -1,8 +1,9 @@
+import React from 'react';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { MDXRemote } from 'next-mdx-remote/rsc';
 import remarkGfm from 'remark-gfm';
-import { getNotesPost, getNotesSlugParams, extractHeadings, extractFaq } from '@/lib/notes';
+import { getNotesPost, getNotesSlugParams, extractHeadings, extractFaq, slugifyHeading } from '@/lib/notes';
 import { NotesHero } from '@/components/notes/NotesHero';
 import { TableOfContents } from '@/components/notes/TableOfContents';
 import { NotesCta } from '@/components/notes/NotesCta';
@@ -14,6 +15,17 @@ import { PullQuote } from '@/components/notes/PullQuote';
 import { StepList, Step } from '@/components/notes/StepList';
 import { ImageComparison } from '@/components/notes/ImageComparison';
 import { MaterialSwatch } from '@/components/notes/MaterialSwatch';
+
+function childrenToText(children: unknown): string {
+  if (typeof children === 'string') return children;
+  if (typeof children === 'number') return String(children);
+  if (Array.isArray(children)) return (children as unknown[]).map(childrenToText).join('');
+  if (children !== null && typeof children === 'object') {
+    const el = children as { props?: { children?: unknown } };
+    if (el.props?.children !== undefined) return childrenToText(el.props.children);
+  }
+  return '';
+}
 
 // ISR: revalidate every hour so future-dated articles begin serving 200 within
 // ~1 hour of their publishedAt arriving, without requiring a fresh deploy.
@@ -32,6 +44,16 @@ const mdxComponents = {
   Step,
   ImageComparison,
   MaterialSwatch,
+  h2: ({ children, ...props }: { children?: unknown; [key: string]: unknown }) => (
+    <h2 id={slugifyHeading(childrenToText(children))} {...(props as object)}>
+      {children as React.ReactNode}
+    </h2>
+  ),
+  h3: ({ children, ...props }: { children?: unknown; [key: string]: unknown }) => (
+    <h3 id={slugifyHeading(childrenToText(children))} {...(props as object)}>
+      {children as React.ReactNode}
+    </h3>
+  ),
 };
 
 const mdxOptions = {
@@ -86,7 +108,8 @@ export default async function NotesPostPage({ params }: PageProps) {
 
   const { post, content } = result;
   const headings = extractHeadings(content);
-  const hasToC = headings.length >= 3;
+  const h2Headings = headings.filter((h) => h.level === 2);
+  const hasToC = h2Headings.length >= 3;
   const canonical = post.canonicalUrl ?? `https://www.dedrab.com/notes/${slug}`;
   const ogImage = post.ogImage ?? post.coverImage;
 
@@ -186,6 +209,26 @@ export default async function NotesPostPage({ params }: PageProps) {
             <article className="min-w-0">
               <NotesHero post={post} />
 
+              {hasToC && (
+                <details className="lg:hidden mb-8 border border-stone-200 rounded-sm">
+                  <summary className="cursor-pointer px-4 py-3 text-xs font-semibold tracking-widest uppercase text-stone-400 select-none list-none">
+                    On this page
+                  </summary>
+                  <ul className="px-4 pb-3 pt-1 space-y-1 border-t border-stone-200">
+                    {h2Headings.map(({ id, text }) => (
+                      <li key={id}>
+                        <a
+                          href={`#${id}`}
+                          className="block text-sm leading-snug py-1 text-stone-500 hover:text-[#0a3d2b] transition-colors"
+                        >
+                          {text}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              )}
+
               <div
                 className="
                   prose prose-stone max-w-none
@@ -219,7 +262,7 @@ export default async function NotesPostPage({ params }: PageProps) {
             {/* Table of contents */}
             {hasToC && (
               <aside className="hidden lg:block">
-                <TableOfContents headings={headings} />
+                <TableOfContents headings={h2Headings} />
               </aside>
             )}
           </div>
