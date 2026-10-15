@@ -68,6 +68,7 @@ Every change to this document is committed in the same PR as the article work it
 | 2026-11-03 (Tue) | New | Landscaping a Sloped Garden (Problem-solving cluster) | **Queued 5 Aug** — target date, not yet drafted |
 | 2026-08-18 → 2026-10-06 | — | **Slipped.** Seven Tuesday slots (25 Aug – 6 Oct) were queued but never drafted; nothing published 12 Aug – 7 Oct | Reset below |
 | 2026-10-13 (Tue) | New | What Will Actually Grow in a North-Facing Garden (Problem-solving) | **Drafted 7 Oct** — `what-will-grow-in-a-north-facing-garden.mdx`, auto-publishes via ISR |
+| 2026-10-15 (Thu) | Refresh | Hardiness CTR refresh (Search Console, 14 Jul to 13 Oct): Ireland pillar retitled + county table from Met Éireann station data; UK pillar retitled + regional table; RHS vs USDA page turned into the H1 to H7 hub, USDA conversion rows corrected (Zones 5 to 9) | **Ready to ship.** Review click-through rate early December against the 15 Oct baseline |
 | 2026-10-20 (Tue) | New | Boggy or Waterlogged Garden: What to Do (Problem-solving) | **Drafted 7 Oct** — `boggy-waterlogged-garden-what-to-do.mdx` |
 | 2026-10-27 (Tue) | New | Microclimates in Your Garden (Hardiness satellite) | **Drafted 7 Oct** — `microclimates-in-your-garden.mdx` |
 | 2026-11-03 (Tue) | New | Right Plant, Right Place: Planting for Your Garden's Orientation (Hardiness satellite; strongest tool CTA) | **Drafted 7 Oct** — `right-plant-right-place-garden-orientation.mdx` |
