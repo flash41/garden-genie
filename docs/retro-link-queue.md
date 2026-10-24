@@ -4,8 +4,8 @@ New articles are future-dated, so older live articles must **not** link to them 
 
 | New article (publish date) | Add a link to it from |
 |---|---|
-| what-will-grow-in-a-north-facing-garden (13 Oct) | plants-that-earn-their-keep-temperate-garden, what-planting-zone-is-the-uk-in, low-maintenance-garden-ideas-by-climate |
-| boggy-waterlogged-garden-what-to-do (20 Oct) | before-you-hire-a-landscaper, reviving-your-garden-after-a-hosepipe-ban, hard-landscaping-vs-soft-landscaping |
+| ~~what-will-grow-in-a-north-facing-garden (13 Oct)~~ | ~~plants-that-earn-their-keep-temperate-garden, what-planting-zone-is-the-uk-in, low-maintenance-garden-ideas-by-climate~~ | done 24 Oct 2026 |
+| ~~boggy-waterlogged-garden-what-to-do (20 Oct)~~ | ~~before-you-hire-a-landscaper, reviving-your-garden-after-a-hosepipe-ban, hard-landscaping-vs-soft-landscaping~~ | done 24 Oct 2026 |
 | microclimates-in-your-garden (27 Oct) | plant-hardiness-zones-ireland-beginners-guide, what-planting-zone-is-the-uk-in, rhs-hardiness-vs-usda-zones |
 | right-plant-right-place-garden-orientation (3 Nov) | plant-hardiness-zones-ireland-beginners-guide, what-planting-zone-is-the-uk-in, what-will-grow-in-a-north-facing-garden, microclimates-in-your-garden |
 | clay-soil-vs-sandy-soil-what-will-grow (10 Nov) | boggy-waterlogged-garden-what-to-do, diy-garden-makeover-plan |

@@ -4,6 +4,8 @@ Living task list. Edit via Claude Code prompts.
 ## URGENT — GOOGLE_API_KEY suspended, found 6 August 2026
 Testing a hero-image generation call against `gemini-2.5-flash-image` using the `GOOGLE_API_KEY` value in local `.env.local` returned `403 PERMISSION_DENIED / CONSUMER_SUSPENDED` from Google's Generative Language API — not a quota or billing error, the key itself has been suspended by Google. This is the exact key `src/inngest/functions/pipeline.ts` uses for every Gemini call in the render pipeline (analysis, design, and the render itself).
 
+**24 Oct 2026 recheck:** Local `.env.local` key still returns `403 PERMISSION_DENIED / CONSUMER_SUSPENDED` (HTTP 403). Vercel CLI not installed so production env var could not be compared — same/different still unknown. Production status remains unconfirmed until CLI is available or key is checked via Vercel dashboard.
+
 **Not yet confirmed whether the deployed Vercel env var holds the same key** — local `.env.local` and production env can differ. This needs checking today: if it's the same key, every design job currently in production is failing at the Gemini step (worse than the R1–R3 silent-strand failure mode below, this would be 100% failure, not 1-in-5). Check Google Cloud Console / AI Studio for the suspension reason (billing, quota abuse, or a leaked-key flag — worth checking if this key has ever been committed or logged anywhere), issue a fresh key if needed, update both local `.env.local` and the Vercel production env var, and run the R4 synthetic smoke test (once it exists) or a manual test job to confirm recovery.
 
 ## Now — Render pipeline reliability (PAYMENTS DISABLED until stable)
