@@ -108,7 +108,7 @@ export const planStartFunction = inngest.createFunction(
       });
 
       // ── Step 5: persist ────────────────────────────────────────────────────
-      return await step.run('persist', async () => {
+      const persistResult = await step.run('persist', async () => {
         const plantMap = new Map(plants.map(p => [p.id, p]));
         const shoppingList = buildShoppingList(repairedSuggestions, plantMap);
 
@@ -127,6 +127,14 @@ export const planStartFunction = inngest.createFunction(
           shopping_items: shoppingList.length,
         };
       });
+
+      // ── Step 6: kick off render (PDF generation) ───────────────────────────
+      await step.sendEvent('trigger-render', {
+        name: 'render/start',
+        data: { job_id },
+      });
+
+      return persistResult;
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       await supabaseAdmin

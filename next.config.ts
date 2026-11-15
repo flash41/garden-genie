@@ -35,6 +35,10 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // @react-pdf/renderer ships pure ESM. Prevent Next.js from treating it as a
+  // CJS external (it would fail with "require() of ES module"). Setting an
+  // explicit empty array overrides the default list that includes it.
+  serverExternalPackages: [],
   // reactCompiler disabled — was causing React error #310 (hook count mismatch) on restore path
   // due to interaction with Suspense boundary around ThemePreSelector in React 19
   async redirects() {

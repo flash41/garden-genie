@@ -34,6 +34,7 @@ interface JobStatus {
   error_message?: string;
   validated_suggestions?: PlantingSuggestion[];
   shopping_list?: ShoppingItem[];
+  pdf_url?: string;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -304,6 +305,34 @@ export default function PlanLabClient() {
                 </tbody>
               </table>
             </div>
+          )}
+
+          {/* PDF download — appears once render/start has completed */}
+          {jobStatus.pdf_url ? (
+            <div style={{ marginTop: '1.5rem' }}>
+              <a
+                href={jobStatus.pdf_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'inline-block',
+                  padding: '0.6rem 1.25rem',
+                  background: '#064e3b',
+                  color: '#fff',
+                  textDecoration: 'none',
+                  borderRadius: 4,
+                  fontFamily: 'Georgia, serif',
+                  fontSize: '0.9rem',
+                  fontWeight: 600,
+                }}
+              >
+                Download PDF
+              </a>
+            </div>
+          ) : (
+            <p style={{ marginTop: '1rem', fontSize: '0.8rem', color: '#64748b' }}>
+              PDF generating in background...
+            </p>
           )}
         </div>
       )}

@@ -38,7 +38,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   const { data, error } = await supabaseAdmin
     .from('plan_jobs')
     .select(
-      'id, status, error_message, shortlist_ids, raw_suggestions, validated_suggestions, shopping_list, created_at, updated_at',
+      'id, status, error_message, shortlist_ids, raw_suggestions, validated_suggestions, shopping_list, pdf_url, created_at, updated_at',
     )
     .eq('id', jobId)
     .eq('invite_code', inviteCode)
