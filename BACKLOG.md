@@ -17,6 +17,19 @@ Full plan: "Dedrab Revised Strategy and Project Plan" (Claude doc, 14 Nov 2026).
 - [ ] **Known, not fixed here:** `DesignTool.tsx` `sendPlan` / `sendToSelf` post `pdfBase64`, but `/api/send-plan` has only ever accepted `pdfUrl`, so those two buttons on `/design` already returned 400 before this pass. The `/next-steps` buttons send `pdfUrl` and work. Fix when the results page is rebuilt.
 - [ ] **Still open from the review:** make the `pdfs` bucket private with signed links (needs the server-side PDF step), repo migration baseline, drop direct public INSERT on `error_reports` / `quote_requests`, remove email from `/api/design-record`.
 
+## Staged pipeline gap fixes, 15 Nov 2026 (feature/staged-pipeline branch)
+Six gaps closed in one session. See `docs/handover-staged-pipeline.md` for full detail.
+
+- [x] **GAP 1: Per-position light check.** validate.ts now checks each placement against the server-built sun grid and enforces minimum spacing. prompt.ts includes a text light map. Repair step makes one extra model call for violations. 12 new unit tests.
+- [x] **GAP 2: Unified corner-pin + planting flow.** /lab/plan is now one flow: upload photo, drag pins, enter measurements/facing/heights/location/hardiness/style. Reuses geometry from SiteModelLabClient.
+- [x] **GAP 3: Mature garden render.** New garden-render/start Inngest function. Existing PDF job renamed to plan-pdf/start. New migration adds staged statuses (planting_status, render_status, pdf_status). onFailure handlers on both.
+- [x] **GAP 4: Reliability and guards.** Rate limits on /api/plan/create (10/hr) and /api/plan/status (600/hr). UUID validation. inngest.send failure marks job failed + returns 502. Signed links for render/PDF.
+- [x] **GAP 5: Remove prices, UK bias, confirm serverExternalPackages.** price_bracket removed from types, shopping-list, page, and PDF. UK bias removed from prompt. serverExternalPackages tested and kept.
+- [x] **GAP 6: Staged results + plan-ready email.** Results shown progressively (plan, then render, then PDF). plan-ready email sent from garden-render completion/failure.
+- [ ] **Remaining: photo upload to pipeline-assets** (multipart upload not yet wired).
+- [ ] **Remaining: new Google API key** (see URGENT below).
+- [ ] **Remaining: apply migration 20261115000003** before testing.
+
 ## URGENT — GOOGLE_API_KEY suspended, found 6 August 2026
 Testing a hero-image generation call against `gemini-2.5-flash-image` using the `GOOGLE_API_KEY` value in local `.env.local` returned `403 PERMISSION_DENIED / CONSUMER_SUSPENDED` from Google's Generative Language API — not a quota or billing error, the key itself has been suspended by Google. This is the exact key `src/inngest/functions/pipeline.ts` uses for every Gemini call in the render pipeline (analysis, design, and the render itself).
 
