@@ -178,6 +178,17 @@ Not a planned pillar-and-satellite build like the clusters above — opened reac
 ## Exploration / validation
 - [ ] B2B garden centre licensing — validate as a revenue channel.
 
+## Staged pipeline (feature/staged-pipeline branch, 15 Nov 2026)
+- [x] **Stage 0** — Vitest installed; `feature/staged-pipeline` branch created from `security/phase-0`.
+- [x] **Stage 1** — Geometry library: `src/lib/site-model/homography.ts`, `dimensions.ts`, `sun-grid.ts`. 21 unit tests, all passing.
+- [x] **Stage 2** — Code-drawn SVG plan component: `src/components/plan/PlanSvg.tsx`, `planTypes.ts`. Seeded PRNG wobble, sun tinting, numbered plant circles, north arrow, scale bar.
+- [x] **Stage 3** — `/lab/site-model` test page (gated: `LAB_ENABLED` + `dedrab_invite` cookie). Photo upload, 4-corner Pointer API drag, live plan preview with sample plants.
+- [x] **Stage 4** — `public.plants` migration (`supabase/migrations/20261115000000_plants_table.sql`, NOT applied). JSON fixture with 60 curated garden-centre plants (`src/data/plants-fixture.json`).
+- [x] **Stage 5** — Planting engine (`src/lib/planting/`): shortlist (RHS + light + style scoring), prompt builder, Gemini text call (`GEMINI_TEXT_MODEL`, 60 s), validate (pure, 22 unit tests), repair round, shopping list. 43 tests total, all passing.
+- [x] **Stage 6** — `public.plan_jobs` migration (NOT applied). `plan/start` and `render/start` Inngest functions registered. `POST /api/plan/create` and `GET /api/plan/status` API routes. `/lab/plan` interactive results page.
+- [ ] **Stage 7 (pending)** — Server-side PDF with `@react-pdf/renderer`, stored in `pdfs` bucket.
+- [ ] **Merge gate** — Do not merge `feature/staged-pipeline` until Stage 7 is done and payments gate (R6) is cleared.
+
 ## Done (recent)
 - [x] Notes article: "DIY Garden Makeover Plan: A Realistic Weekend-by-Weekend Guide" — phased weekend-by-weekend renovation guide, soft funnel to Dedrab tool (22 May).
 - [x] Notes article: "Low Maintenance Garden Ideas by Climate Zone: What Actually Thrives Where" — climate-led low-maintenance planting + structure, soft funnel to Dedrab tool (22 May). **Hero image still to be generated** — placeholder coverImage path `/images/notes/low-maintenance-garden-ideas-by-climate.png`.
