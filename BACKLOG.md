@@ -186,7 +186,7 @@ Not a planned pillar-and-satellite build like the clusters above — opened reac
 - [x] **Stage 4** — `public.plants` migration (`supabase/migrations/20261115000000_plants_table.sql`, NOT applied). JSON fixture with 60 curated garden-centre plants (`src/data/plants-fixture.json`).
 - [x] **Stage 5** — Planting engine (`src/lib/planting/`): shortlist (RHS + light + style scoring), prompt builder, Gemini text call (`GEMINI_TEXT_MODEL`, 60 s), validate (pure, 22 unit tests), repair round, shopping list. 43 tests total, all passing.
 - [x] **Stage 6** — `public.plan_jobs` migration (NOT applied). `plan/start` and `render/start` Inngest functions registered. `POST /api/plan/create` and `GET /api/plan/status` API routes. `/lab/plan` interactive results page.
-- [ ] **Stage 7 (pending)** — Server-side PDF with `@react-pdf/renderer`, stored in `pdfs` bucket.
+- [x] **Stage 7** — Server-side PDF via `@react-pdf/renderer`. `PlanDocument.tsx` (plan drawing as PDF SVG primitives + shopping list table, Forest & Gold palette, longhand styles). `render/start` Inngest function generates, uploads to `pdfs` bucket, persists `pdf_url`. `plan-start` fires `render/start` automatically after persist. Download link in `/lab/plan`. Migration `20261115000002_plan_jobs_pdf_url.sql` (NOT applied).
 - [ ] **Merge gate** — Do not merge `feature/staged-pipeline` until Stage 7 is done and payments gate (R6) is cleared.
 
 ## Done (recent)

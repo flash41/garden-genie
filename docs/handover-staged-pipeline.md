@@ -95,15 +95,17 @@ Gated: `process.env.LAB_ENABLED === 'true'` AND valid `dedrab_invite` cookie.
 
 ---
 
-## What is NOT done (Stage 7)
+## Stage 7 — PDF generation (complete)
 
-Server-side PDF generation with `@react-pdf/renderer`. The `render/start` Inngest function is a stub — it confirms the job is done but does not generate a PDF. When Stage 7 is built:
-- Install `@react-pdf/renderer` (use longhand style properties only — no shorthand).
-- Generate PDF inside `render-start.ts`.
-- Upload to `pdfs` Supabase Storage bucket.
-- Update `plan_jobs` with a `pdf_url` column (new migration needed).
-- Expose `pdf_url` from `/api/plan/status`.
-- Add a download link in `PlanLabClient.tsx`.
+| File | Purpose |
+|------|---------|
+| `src/components/plan/pdf/PlanDocument.tsx` | React-PDF A4 document. Forest & Gold header, plan drawing as PDF SVG primitives (grid, boundary, plant circles with dashed arcs, north arrow, scale bar), shopping list table with alternating rows. Longhand styles only. Server-only — never imported by client components. |
+| `src/inngest/functions/render-start.ts` | Full implementation: fetch job, build PlantPlacements from suggestions, `dynamic import('@react-pdf/renderer')` to stay ESM-safe, `renderToBuffer`, upload to `pdfs` bucket as `plan-<job_id>.pdf`, persist `pdf_url`. |
+| `supabase/migrations/20261115000002_plan_jobs_pdf_url.sql` | Adds `pdf_url text` column to `public.plan_jobs`. **NOT applied to production.** |
+
+`plan-start.ts` fires `render/start` via `step.sendEvent` after the persist step, so PDF generation chains automatically.
+
+`next.config.ts` sets `serverExternalPackages: []` to prevent Next.js from trying to `require()` the pure-ESM `@react-pdf/renderer` package (which would fail at runtime).
 
 ---
 
@@ -126,11 +128,13 @@ feature/staged-pipeline
   e91ee6e feat(stage-4): plant fixture (60 plants) and SQL migration
   9aab3df feat(stage-5): planting engine
   07ad980 feat(stage-6): plan_jobs migration, Inngest functions, API routes, /lab/plan page
-  <this commit> docs + backlog
+  ed2b2e5 docs: update BACKLOG and write handover
+  c5cf039 feat(stage-7): server-side PDF generation via @react-pdf/renderer
 ```
 
+All 7 stages complete. TSC clean, 43 tests passing, build clean.
+
 Do NOT merge to `main` until:
-1. Stage 7 (PDF) is complete.
-2. Both SQL migrations are applied to production.
-3. The GOOGLE_API_KEY is replaced (see BACKLOG URGENT).
-4. R6 payments gate is cleared (see BACKLOG: Render pipeline reliability).
+1. All three SQL migrations are applied to production (plants, plan_jobs, plan_jobs_pdf_url).
+2. The GOOGLE_API_KEY is replaced (see BACKLOG URGENT).
+3. R6 payments gate is cleared (see BACKLOG: Render pipeline reliability).
