@@ -1,5 +1,5 @@
 /**
- * render/start — Inngest function that generates a PDF from a completed plan job.
+ * plan-pdf/start — Inngest function that generates a PDF from a completed plan job.
  *
  * Steps:
  *   1. fetch-job   — load validated_suggestions, shopping_list, dimensions from plan_jobs
@@ -7,7 +7,7 @@
  *   3. upload-pdf  — upload to Supabase Storage pdfs bucket
  *   4. persist     — write pdf_url back to plan_jobs row
  *
- * Triggered by: "render/start"
+ * Triggered by: "plan-pdf/start"
  * Data: { job_id: string }
  */
 
@@ -41,32 +41,57 @@ function buildPlacements(
     xMetres: s.x_metres,
     yMetres: s.y_metres,
     spreadMetres: plantMap.get(s.plant_id)?.spread_m ?? 0.5,
-    light: 'full_sun' as const,
+    light: s.light ?? 'full_sun',
   }));
 }
 
-export const renderStartFunction = inngest.createFunction(
-  { id: 'render-start', name: 'Render: Start', retries: 1, triggers: [{ event: 'render/start' }] },
+export const pdfStartFunction = inngest.createFunction(
+  {
+    id: 'plan-pdf',
+    name: 'Plan PDF: Start',
+    retries: 1,
+    triggers: [{ event: 'plan-pdf/start' }],
+    onFailure: async ({ error, event }) => {
+      const jobId = (event.data as { event: { data: { job_id: string } } }).event.data.job_id;
+      if (jobId) {
+        await supabaseAdmin
+          .from('plan_jobs')
+          .update({
+            pdf_status: 'failed',
+            pdf_error: error.message,
+          })
+          .eq('id', jobId);
+      }
+    },
+  },
   async ({ event, step }) => {
     const { job_id } = event.data as { job_id: string };
+
+    // Mark running
+    await step.run('mark-pdf-running', async () => {
+      await supabaseAdmin
+        .from('plan_jobs')
+        .update({ pdf_status: 'running' })
+        .eq('id', job_id);
+    });
 
     // ── Step 1: fetch job ─────────────────────────────────────────────────────
     const jobData = await step.run('fetch-job', async () => {
       const { data, error } = await supabaseAdmin
         .from('plan_jobs')
         .select(
-          'id, status, width_metres, depth_metres, camera_facing, validated_suggestions, shopping_list, created_at',
+          'id, planting_status, width_metres, depth_metres, camera_facing, validated_suggestions, shopping_list, created_at',
         )
         .eq('id', job_id)
         .single();
 
       if (error || !data) throw new Error(`Job ${job_id} not found`);
-      if ((data as { status: string }).status !== 'done') {
-        throw new Error(`Job ${job_id} is not done (status: ${(data as { status: string }).status})`);
+      if ((data as { planting_status: string }).planting_status !== 'complete') {
+        throw new Error(`Job ${job_id} planting not complete (status: ${(data as { planting_status: string }).planting_status})`);
       }
       return data as {
         id: string;
-        status: string;
+        planting_status: string;
         width_metres: number;
         depth_metres: number;
         camera_facing: string;
@@ -93,43 +118,35 @@ export const renderStartFunction = inngest.createFunction(
         generatedAt: jobData.created_at,
       });
 
-      // Dynamic import keeps @react-pdf/renderer (pure ESM) out of the
-      // module graph at parse time — it loads only when this step runs.
       const { renderToBuffer } = await import('@react-pdf/renderer');
       const buffer = await (renderToBuffer as (doc: React.ReactElement) => Promise<Buffer>)(doc);
-      // Return as base64 — Inngest serialises step outputs as JSON
       return buffer.toString('base64');
     });
 
     // ── Step 3: upload PDF ────────────────────────────────────────────────────
-    const pdfUrl = await step.run('upload-pdf', async () => {
+    const storagePath = await step.run('upload-pdf', async () => {
       const pdfBytes = Buffer.from(pdfBuffer, 'base64');
-      const storagePath = `plan-${job_id}.pdf`;
+      const path = `plan-${job_id}.pdf`;
 
       const { error } = await supabaseAdmin.storage
-        .from('pdfs')
-        .upload(storagePath, pdfBytes, {
+        .from('pipeline-assets')
+        .upload(path, pdfBytes, {
           contentType: 'application/pdf',
-          upsert: false,
+          upsert: true,
         });
 
       if (error) throw new Error(`PDF upload failed: ${error.message}`);
-
-      const { data: urlData } = supabaseAdmin.storage
-        .from('pdfs')
-        .getPublicUrl(storagePath);
-
-      return urlData.publicUrl;
+      return path;
     });
 
     // ── Step 4: persist ───────────────────────────────────────────────────────
-    return await step.run('persist-pdf-url', async () => {
+    return await step.run('persist-pdf-path', async () => {
       await supabaseAdmin
         .from('plan_jobs')
-        .update({ pdf_url: pdfUrl })
+        .update({ pdf_path: storagePath, pdf_status: 'complete' })
         .eq('id', job_id);
 
-      return { job_id, pdf_url: pdfUrl };
+      return { job_id, pdf_path: storagePath };
     });
   },
 );

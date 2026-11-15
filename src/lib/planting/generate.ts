@@ -15,7 +15,7 @@ export async function generateSuggestions(prompt: string): Promise<GenerateResul
   if (!apiKey) throw new Error('GOOGLE_API_KEY is not set');
 
   const url =
-    `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`;
+    `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 
   const body = {
     contents: [{ parts: [{ text: prompt }] }],
@@ -33,7 +33,10 @@ export async function generateSuggestions(prompt: string): Promise<GenerateResul
   try {
     res = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': apiKey,
+      },
       body: JSON.stringify(body),
       signal: controller.signal,
     });

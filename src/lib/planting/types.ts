@@ -46,6 +46,16 @@ export interface SiteContext {
   rhsHardiness: RhsHardiness;
   /** User-chosen style keywords, e.g. ['cottage', 'wildlife'] */
   styleTags: string[];
+  /** Camera facing direction — needed to rebuild sun grid server-side */
+  cameraFacing?: string;
+  /** Hemisphere — needed to rebuild sun grid server-side */
+  hemisphere?: 'north' | 'south';
+  /** Boundary heights in metres — needed to rebuild sun grid */
+  boundaryHeights?: { rear: number; front: number; left: number; right: number };
+  /** Server-built sun grid (row 0 = rear). Cells are 0.5 m. */
+  sunGrid?: SunLabel[][];
+  /** Typed location description for prompt context */
+  location?: string;
 }
 
 // ─── Shortlist output ─────────────────────────────────────────────────────────
@@ -64,6 +74,8 @@ export interface PlantingSuggestion {
   x_metres: number;
   y_metres: number;
   notes: string;
+  /** Actual light level at this position (from sun grid lookup). Added by validation. */
+  light?: SunLabel;
 }
 
 export interface GenerateResult {
@@ -78,7 +90,9 @@ export type ValidationIssue =
   | { kind: 'unknown_id';      plant_id: string }
   | { kind: 'out_of_bounds';   plant_id: string; x: number; y: number }
   | { kind: 'negative_qty';    plant_id: string; qty: number }
-  | { kind: 'duplicate_pos';   plant_id: string; x: number; y: number };
+  | { kind: 'duplicate_pos';   plant_id: string; x: number; y: number }
+  | { kind: 'wrong_light';     plant_id: string; x: number; y: number; cell_light: SunLabel; plant_light: SunLabel[] }
+  | { kind: 'too_close';       plant_id: string; x: number; y: number; other_id: string; distance: number; min_distance: number };
 
 export interface ValidationResult {
   valid: PlantingSuggestion[];

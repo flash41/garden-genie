@@ -5,8 +5,8 @@
  */
 
 export { shortlistPlants } from './shortlist';
-export { buildPlantingPrompt } from './prompt';
-export { validateSuggestions, isViable } from './validate';
+export { buildPlantingPrompt, buildRepairPrompt } from './prompt';
+export { validateSuggestions, isViable, lookupSunCell } from './validate';
 export { repairSuggestions } from './repair';
 export { buildShoppingList } from './shopping-list';
 export type {
