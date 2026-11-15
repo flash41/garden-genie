@@ -13,10 +13,35 @@
 
 import { inngest } from '@/lib/inngest';
 import { supabaseAdmin } from '@/lib/supabase-server';
+import { sendPlanReadyEmail } from '@/lib/plan-email';
 import type { PlantingSuggestion, ShoppingItem } from '@/lib/planting/types';
 
 const RENDER_MODEL = process.env.GEMINI_IMAGE_MODEL ?? 'gemini-2.0-flash-exp';
 const TIMEOUT_MS = 120_000;
+
+async function trySendPlanEmail(jobId: string): Promise<void> {
+  try {
+    const { data } = await supabaseAdmin
+      .from('plan_jobs')
+      .select('recipient_email, invite_code')
+      .eq('id', jobId)
+      .single();
+
+    const email = (data as Record<string, unknown> | null)?.recipient_email;
+    if (typeof email !== 'string' || !email) return; // no email on record, skip
+
+    const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.dedrab.com').replace(/\/+$/, '');
+    const resumeUrl = `${baseUrl}/lab/plan?job_id=${encodeURIComponent(jobId)}`;
+
+    await sendPlanReadyEmail({
+      to: email,
+      planTitle: 'Your Garden Plan',
+      resumeUrl,
+    });
+  } catch {
+    // Email failure must never block the pipeline
+  }
+}
 
 export const gardenRenderFunction = inngest.createFunction(
   {
@@ -34,6 +59,8 @@ export const gardenRenderFunction = inngest.createFunction(
             render_error: error.message,
           })
           .eq('id', jobId);
+        // Send plan-ready email even if render failed (plan is still valid)
+        await trySendPlanEmail(jobId);
       }
     },
   },
@@ -179,13 +206,18 @@ export const gardenRenderFunction = inngest.createFunction(
     });
 
     // ── Step 3: persist ──────────────────────────────────────────────────────
-    return await step.run('persist-render-path', async () => {
+    await step.run('persist-render-path', async () => {
       await supabaseAdmin
         .from('plan_jobs')
         .update({ render_path: renderPath, render_status: 'complete' })
         .eq('id', job_id);
-
-      return { job_id, render_path: renderPath };
     });
+
+    // ── Step 4: send plan-ready email ────────────────────────────────────────
+    await step.run('send-email', async () => {
+      await trySendPlanEmail(job_id);
+    });
+
+    return { job_id, render_path: renderPath };
   },
 );
