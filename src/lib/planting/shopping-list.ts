@@ -1,23 +1,10 @@
 /**
  * shopping-list.ts — Aggregate validated suggestions into a shopping list.
  *
- * Groups by plant_id, sums quantities, looks up display names,
- * and assigns a rough GBP price bracket based on plant type and size.
+ * Groups by plant_id, sums quantities, looks up display names.
  */
 
 import type { PlantingSuggestion, PlantRecord, ShoppingItem } from './types';
-
-/** Rough price-bracket heuristics for a standard 2 L pot from a UK garden centre. */
-function priceBracket(plant: PlantRecord): ShoppingItem['price_bracket'] {
-  if (plant.plant_type === 'Tree') return 'over_20';
-  if (plant.plant_type === 'Shrub' && plant.height_m > 1.5) return '10_to_20';
-  if (plant.plant_type === 'Shrub') return '5_to_10';
-  if (plant.plant_type === 'Climber') return '10_to_20';
-  if (plant.plant_type === 'Bamboo') return '10_to_20';
-  if (plant.plant_type === 'Grass' && plant.height_m > 1.0) return '5_to_10';
-  if (plant.plant_type === 'Bulb') return 'under_5';
-  return '5_to_10'; // Perennial, Annual, Groundcover, Fern, Grass (small)
-}
 
 export function buildShoppingList(
   suggestions: PlantingSuggestion[],
@@ -38,7 +25,6 @@ export function buildShoppingList(
       common_name: plant.common_name,
       botanical_name: plant.botanical_name,
       quantity,
-      price_bracket: priceBracket(plant),
     });
   }
 

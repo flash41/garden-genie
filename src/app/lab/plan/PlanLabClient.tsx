@@ -70,13 +70,6 @@ function suggestionsToPlantPlacements(
   });
 }
 
-const PRICE_LABELS: Record<ShoppingItem['price_bracket'], string> = {
-  under_5: 'Under 5',
-  '5_to_10': '5-10',
-  '10_to_20': '10-20',
-  over_20: 'Over 20',
-};
-
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function PlanLabClient() {
@@ -289,7 +282,6 @@ export default function PlanLabClient() {
                     <th style={thStyle}>Plant</th>
                     <th style={thStyle}>Botanical name</th>
                     <th style={thStyle}>Qty</th>
-                    <th style={thStyle}>Price bracket (GBP)</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -299,7 +291,6 @@ export default function PlanLabClient() {
                       <td style={tdStyle}>{item.common_name}</td>
                       <td style={{ ...tdStyle, fontStyle: 'italic' }}>{item.botanical_name}</td>
                       <td style={tdStyle}>{item.quantity}</td>
-                      <td style={tdStyle}>{PRICE_LABELS[item.price_bracket]}</td>
                     </tr>
                   ))}
                 </tbody>

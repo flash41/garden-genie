@@ -35,9 +35,10 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  // @react-pdf/renderer ships pure ESM. Prevent Next.js from treating it as a
-  // CJS external (it would fail with "require() of ES module"). Setting an
-  // explicit empty array overrides the default list that includes it.
+  // @react-pdf/renderer ships pure ESM. The Inngest PDF function imports
+  // PlanDocument.tsx statically, which imports @react-pdf/renderer. Without
+  // this override Next.js may try to require() the ESM package at runtime.
+  // Build passes either way, but kept for runtime safety. Confirmed Nov 2026.
   serverExternalPackages: [],
   // reactCompiler disabled — was causing React error #310 (hook count mismatch) on restore path
   // due to interaction with Suspense boundary around ThemePreSelector in React 19

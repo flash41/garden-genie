@@ -182,13 +182,6 @@ function PlanDrawing({ widthMetres, depthMetres, plants, cameraFacing, seed }: P
 
 // ─── Shopping list table ──────────────────────────────────────────────────────
 
-const PRICE_LABEL: Record<ShoppingItem['price_bracket'], string> = {
-  under_5: 'Under £5',
-  '5_to_10': '£5–£10',
-  '10_to_20': '£10–£20',
-  over_20: 'Over £20',
-};
-
 function ShoppingTable({ items, plants }: { items: ShoppingItem[]; plants: PlantPlacement[] }) {
   // Build number map from plants array
   const numMap = new Map<string, number>();
@@ -210,7 +203,6 @@ function ShoppingTable({ items, plants }: { items: ShoppingItem[]; plants: Plant
       <Text style={{ flex: 1, fontSize: 8, color: C.ink }}>{item.common_name}</Text>
       <Text style={{ flex: 1.4, fontSize: 7, color: C.note, fontStyle: 'italic' }}>{item.botanical_name}</Text>
       <Text style={{ width: 24, fontSize: 8, color: C.ink, textAlign: 'right' }}>{item.quantity}</Text>
-      <Text style={{ width: 60, fontSize: 8, color: C.ink, textAlign: 'right' }}>{PRICE_LABEL[item.price_bracket]}</Text>
     </View>
   ));
 
@@ -229,7 +221,6 @@ function ShoppingTable({ items, plants }: { items: ShoppingItem[]; plants: Plant
         <Text style={{ flex: 1, fontSize: 8, color: C.white, fontWeight: 'bold' }}>Plant</Text>
         <Text style={{ flex: 1.4, fontSize: 8, color: C.white, fontWeight: 'bold' }}>Botanical name</Text>
         <Text style={{ width: 24, fontSize: 8, color: C.white, fontWeight: 'bold', textAlign: 'right' }}>Qty</Text>
-        <Text style={{ width: 60, fontSize: 8, color: C.white, fontWeight: 'bold', textAlign: 'right' }}>Price (est.)</Text>
       </View>
       {rows}
     </View>

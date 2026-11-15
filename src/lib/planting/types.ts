@@ -106,6 +106,4 @@ export interface ShoppingItem {
   common_name: string;
   botanical_name: string;
   quantity: number;
-  /** Approx GBP price bracket for a standard 2 L pot */
-  price_bracket: 'under_5' | '5_to_10' | '10_to_20' | 'over_20';
 }
