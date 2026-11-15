@@ -4,10 +4,11 @@ import { supabaseAdmin } from '@/lib/supabase-server';
 export const dynamic = 'force-dynamic';
 
 // Public health-check endpoint. Returns 200 when the Inngest pipeline
-// heartbeat is fresh, 503 when it has gone stale (>5 min since last beat).
+// heartbeat is fresh, 503 when it has gone stale (>4 hours since last beat).
 // Intended for external monitors (UptimeRobot, BetterStack, etc.) and
 // for the internal Vercel cron at /api/cron/heartbeat-check.
-const STALE_THRESHOLD_MS = 5 * 60 * 1000;
+// Heartbeat runs every 3 hours (free-tier limit); stale means more than 4 hours.
+const STALE_THRESHOLD_MS = 4 * 60 * 60 * 1000;
 
 export async function GET() {
   const { data, error } = await supabaseAdmin

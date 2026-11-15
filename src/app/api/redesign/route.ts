@@ -179,7 +179,8 @@ export async function POST(request: NextRequest) {
       .eq('id', 'singleton')
       .maybeSingle();
     const lastSeen = health?.last_seen_at ? new Date(health.last_seen_at).getTime() : 0;
-    if (!lastSeen || (Date.now() - lastSeen) > 10 * 60 * 1000) {
+    // Heartbeat runs every 3 hours (free-tier limit), so allow 4 hours before refusing.
+    if (!lastSeen || (Date.now() - lastSeen) > 4 * 60 * 60 * 1000) {
       console.warn('[redesign] Refusing submission — pipeline heartbeat stale');
       return NextResponse.json(
         {

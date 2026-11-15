@@ -1,6 +1,22 @@
 # Dedrab Backlog
 Living task list. Edit via Claude Code prompts.
 
+## Phase 0 security pass, 14 Nov 2026 (code written, NOT yet committed or deployed)
+Full plan: "Dedrab Revised Strategy and Project Plan" (Claude doc, 14 Nov 2026). Code changes sit uncommitted in the working tree on `main`; commit on a branch, check the Vercel preview, then merge.
+
+- [x] **`/api/send-plan` open relay closed (code).** Only attaches a PDF from our own `pdfs` bucket for a plan that exists in `design_records`; title and style come from the record, not the caller; one plain recipient; rate limited per IP (5/hour) and per plan (6/day).
+- [x] **`/api/fetch-asset` host check fixed (code).** Exact origin match instead of `startsWith`; images only; no redirects; size cap.
+- [x] **`/api/upload-pdf` hardened (code), closes R5 server-side.** Needs the reference AND its session id; must be a real PDF; never replaces a PDF with a smaller one.
+- [x] **`/api/upload-render`, `/api/update-design`, `/api/save-design` hardened (code).** Real invite cookie required, rate limits, input checks, own-storage links only.
+- [x] **Heartbeat mismatch fixed (code).** `/api/redesign` and `/api/health/inngest` now allow 4 hours, matching the 3-hourly heartbeat and the 4-hour cron check. Before this, about 94% of submissions would have been refused.
+- [x] Shared helpers in `src/lib/route-guards.ts`. `npx tsc --noEmit` passes.
+- [ ] **Commit, preview, merge and deploy the above** (Steen).
+- [x] **Migration `20261114000000_phase0_storage_and_function_lockdown.sql` applied to production 14 Nov 2026** (verified live: 0 public upload policies, limits set, anon/authenticated can no longer call the function; Supabase security advisor warnings cleared). Drops three public upload policies on storage, adds size/type limits to `pdfs` and `renders`, revokes public execute on `check_invite_code`.
+- [x] **Four jobs stranded at `queued` (April/May) marked `failed` with an error message, 14 Nov 2026.**
+- [ ] **New Google API key** (see URGENT below), with billing and a monthly spend cap.
+- [ ] **Known, not fixed here:** `DesignTool.tsx` `sendPlan` / `sendToSelf` post `pdfBase64`, but `/api/send-plan` has only ever accepted `pdfUrl`, so those two buttons on `/design` already returned 400 before this pass. The `/next-steps` buttons send `pdfUrl` and work. Fix when the results page is rebuilt.
+- [ ] **Still open from the review:** make the `pdfs` bucket private with signed links (needs the server-side PDF step), repo migration baseline, drop direct public INSERT on `error_reports` / `quote_requests`, remove email from `/api/design-record`.
+
 ## URGENT — GOOGLE_API_KEY suspended, found 6 August 2026
 Testing a hero-image generation call against `gemini-2.5-flash-image` using the `GOOGLE_API_KEY` value in local `.env.local` returned `403 PERMISSION_DENIED / CONSUMER_SUSPENDED` from Google's Generative Language API — not a quota or billing error, the key itself has been suspended by Google. This is the exact key `src/inngest/functions/pipeline.ts` uses for every Gemini call in the render pipeline (analysis, design, and the render itself).
 

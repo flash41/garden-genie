@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin as supabase } from '@/lib/supabase-server';
+import { UUID_RE, isValidEmail, limitOr429, requireInvite } from '@/lib/route-guards';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,7 +12,14 @@ function generateReference(): string {
   return 'DED-' + year + month + '-' + random;
 }
 
+// SECURITY (Nov 2026): now requires a real invite cookie, a rate limit, a
+// valid email and a size cap. Only called from /design.
 export async function POST(req: NextRequest) {
+  const limited = await limitOr429(req, 'save-design', 20, 60 * 60 * 1000);
+  if (limited) return limited;
+  const invite = await requireInvite(req);
+  if (invite instanceof NextResponse) return invite;
+
   let body: Record<string, unknown>;
   try {
     body = await req.json();
@@ -28,8 +36,14 @@ export async function POST(req: NextRequest) {
     fullReport?: unknown;
   };
 
-  if (!email) {
+  if (!isValidEmail(email)) {
     return NextResponse.json({ error: 'email is required' }, { status: 400 });
+  }
+  if (sessionId !== undefined && sessionId !== null && sessionId !== '' && (typeof sessionId !== 'string' || !UUID_RE.test(sessionId))) {
+    return NextResponse.json({ error: 'Invalid sessionId' }, { status: 400 });
+  }
+  if (JSON.stringify({ plantList, fullReport }).length > 2 * 1024 * 1024) {
+    return NextResponse.json({ error: 'Plan data too large' }, { status: 413 });
   }
 
   const referenceNumber = generateReference();
@@ -39,8 +53,8 @@ export async function POST(req: NextRequest) {
     .insert({
       session_id: sessionId || crypto.randomUUID(),
       email,
-      design_style: designStyle || null,
-      hardiness_zone: hardinessZone || null,
+      design_style: typeof designStyle === 'string' ? designStyle.slice(0, 120) : null,
+      hardiness_zone: typeof hardinessZone === 'string' ? hardinessZone.slice(0, 120) : null,
       plant_list: plantList || null,
       full_report: fullReport || null,
       reference_number: referenceNumber,
@@ -50,7 +64,7 @@ export async function POST(req: NextRequest) {
 
   if (error) {
     console.error('Supabase insert error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Could not save design' }, { status: 500 });
   }
 
   return NextResponse.json({ id: data.id, session_id: data.session_id, reference_number: data.reference_number });

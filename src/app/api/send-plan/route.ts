@@ -1,11 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
+import { supabaseAdmin } from '@/lib/supabase-server';
+import { rateLimit } from '@/lib/rate-limit';
+import {
+  REFERENCE_RE,
+  MAX_UPLOAD_BYTES,
+  escapeHtml,
+  isValidEmail,
+  limitOr429,
+  parseOwnStorageUrl,
+} from '@/lib/route-guards';
+
+export const dynamic = 'force-dynamic';
 
 function getResend() {
   return new Resend(process.env.RESEND_API_KEY);
 }
 
+// SECURITY (Nov 2026): this route used to email ANY address, with a
+// caller-supplied title inserted as raw HTML and ANY caller-supplied URL
+// fetched and attached. It now:
+//   - only attaches a PDF from our own public `pdfs` bucket,
+//   - only for a plan that exists in design_records,
+//   - takes the title/style from that record, never from the caller,
+//   - accepts one plain recipient address,
+//   - is rate limited per IP and per plan.
+// The recipient stays caller-chosen because "share with a friend" needs it.
 export async function POST(req: NextRequest) {
+  const limited = await limitOr429(req, 'send-plan', 5, 60 * 60 * 1000);
+  if (limited) return limited;
+
   let body: Record<string, unknown>;
   try {
     body = await req.json();
@@ -13,18 +37,49 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
   }
 
-  console.log('[send-plan] body keys:', Object.keys(body));
-  console.log('[send-plan] body size estimate (chars):', JSON.stringify(body).length);
+  const { recipientEmail, pdfUrl } = body as { recipientEmail?: unknown; pdfUrl?: unknown };
 
-  const { recipientEmail, pdfUrl, planTitle, designStyle } = body as {
-    recipientEmail: string; pdfUrl: string; planTitle: string; designStyle: string;
-  };
-
-  if (!recipientEmail || !pdfUrl) {
-    return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+  if (!isValidEmail(recipientEmail)) {
+    return NextResponse.json({ error: 'A valid recipient email is required' }, { status: 400 });
   }
 
-  const subject = `Your Dedrab Garden Vision - ${planTitle || 'Garden Design Plan'}`;
+  const parsedPdfUrl = parseOwnStorageUrl(pdfUrl, { publicBucket: 'pdfs' });
+  const fileName = parsedPdfUrl ? decodeURIComponent(parsedPdfUrl.pathname.split('/').pop() || '') : '';
+  const referenceNumber = fileName.endsWith('.pdf') ? fileName.slice(0, -4) : '';
+  if (!parsedPdfUrl || !REFERENCE_RE.test(referenceNumber)) {
+    return NextResponse.json({ error: 'Invalid plan link' }, { status: 400 });
+  }
+  // Rebuild the address ourselves: no query string, no caller-controlled parts.
+  const safePdfUrl = parsedPdfUrl.origin + '/storage/v1/object/public/pdfs/' + referenceNumber + '.pdf';
+
+  const { data: record } = await supabaseAdmin
+    .from('design_records')
+    .select('design_style')
+    .eq('reference_number', referenceNumber)
+    .limit(1)
+    .maybeSingle();
+  if (!record) {
+    return NextResponse.json({ error: 'Plan not found' }, { status: 404 });
+  }
+
+  const planLimit = await rateLimit({
+    key: `send-plan:plan:${referenceNumber}`,
+    limit: 6,
+    windowMs: 24 * 60 * 60 * 1000,
+  });
+  if (!planLimit.allowed) {
+    return NextResponse.json(
+      { error: 'rate_limited', message: 'This plan has been emailed several times today. Please try again tomorrow.' },
+      { status: 429 },
+    );
+  }
+
+  // Title and style come from our own record. Escaped for the HTML body.
+  const rawStyle = String(record.design_style || '').replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, 80);
+  const subjectPlain = `Your Dedrab Garden Vision - ${rawStyle ? rawStyle + ' Garden Plan' : 'Garden Design Plan'}`;
+  const designStyle = escapeHtml(rawStyle);
+  const planTitle = designStyle ? designStyle + ' Garden Plan' : 'Garden Design Plan';
+  const subject = escapeHtml(subjectPlain);
 
   const html = `
 <!DOCTYPE html>
@@ -106,16 +161,16 @@ export async function POST(req: NextRequest) {
 </html>
 `;
 
-  // Fetch PDF server-side from Supabase storage — avoids sending the binary
-  // through the client and exceeding Vercel's 4.5MB request body limit.
+  // Fetch the PDF server-side from our own storage (address rebuilt above).
   let pdfBuffer: Buffer;
   try {
-    const pdfRes = await fetch(pdfUrl);
+    const pdfRes = await fetch(safePdfUrl, { redirect: 'error' });
     if (!pdfRes.ok) throw new Error('PDF fetch failed: ' + pdfRes.status);
     pdfBuffer = Buffer.from(await pdfRes.arrayBuffer());
-    console.log('[send-plan] PDF fetched server-side, size (bytes):', pdfBuffer.byteLength);
+    if (pdfBuffer.byteLength > MAX_UPLOAD_BYTES) throw new Error('PDF too large');
+    if (pdfBuffer.subarray(0, 5).toString('latin1') !== '%PDF-') throw new Error('Not a PDF');
   } catch (err) {
-    console.error('[send-plan] Failed to fetch PDF from URL:', err);
+    console.error('[send-plan] Failed to fetch PDF:', err);
     return NextResponse.json({ error: 'Could not retrieve PDF for attachment' }, { status: 502 });
   }
 
@@ -123,7 +178,7 @@ export async function POST(req: NextRequest) {
     const { data, error } = await getResend().emails.send({
       from: 'Dedrab <noreply@dedrab.com>',
       to: [recipientEmail],
-      subject,
+      subject: subjectPlain,
       html,
       attachments: [
         {
@@ -135,14 +190,14 @@ export async function POST(req: NextRequest) {
 
     if (error) {
       console.error('Resend error:', JSON.stringify(error));
-      return NextResponse.json({ error: 'send_failed', detail: error.message }, { status: 500 });
+      return NextResponse.json({ error: 'send_failed' }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, id: data?.id });
   } catch (err: unknown) {
     console.error('Send plan error:', JSON.stringify(err));
     return NextResponse.json(
-      { error: 'Failed to send email', details: String(err) },
+      { error: 'Failed to send email' },
       { status: 500 }
     );
   }
