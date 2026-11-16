@@ -22,7 +22,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { requireInvite, limitOr429 } from '@/lib/route-guards';
+import { requireInvite, limitOr429, isValidEmail } from '@/lib/route-guards';
+import { validateImage } from '@/lib/validate-image';
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { inngest } from '@/lib/inngest';
 
@@ -95,6 +96,37 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Invalid hemisphere' }, { status: 400 });
   }
 
+  // Optional email for the plan-ready message
+  let recipientEmail: string | null = null;
+  if (b.recipient_email !== undefined && b.recipient_email !== null && b.recipient_email !== '') {
+    const candidate = typeof b.recipient_email === 'string' ? b.recipient_email.trim().toLowerCase() : b.recipient_email;
+    if (!isValidEmail(candidate)) {
+      return NextResponse.json({ error: 'Invalid recipient_email' }, { status: 400 });
+    }
+    recipientEmail = candidate;
+  }
+
+  // Optional garden photo (base64 data URL). Needed for the mature-garden render
+  // and lets the planting model see existing features. Stored in the private
+  // pipeline-assets bucket; only the path is kept on the job.
+  let photoPath: string | null = null;
+  if (b.photo_base64 !== undefined && b.photo_base64 !== null && b.photo_base64 !== '') {
+    const img = validateImage(b.photo_base64);
+    if (!img.valid || !img.base64Data || !img.mimeType) {
+      return NextResponse.json({ error: img.message ?? 'Invalid photo' }, { status: 400 });
+    }
+    const ext = img.mimeType === 'image/png' ? 'png' : img.mimeType === 'image/webp' ? 'webp' : 'jpg';
+    const path = `${inviteCode}/plan-${crypto.randomUUID()}/original.${ext}`;
+    const { error: uploadError } = await supabaseAdmin.storage
+      .from('pipeline-assets')
+      .upload(path, Buffer.from(img.base64Data, 'base64'), { contentType: img.mimeType, upsert: false });
+    if (uploadError) {
+      console.error('[plan/create] photo upload failed:', uploadError.message);
+      return NextResponse.json({ error: 'Failed to store photo' }, { status: 500 });
+    }
+    photoPath = path;
+  }
+
   // Create the plan_jobs row
   const { data, error } = await supabaseAdmin
     .from('plan_jobs')
@@ -108,6 +140,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       hemisphere,
       boundary_heights: boundaryHeights ?? null,
       location: location ?? null,
+      photo_path: photoPath,
+      recipient_email: recipientEmail,
       invite_code: inviteCode,
       planting_status: 'queued',
       render_status: 'queued',
@@ -138,6 +172,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         hemisphere,
         boundary_heights: boundaryHeights,
         location,
+        photo_path: photoPath,
       },
     });
   } catch (err) {

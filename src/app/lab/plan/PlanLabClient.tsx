@@ -13,6 +13,7 @@
  */
 
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
+import { compressImage } from '@/lib/compressImage';
 import { recoverDimensions, type CornerPoints } from '@/lib/site-model/dimensions';
 import { buildSunGrid, type Compass } from '@/lib/site-model/sun-grid';
 import { PlanSvg } from '@/components/plan/PlanSvg';
@@ -102,6 +103,7 @@ export default function PlanLabClient() {
   const [hardiness, setHardiness] = useState<RhsOption>('H5');
   const [styleTags, setStyleTags] = useState('cottage, wildlife');
   const [location, setLocation] = useState('');
+  const [email, setEmail] = useState('');
 
   // Job state
   const [jobId, setJobId] = useState<string | null>(null);
@@ -237,6 +239,18 @@ export default function PlanLabClient() {
     const h = parseFloat(boundaryH) || 1.8;
 
     try {
+      // Shrink the photo to fit the request size limit, then send it as a data URL.
+      let photoBase64: string | undefined;
+      if (imageFile) {
+        const small = await compressImage(imageFile, 3 * 1024 * 1024);
+        photoBase64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.onerror = () => reject(new Error('Could not read the photo'));
+          reader.readAsDataURL(small);
+        });
+      }
+
       const res = await fetch('/api/plan/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -250,6 +264,8 @@ export default function PlanLabClient() {
           hemisphere,
           boundary_heights: { rear: h, front: h, left: h, right: h },
           location: location || undefined,
+          recipient_email: email.trim() || undefined,
+          photo_base64: photoBase64,
         }),
       });
       const data = await res.json();
@@ -403,6 +419,18 @@ export default function PlanLabClient() {
                 <label style={labelStyle}>Boundary height (metres, all sides)</label>
                 <input type="number" min={0} max={10} step={0.1} value={boundaryH}
                   onChange={e => setBoundaryH(e.target.value)} style={{ ...inputStyle, width: 80 }} />
+              </div>
+
+              {/* Email */}
+
+              <div>
+
+                <label style={labelStyle}>Email for your plan (optional)</label>
+
+                <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+
+                  placeholder="you@example.com" style={inputStyle} />
+
               </div>
 
               {/* Location */}

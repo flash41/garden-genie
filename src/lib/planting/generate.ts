@@ -10,7 +10,12 @@ import type { GenerateResult } from './types';
 const MODEL = process.env.GEMINI_TEXT_MODEL ?? 'gemini-2.5-flash';
 const TIMEOUT_MS = 60_000;
 
-export async function generateSuggestions(prompt: string): Promise<GenerateResult> {
+export interface PromptImage {
+  mimeType: string;
+  base64: string;
+}
+
+export async function generateSuggestions(prompt: string, image?: PromptImage): Promise<GenerateResult> {
   const apiKey = process.env.GOOGLE_API_KEY;
   if (!apiKey) throw new Error('GOOGLE_API_KEY is not set');
 
@@ -18,7 +23,14 @@ export async function generateSuggestions(prompt: string): Promise<GenerateResul
     `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 
   const body = {
-    contents: [{ parts: [{ text: prompt }] }],
+    contents: [{
+      parts: [
+        // The garden photo (when there is one) goes first so the model can
+        // account for existing features before reading the brief.
+        ...(image ? [{ inlineData: { mimeType: image.mimeType, data: image.base64 } }] : []),
+        { text: prompt },
+      ],
+    }],
     generationConfig: {
       responseMimeType: 'application/json',
       temperature: 0.4,

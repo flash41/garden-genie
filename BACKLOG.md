@@ -1,6 +1,19 @@
 # Dedrab Backlog
 Living task list. Edit via Claude Code prompts.
 
+## Staged pipeline review, 16 Nov 2026 (branch `feature/staged-pipeline`, uncommitted changes in working tree)
+- [x] **Plant table replaced with the verified 132-plant set** (`src/data/plants-fixture.json`). First 60 re-checked against RHS pages (all original source links were invalid; hardiness corrected on 21, light on 29). 72 added from Steen's list of 100. Each row lists `verified_fields` and `unverified_fields`. USDA zones are null for the new 72 (type now allows null).
+- [x] **Photo upload wired in.** `/api/plan/create` accepts `photo_base64`, validates it, stores it in `pipeline-assets`, saves `photo_path`. The planting call now receives the photo (loaded inside the step). The lab page compresses and sends it.
+- [x] **Email collected.** Optional email field on `/lab/plan`; `recipient_email` saved on the job. New migration `20261116000000_plan_jobs_recipient_email.sql` (NOT applied).
+- [ ] **Run `npm test` and `npm run build`, then commit** (Steen). `npx tsc --noEmit` passes.
+- [ ] **Decide on the two plants with RHS legal cautions** (Cotoneaster horizontalis p095, Parthenocissus quinquefolia p099): drop, or keep with the caution shown.
+- [ ] **New plants have no style tags or seasons**, so style matching ranks them below the first 60. Needs tagging (Steen to review, or sourced).
+- [ ] **Soil acidity is recorded (`soil_ph`) but not asked of the user or checked.** 11 plants need acid or neutral soil.
+- [ ] **`GEMINI_IMAGE_MODEL` default is `gemini-2.0-flash-exp`**, an old experimental name. Set the env var to a current image model when the new key is created.
+- [ ] **Render prompt lists plants only, not their positions.** Fine for a first test; revisit after seeing real renders.
+- [ ] **`plants` table migration has no seed step**; the app reads the JSON file. Load the table from the JSON when the database becomes the source.
+- [ ] **Live AI calls remain untested** until the Google key is replaced.
+
 ## Phase 0 security pass, 14 Nov 2026 (code written, NOT yet committed or deployed)
 Full plan: "Dedrab Revised Strategy and Project Plan" (Claude doc, 14 Nov 2026). Code changes sit uncommitted in the working tree on `main`; commit on a branch, check the Vercel preview, then merge.
 

@@ -39,6 +39,7 @@ type PlanStartData = {
   hemisphere?: 'north' | 'south';
   boundary_heights?: { rear: number; front: number; left: number; right: number };
   location?: string;
+  photo_path?: string | null;
 };
 
 async function setStatus(jobId: string, status: string) {
@@ -62,6 +63,7 @@ export const planStartFunction = inngest.createFunction(
       hemisphere = 'north',
       boundary_heights,
       location,
+      photo_path,
     } = event.data as PlanStartData;
 
     // Server-side sun grid build (never trust browser-sent grid)
@@ -103,7 +105,23 @@ export const planStartFunction = inngest.createFunction(
       // ── Step 2: generate ───────────────────────────────────────────────────
       const generateResult = await step.run('generate', async () => {
         const prompt = buildPlantingPrompt(shortlist, ctx);
-        return generateSuggestions(prompt);
+        // Load the photo from storage INSIDE the step: image bytes must never
+        // cross an Inngest step boundary (about 4 MB limit strands the job).
+        let image: { mimeType: string; base64: string } | undefined;
+        if (photo_path) {
+          const { data: photo, error: photoError } = await supabaseAdmin.storage
+            .from('pipeline-assets')
+            .download(photo_path);
+          if (photo && !photoError) {
+            const ext = photo_path.split('.').pop()?.toLowerCase() ?? 'jpg';
+            const mimeType = ext === 'png' ? 'image/png' : ext === 'webp' ? 'image/webp' : 'image/jpeg';
+            image = { mimeType, base64: Buffer.from(await photo.arrayBuffer()).toString('base64') };
+          } else {
+            // A missing photo should not sink the plan: carry on from the site model alone.
+            console.warn('[plan-start] photo download failed, continuing without it:', photoError?.message);
+          }
+        }
+        return generateSuggestions(prompt, image);
       });
 
       // ── Step 3: validate ───────────────────────────────────────────────────

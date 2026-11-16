@@ -19,8 +19,9 @@ export interface PlantRecord {
   common_name: string;
   plant_type: PlantType;
   rhs_hardiness: RhsHardiness;
-  usda_zone_min: number;
-  usda_zone_max: number;
+  // null = not verified against a source yet (never guessed)
+  usda_zone_min: number | null;
+  usda_zone_max: number | null;
   light: SunLabel[];
   soil: string[];
   moisture: string;
@@ -33,6 +34,16 @@ export interface PlantRecord {
   native_regions: string[];
   source_urls: string[];
   reviewed: boolean;
+  // Verification metadata (added 15 Nov 2026 when the table was checked against source pages)
+  source_height_range_m?: (number | null)[];
+  source_spread_range_m?: (number | null)[];
+  soil_ph?: string[] | null;
+  caution?: string | null;
+  verified_fields?: string[];
+  unverified_fields?: string[];
+  verification_note?: string;
+  verified_on?: string;
+  origin?: string;
 }
 
 // ─── Site context passed to the planting engine ───────────────────────────────
