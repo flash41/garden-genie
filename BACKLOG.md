@@ -2,11 +2,11 @@
 Living task list. Edit via Claude Code prompts.
 
 ## Staged pipeline review, 16 Nov 2026 (branch `feature/staged-pipeline`, uncommitted changes in working tree)
-- [x] **Plant table replaced with the verified 132-plant set** (`src/data/plants-fixture.json`). First 60 re-checked against RHS pages (all original source links were invalid; hardiness corrected on 21, light on 29). 72 added from Steen's list of 100. Each row lists `verified_fields` and `unverified_fields`. USDA zones are null for the new 72 (type now allows null).
+- [x] **Plant table replaced with the verified plant set (132, now 130 after two removals)** (`src/data/plants-fixture.json`). First 60 re-checked against RHS pages (all original source links were invalid; hardiness corrected on 21, light on 29). 72 added from Steen's list of 100. Each row lists `verified_fields` and `unverified_fields`. USDA zones are null for the new 72 (type now allows null).
 - [x] **Photo upload wired in.** `/api/plan/create` accepts `photo_base64`, validates it, stores it in `pipeline-assets`, saves `photo_path`. The planting call now receives the photo (loaded inside the step). The lab page compresses and sends it.
 - [x] **Email collected.** Optional email field on `/lab/plan`; `recipient_email` saved on the job. New migration `20261116000000_plan_jobs_recipient_email.sql` (NOT applied).
 - [ ] **Run `npm test` and `npm run build`, then commit** (Steen). `npx tsc --noEmit` passes.
-- [ ] **Decide on the two plants with RHS legal cautions** (Cotoneaster horizontalis p095, Parthenocissus quinquefolia p099): drop, or keep with the caution shown.
+- [x] **Dropped the two plants with RHS invasive-species cautions** (Cotoneaster horizontalis p095, Parthenocissus quinquefolia p100), Steen's decision 16 Nov. Table is now 130 plants. Their ids are retired, not reused.
 - [ ] **New plants have no style tags or seasons**, so style matching ranks them below the first 60. Needs tagging (Steen to review, or sourced).
 - [ ] **Soil acidity is recorded (`soil_ph`) but not asked of the user or checked.** 11 plants need acid or neutral soil.
 - [ ] **`GEMINI_IMAGE_MODEL` default is `gemini-2.0-flash-exp`**, an old experimental name. Set the env var to a current image model when the new key is created.
