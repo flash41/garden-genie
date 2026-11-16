@@ -26,9 +26,7 @@
       "autumn"
     ],
     "style_tags": [
-      "japanese",
-      "specimen",
-      "small_garden"
+      "japanese"
     ],
     "description": "A slow-growing deciduous tree prized for its delicate, often deeply lobed leaves which turn vivid shades of red, orange and gold in autumn. Best in a sheltered spot away from cold winds.",
     "native_regions": [
@@ -69,7 +67,12 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "small_garden",
+      "specimen"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p002",
@@ -98,7 +101,6 @@
       "winter"
     ],
     "style_tags": [
-      "native",
       "wildlife",
       "woodland"
     ],
@@ -140,7 +142,11 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "native"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p003",
@@ -168,8 +174,6 @@
       "autumn"
     ],
     "style_tags": [
-      "fruit",
-      "kitchen_garden",
       "wildlife"
     ],
     "description": "An early-cropping dessert apple with crisp, slightly sharp red fruit from mid-August. Attractive spring blossom important for pollinators. Self-fertile, so a single tree will produce fruit.",
@@ -209,7 +213,12 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "fruit",
+      "kitchen_garden"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p004",
@@ -237,8 +246,7 @@
       "spring"
     ],
     "style_tags": [
-      "hedging",
-      "screening",
+      "formal",
       "low_maintenance"
     ],
     "description": "A robust, fast-growing evergreen shrub frequently used for dense hedging and screening. Produces spikes of white flowers in spring. Very tolerant of shade and urban conditions.",
@@ -279,7 +287,12 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "hedging",
+      "screening"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p005",
@@ -307,8 +320,8 @@
     "style_tags": [
       "cottage",
       "mediterranean",
-      "pollinator",
-      "fragrant"
+      "wildlife",
+      "formal"
     ],
     "description": "Classic aromatic sub-shrub with narrow silvery leaves and spikes of purple flowers beloved by bees and butterflies. Thrives in hot, dry positions with excellent drainage. Clip after flowering to maintain shape.",
     "native_regions": [
@@ -347,7 +360,12 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "fragrant",
+      "pollinator"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p006",
@@ -376,8 +394,8 @@
       "autumn"
     ],
     "style_tags": [
-      "coastal",
       "contemporary",
+      "coastal",
       "low_maintenance"
     ],
     "description": "A compact evergreen shrub with glossy dark-green leaves edged with purple and long-lasting violet-blue flower spikes from summer into autumn. Good coastal and urban garden plant.",
@@ -417,7 +435,9 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p007",
@@ -447,9 +467,8 @@
       "spring"
     ],
     "style_tags": [
-      "winter_interest",
-      "screening",
-      "wildlife"
+      "wildlife",
+      "formal"
     ],
     "description": "A dense, bushy evergreen shrub that earns its place in a temperate garden by flowering reliably from late autumn through spring. Flat-topped pink and white flower clusters are followed by metallic blue berries.",
     "native_regions": [
@@ -489,7 +508,12 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "screening",
+      "winter_interest"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p008",
@@ -518,8 +542,8 @@
     ],
     "style_tags": [
       "cottage",
-      "coastal",
-      "bold_colour"
+      "japanese",
+      "coastal"
     ],
     "description": "Classic deciduous shrub with large round flower heads in blue or pink depending on soil pH. Blue tones occur in acidic soil; pink in alkaline. Flowers last from midsummer into autumn and dry attractively.",
     "native_regions": [
@@ -559,7 +583,11 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "bold_colour"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p009",
@@ -586,10 +614,8 @@
       "summer"
     ],
     "style_tags": [
-      "herb",
       "mediterranean",
-      "fragrant",
-      "pollinator"
+      "wildlife"
     ],
     "description": "Aromatic evergreen shrub with needle-like silvery-green leaves and small blue-purple flowers in spring and early summer. Attractive to bees. Thrives in poor, dry soil in a sunny position.",
     "native_regions": [
@@ -628,7 +654,13 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "fragrant",
+      "herb",
+      "pollinator"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p010",
@@ -657,8 +689,8 @@
       "summer"
     ],
     "style_tags": [
-      "fragrant",
       "contemporary",
+      "formal",
       "low_maintenance"
     ],
     "description": "Rounded evergreen shrub with aromatic, glossy three-lobed leaves and clusters of sweetly fragrant white flowers in spring and often again in autumn. Very adaptable and reliable in milder gardens.",
@@ -698,7 +730,11 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "fragrant"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p011",
@@ -728,9 +764,7 @@
     ],
     "style_tags": [
       "cottage",
-      "ground_cover",
-      "pollinator",
-      "long_flowering"
+      "wildlife"
     ],
     "description": "AGM-winning hardy perennial with a very long flowering season from early summer through to the first frosts. Violet-blue flowers with a white eye spread over a mounding ground-covering form.",
     "native_regions": [
@@ -769,7 +803,13 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "ground_cover",
+      "long_flowering",
+      "pollinator"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p012",
@@ -797,10 +837,8 @@
       "autumn"
     ],
     "style_tags": [
-      "prairie",
-      "pollinator",
       "wildlife",
-      "naturalistic"
+      "prairie"
     ],
     "description": "Upright perennial with large, daisy-like flowers with drooping pink-purple ray florets surrounding a prominent orange-brown central cone. Attracts bees, butterflies and goldfinches in autumn.",
     "native_regions": [
@@ -839,7 +877,12 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "naturalistic",
+      "pollinator"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p013",
@@ -868,9 +911,8 @@
       "winter"
     ],
     "style_tags": [
-      "shade_garden",
-      "foliage",
-      "contemporary"
+      "contemporary",
+      "woodland"
     ],
     "description": "Evergreen perennial grown primarily for its dramatic, deeply lobed leaves of deep metallic purple-bronze. Small white flowers rise on wiry stems in summer. Useful for year-round colour in shaded spots.",
     "native_regions": [
@@ -910,7 +952,12 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "foliage",
+      "shade_garden"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p014",
@@ -937,10 +984,10 @@
       "summer"
     ],
     "style_tags": [
-      "prairie",
-      "pollinator",
       "contemporary",
-      "formal"
+      "wildlife",
+      "formal",
+      "prairie"
     ],
     "description": "Upright perennial with deep violet-blue flower spikes on black stems from early summer. Deadhead or cut back after the first flush to encourage a second wave of bloom. Excellent front-of-border plant.",
     "native_regions": [
@@ -979,7 +1026,11 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "pollinator"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p015",
@@ -1006,10 +1057,10 @@
       "summer"
     ],
     "style_tags": [
+      "mediterranean",
+      "wildlife",
       "prairie",
-      "pollinator",
-      "low_maintenance",
-      "drought_tolerant"
+      "low_maintenance"
     ],
     "description": "Tough, spreading perennial with flat-topped flower heads in white, pink or yellow, held above feathery aromatic foliage. Drought-tolerant once established, excellent for wildlife. Spreads readily to form colonies.",
     "native_regions": [
@@ -1049,7 +1100,12 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "drought_tolerant",
+      "pollinator"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p016",
@@ -1080,8 +1136,6 @@
     ],
     "style_tags": [
       "cottage",
-      "edging",
-      "ground_cover",
       "low_maintenance"
     ],
     "description": "Classic cottage garden perennial with scalloped, water-repelling leaves and frothy sprays of lime-yellow-green flowers in early summer. Remarkably adaptable and self-seeds freely. Excellent for path edging.",
@@ -1122,7 +1176,12 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "edging",
+      "ground_cover"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p017",
@@ -1149,8 +1208,8 @@
     ],
     "style_tags": [
       "cottage",
-      "woodland_edge",
-      "naturalistic"
+      "woodland",
+      "prairie"
     ],
     "description": "Cottage garden stalwart with intricate, pin-cushion flower heads in white, pink or deep red, surrounded by papery star-shaped bracts. Flowers from early summer. Tolerates damp conditions well.",
     "native_regions": [
@@ -1189,7 +1248,12 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "naturalistic",
+      "woodland_edge"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p018",
@@ -1215,9 +1279,8 @@
       "summer"
     ],
     "style_tags": [
-      "shade_garden",
-      "foliage",
       "contemporary",
+      "japanese",
       "woodland"
     ],
     "description": "Award-winning hosta with slug-resistant, heart-shaped leaves of steely blue-grey. Lavender-blue tubular flowers in summer. One of the most reliable hostas for providing bold, structural foliage in shade.",
@@ -1257,7 +1320,12 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "foliage",
+      "shade_garden"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p019",
@@ -1287,9 +1355,9 @@
     ],
     "style_tags": [
       "cottage",
-      "woodland_edge",
       "wildlife",
-      "naturalistic"
+      "woodland",
+      "prairie"
     ],
     "description": "Stately biennial or short-lived perennial producing tall spires of tubular purple (or white) spotted flowers beloved by bumblebees. Self-seeds freely to naturalise in informal settings. All parts toxic if ingested.",
     "native_regions": [
@@ -1328,7 +1396,12 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "naturalistic",
+      "woodland_edge"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p020",
@@ -1357,8 +1430,7 @@
     ],
     "style_tags": [
       "cottage",
-      "long_flowering",
-      "pollinator"
+      "wildlife"
     ],
     "description": "Reliable perennial with tubular, wine-red flowers with a white-striped throat produced in great abundance from early summer until the first frosts. Semi-evergreen in mild winters. Best left unpruned until spring.",
     "native_regions": [
@@ -1398,7 +1470,12 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "long_flowering",
+      "pollinator"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p021",
@@ -1426,10 +1503,8 @@
       "autumn"
     ],
     "style_tags": [
-      "prairie",
       "contemporary",
-      "movement",
-      "naturalistic"
+      "prairie"
     ],
     "description": "Fine-textured clump-forming grass with hair-like, pale green leaves that turn golden-blond by late summer. Moves beautifully in the slightest breeze. Can self-seed invasively in warm climates.",
     "native_regions": [
@@ -1469,7 +1544,12 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "movement",
+      "naturalistic"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p022",
@@ -1499,9 +1579,8 @@
     ],
     "style_tags": [
       "contemporary",
-      "structural",
-      "movement",
-      "specimen"
+      "japanese",
+      "prairie"
     ],
     "description": "Tall, elegant clump-forming grass with narrow arching leaves that have a white midrib. Reddish-copper plumes appear in autumn and persist through winter, providing structure and seed for birds.",
     "native_regions": [
@@ -1541,7 +1620,13 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "movement",
+      "specimen",
+      "structural"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p023",
@@ -1571,9 +1656,7 @@
     ],
     "style_tags": [
       "woodland",
-      "shade_garden",
-      "pond_edge",
-      "naturalistic"
+      "prairie"
     ],
     "description": "Bold, architectural sedge with broad arching evergreen leaves and long, drooping dark-brown catkin-like flower spikes. Tolerates wet and deeply shaded conditions where few other plants thrive.",
     "native_regions": [
@@ -1612,7 +1695,13 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "naturalistic",
+      "pond_edge",
+      "shade_garden"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p024",
@@ -1645,8 +1734,7 @@
     ],
     "style_tags": [
       "wildlife",
-      "ground_cover",
-      "shade_garden",
+      "woodland",
       "low_maintenance"
     ],
     "description": "Vigorous self-clinging evergreen climber or ground-cover. Invaluable for covering walls, fences or bare ground in shade. Autumn nectar and winter berries are important for wildlife. Can damage weak mortar if unchecked.",
@@ -1687,7 +1775,12 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "ground_cover",
+      "shade_garden"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p025",
@@ -1715,9 +1808,7 @@
       "summer"
     ],
     "style_tags": [
-      "cottage",
-      "wall_covering",
-      "bold_colour"
+      "cottage"
     ],
     "description": "Classic large-flowered clematis with deep purple-blue flowers 15-18 cm across from early summer. Best with its roots in shade and top growth in sun. Prune to 30 cm in early spring for the best flowers.",
     "native_regions": [
@@ -1756,7 +1847,12 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "bold_colour",
+      "wall_covering"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p026",
@@ -1784,9 +1880,7 @@
       "summer"
     ],
     "style_tags": [
-      "cottage",
-      "fragrant",
-      "classic"
+      "cottage"
     ],
     "description": "Award-winning English rose with deep pink, deeply cupped blooms and an outstanding classic rose fragrance. Repeat-flowers well through summer. One of the most reliable David Austin roses for UK and Irish gardens.",
     "native_regions": [
@@ -1825,7 +1919,12 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "classic",
+      "fragrant"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p027",
@@ -1855,10 +1954,8 @@
       "summer"
     ],
     "style_tags": [
-      "ground_cover",
-      "shade_garden",
-      "low_maintenance",
-      "woodland"
+      "woodland",
+      "low_maintenance"
     ],
     "description": "Vigorous, mat-forming evergreen ground cover with small, glossy dark-green leaves and periwinkle-blue flowers from early spring. Excellent for suppressing weeds under trees or on shady banks.",
     "native_regions": [
@@ -1897,7 +1994,12 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "ground_cover",
+      "shade_garden"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p028",
@@ -1924,10 +2026,8 @@
       "spring"
     ],
     "style_tags": [
-      "shade_garden",
-      "ground_cover",
-      "low_maintenance",
-      "woodland"
+      "woodland",
+      "low_maintenance"
     ],
     "description": "Tough, spreading evergreen with dark rosettes of leathery leaves and bright yellow-green flower heads in spring. One of the best plants for dry shade under trees. Spreads via underground stolons to form weed-suppressing colonies.",
     "native_regions": [
@@ -1966,7 +2066,12 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "ground_cover",
+      "shade_garden"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p029",
@@ -1994,7 +2099,6 @@
       "spring"
     ],
     "style_tags": [
-      "spring_bulb",
       "cottage",
       "low_maintenance"
     ],
@@ -2035,7 +2139,11 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "spring_bulb"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p030",
@@ -2063,9 +2171,9 @@
     ],
     "style_tags": [
       "cottage",
-      "prairie",
-      "pollinator",
-      "structural"
+      "wildlife",
+      "formal",
+      "prairie"
     ],
     "description": "Striking ornamental onion producing perfectly spherical heads of deep violet-purple flowers in late spring to early summer. Plant in drifts among perennials for a striking vertical accent. Attractive to bees.",
     "native_regions": [
@@ -2104,7 +2212,12 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "pollinator",
+      "structural"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p031",
@@ -2134,9 +2247,9 @@
       "autumn"
     ],
     "style_tags": [
+      "japanese",
       "woodland",
-      "shade_garden",
-      "naturalistic"
+      "prairie"
     ],
     "description": "Robust, shuttlecock-forming deciduous fern producing fresh green fronds in spring. Very tolerant of deep shade and challenging soils. One of the most adaptable British native ferns for garden use.",
     "native_regions": [
@@ -2176,7 +2289,12 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "naturalistic",
+      "shade_garden"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p032",
@@ -2206,9 +2324,7 @@
     ],
     "style_tags": [
       "contemporary",
-      "architectural",
-      "coastal",
-      "structural"
+      "coastal"
     ],
     "description": "Bold architectural plant with strap-like, sword-shaped evergreen leaves in bronze, green or variegated forms. Provides strong structural interest year-round. Best in a sheltered coastal or mild urban garden.",
     "native_regions": [
@@ -2247,7 +2363,12 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "architectural",
+      "structural"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p033",
@@ -2275,9 +2396,7 @@
     ],
     "style_tags": [
       "cottage",
-      "fragrant",
-      "long_flowering",
-      "pollinator"
+      "wildlife"
     ],
     "description": "Free-flowering sub-shrub with narrow grey-green leaves and dense spikes of mauve flowers produced almost continuously from early spring into summer. Needs replacing every 2-3 years as it becomes woody and exhausted.",
     "native_regions": [
@@ -2316,7 +2435,13 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "fragrant",
+      "long_flowering",
+      "pollinator"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p034",
@@ -2343,10 +2468,8 @@
       "autumn"
     ],
     "style_tags": [
-      "prairie",
-      "pollinator",
-      "see-through",
-      "naturalistic"
+      "wildlife",
+      "prairie"
     ],
     "description": "Tall, airy perennial with square stems that branch at the top to carry clusters of bright purple flowers from midsummer to autumn. Its see-through habit means it can be planted at the front or middle of a border without blocking views.",
     "native_regions": [
@@ -2385,7 +2508,13 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "naturalistic",
+      "pollinator",
+      "see-through"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p035",
@@ -2413,10 +2542,8 @@
       "autumn"
     ],
     "style_tags": [
-      "prairie",
-      "pollinator",
-      "long_flowering",
-      "naturalistic"
+      "wildlife",
+      "prairie"
     ],
     "description": "Reliable, clump-forming perennial with golden-yellow ray florets surrounding a dark brown central cone. Flowers from late summer until the first frosts. AGM winner and exceptionally reliable in temperate gardens.",
     "native_regions": [
@@ -2455,7 +2582,13 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "long_flowering",
+      "naturalistic",
+      "pollinator"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p036",
@@ -2483,9 +2616,7 @@
     ],
     "style_tags": [
       "prairie",
-      "long_flowering",
-      "low_maintenance",
-      "bold"
+      "low_maintenance"
     ],
     "description": "Vigorous, clump-forming perennial with slender, bright crimson flower spikes produced from midsummer until autumn. Very adaptable and low-maintenance. Provides reliable late-season colour and structure.",
     "native_regions": [
@@ -2524,7 +2655,12 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "bold",
+      "long_flowering"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p037",
@@ -2552,9 +2688,7 @@
     ],
     "style_tags": [
       "contemporary",
-      "structural",
-      "coastal",
-      "bold"
+      "coastal"
     ],
     "description": "Hardy agapanthus producing large, drumstick-like heads of violet-blue or white trumpet flowers on tall stems in midsummer. The hardiest strain of agapanthus; thrives in a sunny well-drained border.",
     "native_regions": [
@@ -2593,7 +2727,12 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "bold",
+      "structural"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p038",
@@ -2624,9 +2763,7 @@
     ],
     "style_tags": [
       "contemporary",
-      "structural",
-      "prairie",
-      "movement"
+      "prairie"
     ],
     "description": "Upright, architectural grass with stiff stems topped by feathery pinkish-purple plumes that fade to wheat-gold. One of the first ornamental grasses to come into growth in spring. Holds its form well into winter.",
     "native_regions": [
@@ -2665,7 +2802,12 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "movement",
+      "structural"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p039",
@@ -2693,9 +2835,8 @@
       "autumn"
     ],
     "style_tags": [
-      "naturalistic",
-      "movement",
-      "woodland_edge"
+      "woodland",
+      "prairie"
     ],
     "description": "Compact moor grass with upright flower stems that dance in the wind. Foliage turns bright yellow in autumn before falling cleanly away. Performs well in acidic or boggy soils.",
     "native_regions": [
@@ -2735,7 +2876,13 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "movement",
+      "naturalistic",
+      "woodland_edge"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p040",
@@ -2765,9 +2912,7 @@
     ],
     "style_tags": [
       "cottage",
-      "fragrant",
-      "wildlife",
-      "wall_covering"
+      "wildlife"
     ],
     "description": "Vigorous twining climber with intensely fragrant, creamy-white and purple-red flowers from midsummer to autumn. Red berries follow, popular with birds. The late-season cultivar extends the display well into autumn.",
     "native_regions": [
@@ -2806,7 +2951,12 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "fragrant",
+      "wall_covering"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p041",
@@ -2834,10 +2984,8 @@
       "spring"
     ],
     "style_tags": [
-      "classic",
-      "fragrant",
-      "wall_covering",
-      "specimen"
+      "cottage",
+      "japanese"
     ],
     "description": "Spectacular deciduous climber with drooping racemes of fragrant lilac-blue flowers before the leaves emerge in spring. Requires a sturdy support and a programme of twice-yearly pruning to flower well.",
     "native_regions": [
@@ -2876,7 +3024,14 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "classic",
+      "fragrant",
+      "specimen",
+      "wall_covering"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p042",
@@ -2904,8 +3059,7 @@
       "spring"
     ],
     "style_tags": [
-      "ground_cover",
-      "shade_garden",
+      "japanese",
       "woodland",
       "low_maintenance"
     ],
@@ -2946,7 +3100,12 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "ground_cover",
+      "shade_garden"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p043",
@@ -2976,9 +3135,7 @@
     ],
     "style_tags": [
       "cottage",
-      "ground_cover",
-      "shade_garden",
-      "edging"
+      "woodland"
     ],
     "description": "Hardy, easy evergreen with rosettes of rounded, slightly fleshy leaves and airy sprays of tiny pink-spotted white flowers in late spring. Very adaptable and tolerant of difficult conditions including dry shade.",
     "native_regions": [
@@ -3018,7 +3175,13 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "edging",
+      "ground_cover",
+      "shade_garden"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p044",
@@ -3044,10 +3207,8 @@
       "spring"
     ],
     "style_tags": [
-      "spring_bulb",
-      "dramatic",
-      "formal",
-      "contemporary"
+      "contemporary",
+      "formal"
     ],
     "description": "Single late tulip with deep maroon-black goblet-shaped flowers that look almost velvety. One of the most dramatic tulip cultivars, effective in bold drifts or in containers. Lift and store bulbs after flowering.",
     "native_regions": [
@@ -3086,7 +3247,12 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "dramatic",
+      "spring_bulb"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p045",
@@ -3113,10 +3279,9 @@
       "spring"
     ],
     "style_tags": [
-      "native",
+      "wildlife",
       "woodland",
-      "naturalistic",
-      "wildlife"
+      "prairie"
     ],
     "description": "Britain's most loved wildflower, with nodding one-sided sprays of fragrant violet-blue bells in late spring. Naturalises freely under deciduous trees and shrubs to create sweeping drifts. Do not confuse with the Spanish bluebell.",
     "native_regions": [
@@ -3155,7 +3320,12 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "native",
+      "naturalistic"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p046",
@@ -3184,9 +3354,7 @@
       "spring"
     ],
     "style_tags": [
-      "spring_bulb",
-      "woodland",
-      "naturalising"
+      "woodland"
     ],
     "description": "One of the first flowers of the year, producing bright yellow cup-shaped blooms on bare stems in January and February, backed by a ruff of leaf-like bracts. Naturalises freely under deciduous trees.",
     "native_regions": [
@@ -3225,7 +3393,12 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "naturalising",
+      "spring_bulb"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p047",
@@ -3253,9 +3426,7 @@
       "autumn"
     ],
     "style_tags": [
-      "winter_interest",
-      "specimen",
-      "fragrant",
+      "japanese",
       "woodland"
     ],
     "description": "Spreading deciduous shrub or small tree producing spidery, copper-orange flowers with a soft fragrance on bare branches in midwinter. Leaves turn brilliant orange-red in autumn. Requires acid to neutral soil.",
@@ -3295,7 +3466,13 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "fragrant",
+      "specimen",
+      "winter_interest"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p048",
@@ -3324,10 +3501,8 @@
       "winter"
     ],
     "style_tags": [
-      "winter_interest",
-      "shade_garden",
-      "structural",
-      "wildlife"
+      "wildlife",
+      "woodland"
     ],
     "description": "Upright evergreen shrub with bold architectural pinnate leaves and long, spreading racemes of fragrant yellow flowers from late autumn through winter. Excellent for shaded spots where winter colour is needed.",
     "native_regions": [
@@ -3366,7 +3541,13 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "shade_garden",
+      "structural",
+      "winter_interest"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p049",
@@ -3395,10 +3576,8 @@
       "winter"
     ],
     "style_tags": [
-      "native",
       "wildlife",
-      "hedging",
-      "structural"
+      "formal"
     ],
     "description": "Classic native evergreen tree or large shrub with glossy, spiny leaves and bright red berries in autumn and winter. Essential wildlife plant: berries feed birds, thorny foliage provides safe nesting. Grows well in shade.",
     "native_regions": [
@@ -3438,7 +3617,13 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "hedging",
+      "native",
+      "structural"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p050",
@@ -3466,10 +3651,7 @@
       "winter"
     ],
     "style_tags": [
-      "winter_interest",
-      "pond_edge",
-      "wildlife",
-      "bold"
+      "wildlife"
     ],
     "description": "Deciduous shrub grown primarily for its brilliant crimson winter stems, which are most vivid when cut back hard each spring. White flowers in summer, autumn colour and white berries add further interest through the year.",
     "native_regions": [
@@ -3509,7 +3691,13 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "bold",
+      "pond_edge",
+      "winter_interest"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p051",
@@ -3539,9 +3727,8 @@
     ],
     "style_tags": [
       "cottage",
-      "coastal",
       "wildlife",
-      "long_flowering"
+      "coastal"
     ],
     "description": "Tough, free-flowering deciduous shrub with pendulous red and purple flowers beloved by hummingbirds in its native range and by bees and butterflies here. Particularly well-suited to mild, western gardens in the UK and Ireland.",
     "native_regions": [
@@ -3581,7 +3768,11 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "long_flowering"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p052",
@@ -3612,9 +3803,8 @@
     ],
     "style_tags": [
       "contemporary",
-      "foliage",
       "coastal",
-      "structural"
+      "formal"
     ],
     "description": "Handsome evergreen shrub with oval, wavy-edged leaves of pale grey-green margined with creamy-white. Very popular in coastal and urban gardens in mild areas. Provides year-round foliage interest.",
     "native_regions": [
@@ -3653,7 +3843,12 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "foliage",
+      "structural"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p053",
@@ -3681,9 +3876,8 @@
       "winter"
     ],
     "style_tags": [
-      "fragrant",
-      "shade_garden",
-      "winter_interest",
+      "woodland",
+      "formal",
       "low_maintenance"
     ],
     "description": "Compact evergreen shrub producing tiny but intensely fragrant white flowers on bare stems in midwinter, followed by shiny black berries. One of the best plants for a shaded spot where fragrance is needed in the dullest months.",
@@ -3723,7 +3917,13 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "fragrant",
+      "shade_garden",
+      "winter_interest"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p054",
@@ -3751,9 +3951,8 @@
       "winter"
     ],
     "style_tags": [
-      "winter_interest",
-      "wall_shrub",
-      "structural"
+      "coastal",
+      "low_maintenance"
     ],
     "description": "Vigorous evergreen shrub bearing exceptionally long, grey-green catkins from midwinter into spring. Best grown against a sheltered wall in colder areas. Its winter display is unmatched for structure in the garden.",
     "native_regions": [
@@ -3792,7 +3991,13 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "structural",
+      "wall_shrub",
+      "winter_interest"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p055",
@@ -3820,8 +4025,6 @@
       "spring"
     ],
     "style_tags": [
-      "fragrant",
-      "hedging",
       "formal",
       "low_maintenance"
     ],
@@ -3862,7 +4065,12 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "fragrant",
+      "hedging"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p056",
@@ -3890,8 +4098,6 @@
     ],
     "style_tags": [
       "contemporary",
-      "structural",
-      "drought_tolerant",
       "mediterranean"
     ],
     "description": "Strikingly architectural evergreen with blue-grey leaves and enormous yellow-green flower heads from early spring until early summer. Spectacular in mass plantings. Milky sap is a severe skin irritant.",
@@ -3931,7 +4137,12 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "drought_tolerant",
+      "structural"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p057",
@@ -3960,10 +4171,8 @@
       "summer"
     ],
     "style_tags": [
-      "prairie",
-      "pond_edge",
-      "structural",
-      "naturalistic"
+      "japanese",
+      "prairie"
     ],
     "description": "Clump-forming perennial with slender, upright grass-like leaves and elegant blue-violet flowers in early summer. Very easy and long-lived. Good at the margins of a pond or boggy ground, also tolerates ordinary borders.",
     "native_regions": [
@@ -4003,7 +4212,13 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "naturalistic",
+      "pond_edge",
+      "structural"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p058",
@@ -4032,10 +4247,7 @@
       "summer"
     ],
     "style_tags": [
-      "cottage",
-      "fragrant",
-      "classic",
-      "cut_flower"
+      "cottage"
     ],
     "description": "Classic cottage garden peony with large, fully double, pale rose-pink flowers in late spring to early summer with a sweet fragrance. Long-lived once established, resenting disturbance. Plant with the buds no deeper than 5 cm.",
     "native_regions": [
@@ -4074,7 +4286,13 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "classic",
+      "cut_flower",
+      "fragrant"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p059",
@@ -4101,10 +4319,9 @@
       "autumn"
     ],
     "style_tags": [
-      "prairie",
-      "drought_tolerant",
-      "structural",
-      "pollinator"
+      "mediterranean",
+      "wildlife",
+      "prairie"
     ],
     "description": "Prickly, metallic-blue thistle-like perennial with rigid, branching stems. Flowers and bracts develop an intense steel-blue colour in summer. Thrives in poor, dry soil in full sun. Excellent for cutting and drying.",
     "native_regions": [
@@ -4143,7 +4360,13 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "drought_tolerant",
+      "pollinator",
+      "structural"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p060",
@@ -4170,8 +4393,7 @@
     ],
     "style_tags": [
       "contemporary",
-      "bold",
-      "pollinator",
+      "wildlife",
       "coastal"
     ],
     "description": "Dramatic perennial with strap-like grey-green leaves and striking torches of tubular flowers grading from red-orange at the top to yellow at the base. Loved by bumblebees and hummingbirds. Requires excellent drainage.",
@@ -4211,7 +4433,12 @@
     "verified_on": "2026-11-15",
     "soil_ph": null,
     "caution": null,
-    "origin": "first batch (15 Nov 2026)"
+    "origin": "first batch (15 Nov 2026)",
+    "feature_tags": [
+      "bold",
+      "pollinator"
+    ],
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review"
   },
   {
     "id": "p061",
@@ -4234,8 +4461,15 @@
     "height_m": 0.3,
     "spread_m": 0.75,
     "evergreen": true,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "summer"
+    ],
+    "style_tags": [
+      "cottage",
+      "mediterranean",
+      "wildlife",
+      "formal"
+    ],
     "description": "Hardy, fragrant purple flower spikes in summer; needs well-drained soil to survive wet winters.",
     "native_regions": [],
     "source_urls": [
@@ -4276,7 +4510,15 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 2"
+    "origin": "your list of 100, row 2",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "drought_tolerant",
+      "edging",
+      "fragrant",
+      "pollinator"
+    ]
   },
   {
     "id": "p062",
@@ -4300,8 +4542,13 @@
     "height_m": 6,
     "spread_m": 6,
     "evergreen": false,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "autumn"
+    ],
+    "style_tags": [
+      "japanese",
+      "woodland"
+    ],
     "description": "Deep purple foliage turning bright red in autumn; prefers shelter from strong coastal winds.",
     "native_regions": [],
     "source_urls": [
@@ -4342,7 +4589,13 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 3"
+    "origin": "your list of 100, row 3",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "foliage",
+      "specimen"
+    ]
   },
   {
     "id": "p063",
@@ -4365,8 +4618,15 @@
     "height_m": 2,
     "spread_m": 2,
     "evergreen": false,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "summer"
+    ],
+    "style_tags": [
+      "cottage",
+      "contemporary",
+      "formal",
+      "low_maintenance"
+    ],
     "description": "Large lime-white summer flower cones; extremely hardy and handles heavy rain well.",
     "native_regions": [],
     "source_urls": [
@@ -4407,7 +4667,12 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 4"
+    "origin": "your list of 100, row 4",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "long_flowering"
+    ]
   },
   {
     "id": "p064",
@@ -4431,7 +4696,10 @@
     "spread_m": 3.25,
     "evergreen": true,
     "season_of_interest": [],
-    "style_tags": [],
+    "style_tags": [
+      "contemporary",
+      "formal"
+    ],
     "description": "Glossy green foliage with bright red young growth; widely sold for evergreen screening and hedging.",
     "native_regions": [],
     "source_urls": [
@@ -4472,7 +4740,14 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 5"
+    "origin": "your list of 100, row 5",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": null,
+    "feature_tags": [
+      "foliage",
+      "hedging",
+      "screening"
+    ]
   },
   {
     "id": "p065",
@@ -4497,7 +4772,9 @@
     "spread_m": 0.75,
     "evergreen": false,
     "season_of_interest": [],
-    "style_tags": [],
+    "style_tags": [
+      "cottage"
+    ],
     "description": "Repeat-flowering English rose with strong disease resistance and fragrance; thrives in UK and Irish clay soils.",
     "native_regions": [],
     "source_urls": [
@@ -4538,7 +4815,14 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 7"
+    "origin": "your list of 100, row 7",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": null,
+    "feature_tags": [
+      "classic",
+      "fragrant",
+      "long_flowering"
+    ]
   },
   {
     "id": "p066",
@@ -4560,8 +4844,15 @@
     "height_m": 0.75,
     "spread_m": 0.75,
     "evergreen": true,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "summer",
+      "autumn"
+    ],
+    "style_tags": [
+      "cottage",
+      "mediterranean",
+      "wildlife"
+    ],
     "description": "Bi-coloured red and white blooms from summer into late autumn; drought-tolerant and pollinator-friendly.",
     "native_regions": [],
     "source_urls": [
@@ -4602,7 +4893,14 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 8"
+    "origin": "your list of 100, row 8",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "drought_tolerant",
+      "long_flowering",
+      "pollinator"
+    ]
   },
   {
     "id": "p067",
@@ -4626,8 +4924,12 @@
     "height_m": 3.25,
     "spread_m": 0.75,
     "evergreen": false,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "summer"
+    ],
+    "style_tags": [
+      "cottage"
+    ],
     "description": "Vigorous summer-flowering climber with large velvety purple flowers; prefers shaded roots and sunny tops.",
     "native_regions": [],
     "source_urls": [
@@ -4668,7 +4970,13 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 12"
+    "origin": "your list of 100, row 12",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "classic",
+      "wall_covering"
+    ]
   },
   {
     "id": "p068",
@@ -4691,8 +4999,13 @@
     "height_m": 10,
     "spread_m": 6,
     "evergreen": true,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "summer"
+    ],
+    "style_tags": [
+      "contemporary",
+      "mediterranean"
+    ],
     "description": "Glossy evergreen leaves and scented white summer flowers; best against a warm, sheltered wall.",
     "native_regions": [],
     "source_urls": [
@@ -4733,7 +5046,13 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 13"
+    "origin": "your list of 100, row 13",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "fragrant",
+      "wall_covering"
+    ]
   },
   {
     "id": "p069",
@@ -4756,8 +5075,15 @@
     "height_m": 10,
     "spread_m": 6,
     "evergreen": true,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "spring",
+      "winter"
+    ],
+    "style_tags": [
+      "japanese",
+      "woodland",
+      "formal"
+    ],
     "description": "Glossy dark foliage with rose-like blooms in late winter/spring; requires ericaceous (acidic) soil.",
     "native_regions": [],
     "source_urls": [
@@ -4797,7 +5123,13 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 14"
+    "origin": "your list of 100, row 14",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "shade_garden",
+      "winter_interest"
+    ]
   },
   {
     "id": "p070",
@@ -4821,7 +5153,10 @@
     "spread_m": 6,
     "evergreen": false,
     "season_of_interest": [],
-    "style_tags": [],
+    "style_tags": [
+      "wildlife",
+      "woodland"
+    ],
     "description": "Self-clinging climber with white lacecap flowers; ideal for north-facing walls in Britain and Ireland.",
     "native_regions": [],
     "source_urls": [
@@ -4861,7 +5196,13 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 17"
+    "origin": "your list of 100, row 17",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": null,
+    "feature_tags": [
+      "shade_garden",
+      "wall_covering"
+    ]
   },
   {
     "id": "p071",
@@ -4886,7 +5227,11 @@
     "spread_m": 2,
     "evergreen": true,
     "season_of_interest": [],
-    "style_tags": [],
+    "style_tags": [
+      "contemporary",
+      "formal",
+      "low_maintenance"
+    ],
     "description": "Bright golden-yellow evergreen foliage that brightens shady borders year-round.",
     "native_regions": [],
     "source_urls": [
@@ -4927,7 +5272,13 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 20"
+    "origin": "your list of 100, row 20",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": null,
+    "feature_tags": [
+      "foliage",
+      "fragrant"
+    ]
   },
   {
     "id": "p072",
@@ -4948,8 +5299,15 @@
     "height_m": 1.25,
     "spread_m": 1.25,
     "evergreen": true,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "spring",
+      "winter"
+    ],
+    "style_tags": [
+      "japanese",
+      "woodland",
+      "low_maintenance"
+    ],
     "description": "Deep red winter flower buds opening to scented white spring blooms; compact and shade-loving.",
     "native_regions": [],
     "source_urls": [
@@ -4989,7 +5347,14 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 21"
+    "origin": "your list of 100, row 21",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "fragrant",
+      "shade_garden",
+      "winter_interest"
+    ]
   },
   {
     "id": "p073",
@@ -5011,8 +5376,13 @@
     "height_m": 3.25,
     "spread_m": 2,
     "evergreen": true,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "spring"
+    ],
+    "style_tags": [
+      "japanese",
+      "woodland"
+    ],
     "description": "Brilliant red young spring foliage fading to cream and green; needs acidic, moisture-retentive soil.",
     "native_regions": [],
     "source_urls": [
@@ -5051,7 +5421,13 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 22"
+    "origin": "your list of 100, row 22",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "foliage",
+      "shade_garden"
+    ]
   },
   {
     "id": "p074",
@@ -5075,7 +5451,9 @@
     "spread_m": 3.25,
     "evergreen": true,
     "season_of_interest": [],
-    "style_tags": [],
+    "style_tags": [
+      "woodland"
+    ],
     "description": "Hardy, reliable white-flowered evergreen shrub suited to acidic soils and high-rainfall areas.",
     "native_regions": [],
     "source_urls": [
@@ -5114,7 +5492,13 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 23"
+    "origin": "your list of 100, row 23",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": null,
+    "feature_tags": [
+      "screening",
+      "shade_garden"
+    ]
   },
   {
     "id": "p075",
@@ -5138,8 +5522,15 @@
     "height_m": 0.75,
     "spread_m": 1.25,
     "evergreen": true,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "summer"
+    ],
+    "style_tags": [
+      "contemporary",
+      "wildlife",
+      "coastal",
+      "low_maintenance"
+    ],
     "description": "Purple-tinged foliage and violet summer flower spikes; thrives in mild coastal UK and Irish gardens.",
     "native_regions": [],
     "source_urls": [
@@ -5179,7 +5570,12 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 25"
+    "origin": "your list of 100, row 25",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "pollinator"
+    ]
   },
   {
     "id": "p076",
@@ -5205,7 +5601,10 @@
     "spread_m": 1.25,
     "evergreen": true,
     "season_of_interest": [],
-    "style_tags": [],
+    "style_tags": [
+      "woodland",
+      "low_maintenance"
+    ],
     "description": "Tough, low-growing variegated groundcover or container shrub; handles pollution and shade easily.",
     "native_regions": [],
     "source_urls": [
@@ -5246,7 +5645,14 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 26"
+    "origin": "your list of 100, row 26",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": null,
+    "feature_tags": [
+      "foliage",
+      "ground_cover",
+      "shade_garden"
+    ]
   },
   {
     "id": "p077",
@@ -5271,7 +5677,10 @@
     "spread_m": 0.3,
     "evergreen": true,
     "season_of_interest": [],
-    "style_tags": [],
+    "style_tags": [
+      "contemporary",
+      "formal"
+    ],
     "description": "Upright, narrow evergreen frequently sold as a blight-free alternative to box hedging.",
     "native_regions": [],
     "source_urls": [
@@ -5312,7 +5721,13 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 27"
+    "origin": "your list of 100, row 27",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": null,
+    "feature_tags": [
+      "edging",
+      "hedging"
+    ]
   },
   {
     "id": "p078",
@@ -5337,7 +5752,9 @@
     "spread_m": 6,
     "evergreen": true,
     "season_of_interest": [],
-    "style_tags": [],
+    "style_tags": [
+      "formal"
+    ],
     "description": "Traditional clipping shrub for formal parterres and topiary; thrives in chalky or clay soils.",
     "native_regions": [],
     "source_urls": [
@@ -5378,7 +5795,13 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 28"
+    "origin": "your list of 100, row 28",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": null,
+    "feature_tags": [
+      "hedging",
+      "structural"
+    ]
   },
   {
     "id": "p079",
@@ -5404,7 +5827,10 @@
     "spread_m": 8,
     "evergreen": true,
     "season_of_interest": [],
-    "style_tags": [],
+    "style_tags": [
+      "wildlife",
+      "formal"
+    ],
     "description": "Native, long-lived evergreen for formal hedges and topiary; tolerates heavy pruning and deep shade.",
     "native_regions": [],
     "source_urls": [
@@ -5445,7 +5871,15 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 29"
+    "origin": "your list of 100, row 29",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": null,
+    "feature_tags": [
+      "hedging",
+      "native",
+      "screening",
+      "structural"
+    ]
   },
   {
     "id": "p080",
@@ -5470,7 +5904,9 @@
     "spread_m": 8,
     "evergreen": true,
     "season_of_interest": [],
-    "style_tags": [],
+    "style_tags": [
+      "formal"
+    ],
     "description": "Dark glossy leaves on reddish stems; a refined, hardy hedging choice across Britain and Ireland.",
     "native_regions": [],
     "source_urls": [
@@ -5511,7 +5947,14 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 30"
+    "origin": "your list of 100, row 30",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": null,
+    "feature_tags": [
+      "hedging",
+      "screening",
+      "structural"
+    ]
   },
   {
     "id": "p081",
@@ -5535,7 +5978,10 @@
     "spread_m": 3.25,
     "evergreen": true,
     "season_of_interest": [],
-    "style_tags": [],
+    "style_tags": [
+      "coastal",
+      "low_maintenance"
+    ],
     "description": "Apple-green leathery leaves; arguably the most popular salt-tolerant coastal hedging plant in Ireland and western UK.",
     "native_regions": [],
     "source_urls": [
@@ -5576,7 +6022,13 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 32"
+    "origin": "your list of 100, row 32",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": null,
+    "feature_tags": [
+      "hedging",
+      "screening"
+    ]
   },
   {
     "id": "p082",
@@ -5600,8 +6052,13 @@
     "height_m": 3.25,
     "spread_m": 3.25,
     "evergreen": true,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "summer"
+    ],
+    "style_tags": [
+      "wildlife",
+      "coastal"
+    ],
     "description": "Glossy leaves and tubular pink summer flowers; excels in seaside and windy maritime gardens.",
     "native_regions": [],
     "source_urls": [
@@ -5642,7 +6099,14 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 33"
+    "origin": "your list of 100, row 33",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "hedging",
+      "pollinator",
+      "screening"
+    ]
   },
   {
     "id": "p083",
@@ -5666,8 +6130,12 @@
     "height_m": 3.25,
     "spread_m": 3.25,
     "evergreen": true,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "autumn"
+    ],
+    "style_tags": [
+      "coastal"
+    ],
     "description": "Silvery-green leaves and intensely scented autumn flowers; impervious to coastal salt winds.",
     "native_regions": [],
     "source_urls": [
@@ -5708,7 +6176,14 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 34"
+    "origin": "your list of 100, row 34",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "fragrant",
+      "hedging",
+      "screening"
+    ]
   },
   {
     "id": "p084",
@@ -5732,8 +6207,14 @@
     "height_m": 2,
     "spread_m": 2,
     "evergreen": false,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "spring",
+      "winter"
+    ],
+    "style_tags": [
+      "cottage",
+      "low_maintenance"
+    ],
     "description": "Bright yellow flowers on bare green stems from November to March; completely hardy.",
     "native_regions": [],
     "source_urls": [
@@ -5774,7 +6255,13 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 36"
+    "origin": "your list of 100, row 36",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "wall_covering",
+      "winter_interest"
+    ]
   },
   {
     "id": "p085",
@@ -5797,8 +6284,14 @@
     "height_m": 3.25,
     "spread_m": 3.25,
     "evergreen": false,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "autumn",
+      "winter"
+    ],
+    "style_tags": [
+      "japanese",
+      "woodland"
+    ],
     "description": "Fragrant yellow ribbon-like flowers on bare branches in mid-winter; vibrant autumn leaf colour.",
     "native_regions": [],
     "source_urls": [
@@ -5838,7 +6331,14 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 39"
+    "origin": "your list of 100, row 39",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "fragrant",
+      "specimen",
+      "winter_interest"
+    ]
   },
   {
     "id": "p086",
@@ -5862,8 +6362,13 @@
     "height_m": 2,
     "spread_m": 2,
     "evergreen": false,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "spring"
+    ],
+    "style_tags": [
+      "cottage",
+      "low_maintenance"
+    ],
     "description": "Reliable burst of golden-yellow flowers in early spring; tough and easy to grow in any soil.",
     "native_regions": [],
     "source_urls": [
@@ -5904,7 +6409,12 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 40"
+    "origin": "your list of 100, row 40",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "classic"
+    ]
   },
   {
     "id": "p087",
@@ -5927,8 +6437,13 @@
     "height_m": 2,
     "spread_m": 1.25,
     "evergreen": false,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "spring"
+    ],
+    "style_tags": [
+      "cottage",
+      "wildlife"
+    ],
     "description": "Clusters of deep pink spring blooms; hardy, fast-growing, and tolerant of poor soils.",
     "native_regions": [],
     "source_urls": [
@@ -5969,7 +6484,12 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 41"
+    "origin": "your list of 100, row 41",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "pollinator"
+    ]
   },
   {
     "id": "p088",
@@ -5992,8 +6512,13 @@
     "height_m": 6,
     "spread_m": 6,
     "evergreen": false,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "spring"
+    ],
+    "style_tags": [
+      "cottage",
+      "wildlife"
+    ],
     "description": "Classic scented purple or white flower panicles in late spring; very hardy and alkaline-tolerant.",
     "native_regions": [],
     "source_urls": [
@@ -6033,7 +6558,14 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 42"
+    "origin": "your list of 100, row 42",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "classic",
+      "fragrant",
+      "pollinator"
+    ]
   },
   {
     "id": "p089",
@@ -6057,8 +6589,12 @@
     "height_m": 1.25,
     "spread_m": 2,
     "evergreen": false,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "summer"
+    ],
+    "style_tags": [
+      "cottage"
+    ],
     "description": "Arching branches covered in orange-blossom scented white flowers in early summer.",
     "native_regions": [],
     "source_urls": [
@@ -6099,7 +6635,13 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 43"
+    "origin": "your list of 100, row 43",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "classic",
+      "fragrant"
+    ]
   },
   {
     "id": "p090",
@@ -6122,8 +6664,14 @@
     "height_m": 1.25,
     "spread_m": 1.25,
     "evergreen": false,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "spring",
+      "summer"
+    ],
+    "style_tags": [
+      "cottage",
+      "wildlife"
+    ],
     "description": "Cream-edged leaves and clusters of soft pink tubular flowers in late spring and early summer.",
     "native_regions": [],
     "source_urls": [
@@ -6163,7 +6711,13 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 44"
+    "origin": "your list of 100, row 44",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "foliage",
+      "pollinator"
+    ]
   },
   {
     "id": "p091",
@@ -6187,8 +6741,14 @@
     "height_m": 0.75,
     "spread_m": 0.75,
     "evergreen": false,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "spring",
+      "summer"
+    ],
+    "style_tags": [
+      "contemporary",
+      "low_maintenance"
+    ],
     "description": "Bronze-gold spring foliage turning green with flat pink summer flower heads; compact and low-maintenance.",
     "native_regions": [],
     "source_urls": [
@@ -6229,7 +6789,12 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 45"
+    "origin": "your list of 100, row 45",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "foliage"
+    ]
   },
   {
     "id": "p092",
@@ -6252,8 +6817,15 @@
     "height_m": 0.75,
     "spread_m": 0.75,
     "evergreen": false,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "spring",
+      "autumn"
+    ],
+    "style_tags": [
+      "mediterranean",
+      "wildlife",
+      "low_maintenance"
+    ],
     "description": "Long-flowering compact shrub with pure white blooms from late spring to autumn; thrives in poor soil.",
     "native_regions": [],
     "source_urls": [
@@ -6294,7 +6866,14 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 46"
+    "origin": "your list of 100, row 46",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "drought_tolerant",
+      "long_flowering",
+      "pollinator"
+    ]
   },
   {
     "id": "p093",
@@ -6318,8 +6897,13 @@
     "height_m": 3.25,
     "spread_m": 3.25,
     "evergreen": false,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "summer"
+    ],
+    "style_tags": [
+      "cottage",
+      "wildlife"
+    ],
     "description": "Deep purple scented flower spikes in mid-to-late summer; prolific pollinator magnet.",
     "native_regions": [],
     "source_urls": [
@@ -6360,7 +6944,13 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 47"
+    "origin": "your list of 100, row 47",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "fragrant",
+      "pollinator"
+    ]
   },
   {
     "id": "p094",
@@ -6381,8 +6971,13 @@
     "height_m": 3.25,
     "spread_m": 3.25,
     "evergreen": true,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "spring"
+    ],
+    "style_tags": [
+      "mediterranean",
+      "wildlife"
+    ],
     "description": "Covered in vivid cobalt-blue flowers in late spring; best against a sheltered, sunny wall.",
     "native_regions": [],
     "source_urls": [
@@ -6423,7 +7018,14 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 48"
+    "origin": "your list of 100, row 48",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "drought_tolerant",
+      "pollinator",
+      "wall_covering"
+    ]
   },
   {
     "id": "p096",
@@ -6447,8 +7049,12 @@
     "height_m": 2,
     "spread_m": 2,
     "evergreen": true,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "spring"
+    ],
+    "style_tags": [
+      "wildlife"
+    ],
     "description": "Thorny wall shrub prized for white spring blossom and dense clusters of orange berries loved by birds.",
     "native_regions": [],
     "source_urls": [
@@ -6489,7 +7095,14 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 50"
+    "origin": "your list of 100, row 50",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "hedging",
+      "wall_covering",
+      "winter_interest"
+    ]
   },
   {
     "id": "p097",
@@ -6514,7 +7127,9 @@
     "spread_m": 0.75,
     "evergreen": true,
     "season_of_interest": [],
-    "style_tags": [],
+    "style_tags": [
+      "woodland"
+    ],
     "description": "Variegated silvery-grey and white foliage; invaluable for shady walls, hanging baskets, and groundcover.",
     "native_regions": [],
     "source_urls": [
@@ -6555,7 +7170,15 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 51"
+    "origin": "your list of 100, row 51",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": null,
+    "feature_tags": [
+      "foliage",
+      "ground_cover",
+      "shade_garden",
+      "wall_covering"
+    ]
   },
   {
     "id": "p098",
@@ -6579,8 +7202,14 @@
     "height_m": 6,
     "spread_m": 1.25,
     "evergreen": false,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "summer",
+      "autumn"
+    ],
+    "style_tags": [
+      "cottage",
+      "wildlife"
+    ],
     "description": "Native-type climbing honeysuckle with sweet-scented creamy-yellow flowers from mid-summer to autumn.",
     "native_regions": [],
     "source_urls": [
@@ -6621,7 +7250,14 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 52"
+    "origin": "your list of 100, row 52",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "fragrant",
+      "pollinator",
+      "wall_covering"
+    ]
   },
   {
     "id": "p099",
@@ -6645,7 +7281,9 @@
     "spread_m": 3.25,
     "evergreen": true,
     "season_of_interest": [],
-    "style_tags": [],
+    "style_tags": [
+      "mediterranean"
+    ],
     "description": "Exotic white-and-purple flowers followed by orange fruits; hardy against sheltered south- or west-facing walls.",
     "native_regions": [],
     "source_urls": [
@@ -6686,7 +7324,13 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 54"
+    "origin": "your list of 100, row 54",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": null,
+    "feature_tags": [
+      "bold",
+      "wall_covering"
+    ]
   },
   {
     "id": "p101",
@@ -6711,7 +7355,9 @@
     "spread_m": 2,
     "evergreen": false,
     "season_of_interest": [],
-    "style_tags": [],
+    "style_tags": [
+      "cottage"
+    ],
     "description": "Repeat-flowering pearl-pink climbing rose with glossy, disease-resistant leaves; tolerates partial shade.",
     "native_regions": [],
     "source_urls": [
@@ -6752,7 +7398,14 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 56"
+    "origin": "your list of 100, row 56",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": null,
+    "feature_tags": [
+      "classic",
+      "fragrant",
+      "wall_covering"
+    ]
   },
   {
     "id": "p102",
@@ -6774,8 +7427,15 @@
     "height_m": 6,
     "spread_m": 3.25,
     "evergreen": false,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "spring",
+      "summer",
+      "autumn"
+    ],
+    "style_tags": [
+      "wildlife",
+      "prairie"
+    ],
     "description": "Compact native tree with spring blossom, bright red late-summer berries, and fiery autumn leaves.",
     "native_regions": [],
     "source_urls": [
@@ -6815,7 +7475,14 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 58"
+    "origin": "your list of 100, row 58",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "native",
+      "naturalistic",
+      "specimen"
+    ]
   },
   {
     "id": "p103",
@@ -6839,8 +7506,13 @@
     "height_m": 6,
     "spread_m": 6,
     "evergreen": false,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "spring"
+    ],
+    "style_tags": [
+      "cottage",
+      "wildlife"
+    ],
     "description": "White-and-pink spring blossom followed by persistent orange-red fruits; great pollinator for garden apples.",
     "native_regions": [],
     "source_urls": [
@@ -6881,7 +7553,13 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 59"
+    "origin": "your list of 100, row 59",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "pollinator",
+      "specimen"
+    ]
   },
   {
     "id": "p104",
@@ -6904,8 +7582,13 @@
     "height_m": 10,
     "spread_m": 8,
     "evergreen": false,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "spring"
+    ],
+    "style_tags": [
+      "cottage",
+      "japanese"
+    ],
     "description": "Iconic double-pink spring blossom clusters; hardy and widely planted in British and Irish gardens.",
     "native_regions": [],
     "source_urls": [
@@ -6946,7 +7629,13 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 60"
+    "origin": "your list of 100, row 60",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "classic",
+      "specimen"
+    ]
   },
   {
     "id": "p105",
@@ -6969,8 +7658,15 @@
     "height_m": 10,
     "spread_m": 6,
     "evergreen": false,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "spring",
+      "autumn"
+    ],
+    "style_tags": [
+      "contemporary",
+      "wildlife",
+      "prairie"
+    ],
     "description": "Starry white spring flowers, bronze young leaves, and rich orange-red autumn foliage; thrives in damp soils.",
     "native_regions": [],
     "source_urls": [
@@ -7010,7 +7706,13 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 61"
+    "origin": "your list of 100, row 61",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "naturalistic",
+      "specimen"
+    ]
   },
   {
     "id": "p106",
@@ -7033,8 +7735,13 @@
     "height_m": 6,
     "spread_m": 2,
     "evergreen": true,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "winter"
+    ],
+    "style_tags": [
+      "contemporary",
+      "mediterranean"
+    ],
     "description": "Sold widely as a patio specimen; hardy in sheltered UK/Irish gardens if given sharp winter drainage.",
     "native_regions": [],
     "source_urls": [
@@ -7075,7 +7782,13 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 62"
+    "origin": "your list of 100, row 62",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "drought_tolerant",
+      "specimen"
+    ]
   },
   {
     "id": "p107",
@@ -7100,7 +7813,10 @@
     "spread_m": 3.25,
     "evergreen": true,
     "season_of_interest": [],
-    "style_tags": [],
+    "style_tags": [
+      "contemporary",
+      "coastal"
+    ],
     "description": "Palm-like spiky foliage widely grown across Ireland and coastal Britain; thrives in mild maritime air.",
     "native_regions": [],
     "source_urls": [
@@ -7141,7 +7857,13 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 63"
+    "origin": "your list of 100, row 63",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": null,
+    "feature_tags": [
+      "architectural",
+      "bold"
+    ]
   },
   {
     "id": "p108",
@@ -7164,7 +7886,10 @@
     "spread_m": 2,
     "evergreen": true,
     "season_of_interest": [],
-    "style_tags": [],
+    "style_tags": [
+      "contemporary",
+      "coastal"
+    ],
     "description": "Bold sword-shaped bronze-purple leaves; wind-resistant and ideal for coastal or contemporary borders.",
     "native_regions": [],
     "source_urls": [
@@ -7205,7 +7930,14 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 64"
+    "origin": "your list of 100, row 64",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": null,
+    "feature_tags": [
+      "architectural",
+      "bold",
+      "foliage"
+    ]
   },
   {
     "id": "p109",
@@ -7231,7 +7963,11 @@
     "spread_m": 3.25,
     "evergreen": true,
     "season_of_interest": [],
-    "style_tags": [],
+    "style_tags": [
+      "contemporary",
+      "japanese",
+      "woodland"
+    ],
     "description": "Large glossy palmate leaves giving a tropical look while being fully hardy in shaded borders.",
     "native_regions": [],
     "source_urls": [
@@ -7272,7 +8008,15 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 65"
+    "origin": "your list of 100, row 65",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": null,
+    "feature_tags": [
+      "architectural",
+      "bold",
+      "foliage",
+      "shade_garden"
+    ]
   },
   {
     "id": "p110",
@@ -7295,8 +8039,14 @@
     "height_m": 0.3,
     "spread_m": 0.3,
     "evergreen": true,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "spring",
+      "winter"
+    ],
+    "style_tags": [
+      "cottage",
+      "woodland"
+    ],
     "description": "Nodding winter-to-spring blooms in white, pink, and plum; thrives under deciduous trees and shrubs.",
     "native_regions": [],
     "source_urls": [
@@ -7337,7 +8087,13 @@
     ],
     "verified_on": "2026-11-15",
     "origin": "your list of 100, row 66",
-    "verification_note": "RHS lists this plant as semi-evergreen"
+    "verification_note": "RHS lists this plant as semi-evergreen",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "shade_garden",
+      "winter_interest"
+    ]
   },
   {
     "id": "p111",
@@ -7360,8 +8116,13 @@
     "height_m": 0.3,
     "spread_m": 0.05,
     "evergreen": false,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "winter"
+    ],
+    "style_tags": [
+      "woodland",
+      "prairie"
+    ],
     "description": "Delicate white nodding flowers emerging in January and February; naturalises well in damp grass or woodland.",
     "native_regions": [],
     "source_urls": [
@@ -7402,7 +8163,14 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 67"
+    "origin": "your list of 100, row 67",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "naturalistic",
+      "spring_bulb",
+      "winter_interest"
+    ]
   },
   {
     "id": "p112",
@@ -7425,8 +8193,13 @@
     "height_m": 0.05,
     "spread_m": 0.05,
     "evergreen": false,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "winter"
+    ],
+    "style_tags": [
+      "wildlife",
+      "prairie"
+    ],
     "description": "Silvery-lilac cup flowers in February; early pollen source for emerging bumblebees.",
     "native_regions": [],
     "source_urls": [
@@ -7467,7 +8240,14 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 68"
+    "origin": "your list of 100, row 68",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "naturalistic",
+      "pollinator",
+      "spring_bulb"
+    ]
   },
   {
     "id": "p113",
@@ -7489,8 +8269,13 @@
     "height_m": 2,
     "spread_m": 0.75,
     "evergreen": false,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "spring",
+      "summer"
+    ],
+    "style_tags": [
+      "cottage"
+    ],
     "description": "Towering summer spires in true blues, purples, and whites; needs staking and slug protection in spring.",
     "native_regions": [],
     "source_urls": [
@@ -7531,7 +8316,12 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 73"
+    "origin": "your list of 100, row 73",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "classic"
+    ]
   },
   {
     "id": "p114",
@@ -7553,8 +8343,13 @@
     "height_m": 1.25,
     "spread_m": 0.75,
     "evergreen": false,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "summer"
+    ],
+    "style_tags": [
+      "cottage",
+      "wildlife"
+    ],
     "description": "Bold, colourful early-summer flower spikes; thrives in cool UK/Irish summers and slightly acidic soils.",
     "native_regions": [],
     "source_urls": [
@@ -7594,7 +8389,13 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 74"
+    "origin": "your list of 100, row 74",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "classic",
+      "pollinator"
+    ]
   },
   {
     "id": "p115",
@@ -7617,8 +8418,12 @@
     "height_m": 0.75,
     "spread_m": 0.75,
     "evergreen": false,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "summer"
+    ],
+    "style_tags": [
+      "cottage"
+    ],
     "description": "Huge papery blooms in scarlet, salmon, or white in early summer; bold cottage-garden favourite.",
     "native_regions": [],
     "source_urls": [
@@ -7659,7 +8464,12 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 76"
+    "origin": "your list of 100, row 76",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "bold_colour"
+    ]
   },
   {
     "id": "p116",
@@ -7681,8 +8491,15 @@
     "height_m": 0.75,
     "spread_m": 0.3,
     "evergreen": false,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "spring"
+    ],
+    "style_tags": [
+      "cottage",
+      "wildlife",
+      "woodland",
+      "prairie"
+    ],
     "description": "Delicate spurred flowers in late spring; self-seeds gently into shady or sunny cottage borders.",
     "native_regions": [],
     "source_urls": [
@@ -7723,7 +8540,14 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 77"
+    "origin": "your list of 100, row 77",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "native",
+      "naturalistic",
+      "woodland_edge"
+    ]
   },
   {
     "id": "p117",
@@ -7745,8 +8569,13 @@
     "height_m": 0.75,
     "spread_m": 0.75,
     "evergreen": false,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "spring"
+    ],
+    "style_tags": [
+      "cottage",
+      "woodland"
+    ],
     "description": "Arching stems hung with heart-shaped pink-and-white flowers in late spring; loves cool, moist shade.",
     "native_regions": [],
     "source_urls": [
@@ -7786,7 +8615,12 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 78"
+    "origin": "your list of 100, row 78",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "shade_garden"
+    ]
   },
   {
     "id": "p118",
@@ -7808,7 +8642,9 @@
     "spread_m": 0.3,
     "evergreen": false,
     "season_of_interest": [],
-    "style_tags": [],
+    "style_tags": [
+      "woodland"
+    ],
     "description": "Feathery plumes of crimson flowers above fern-like leaves; thrives in damp soils and beside ponds.",
     "native_regions": [],
     "source_urls": [
@@ -7849,7 +8685,13 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 79"
+    "origin": "your list of 100, row 79",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": null,
+    "feature_tags": [
+      "pond_edge",
+      "shade_garden"
+    ]
   },
   {
     "id": "p119",
@@ -7872,8 +8714,16 @@
     "height_m": 0.3,
     "spread_m": 0.3,
     "evergreen": false,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "spring",
+      "autumn"
+    ],
+    "style_tags": [
+      "cottage",
+      "mediterranean",
+      "wildlife",
+      "low_maintenance"
+    ],
     "description": "Aromatic grey-green foliage and clouds of lavender-blue blooms from May to September; tough and drought-proof.",
     "native_regions": [],
     "source_urls": [
@@ -7914,7 +8764,15 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 81"
+    "origin": "your list of 100, row 81",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "drought_tolerant",
+      "edging",
+      "long_flowering",
+      "pollinator"
+    ]
   },
   {
     "id": "p120",
@@ -7936,8 +8794,15 @@
     "height_m": 1.25,
     "spread_m": 0.75,
     "evergreen": false,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "summer"
+    ],
+    "style_tags": [
+      "contemporary",
+      "mediterranean",
+      "wildlife",
+      "prairie"
+    ],
     "description": "Silvery stems and airy violet-blue flower spikes in late summer; thrives in free-draining, sunny spots.",
     "native_regions": [],
     "source_urls": [
@@ -7978,7 +8843,13 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 82"
+    "origin": "your list of 100, row 82",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "drought_tolerant",
+      "pollinator"
+    ]
   },
   {
     "id": "p121",
@@ -8002,8 +8873,14 @@
     "height_m": 1.25,
     "spread_m": 0.75,
     "evergreen": false,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "autumn"
+    ],
+    "style_tags": [
+      "cottage",
+      "wildlife",
+      "prairie"
+    ],
     "description": "Essential late-autumn colour in purples, pinks, and blues when most perennials are fading.",
     "native_regions": [],
     "source_urls": [
@@ -8044,7 +8921,12 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 85"
+    "origin": "your list of 100, row 85",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "pollinator"
+    ]
   },
   {
     "id": "p122",
@@ -8068,8 +8950,15 @@
     "height_m": 1.25,
     "spread_m": 0.75,
     "evergreen": false,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "summer",
+      "autumn"
+    ],
+    "style_tags": [
+      "cottage",
+      "japanese",
+      "woodland"
+    ],
     "description": "Tall, graceful white flowers with yellow centres from August to October; thrives in damp, shaded borders.",
     "native_regions": [],
     "source_urls": [
@@ -8111,7 +9000,14 @@
     ],
     "verified_on": "2026-11-15",
     "origin": "your list of 100, row 86",
-    "verification_note": "RHS lists this plant as deciduous or semi-evergreen"
+    "verification_note": "RHS lists this plant as deciduous or semi-evergreen",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "long_flowering",
+      "shade_garden",
+      "woodland_edge"
+    ]
   },
   {
     "id": "p123",
@@ -8133,8 +9029,16 @@
     "height_m": 0.75,
     "spread_m": 0.3,
     "evergreen": false,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "autumn"
+    ],
+    "style_tags": [
+      "contemporary",
+      "mediterranean",
+      "wildlife",
+      "prairie",
+      "low_maintenance"
+    ],
     "description": "Succulent grey-green leaves and flat pink flowerheads turning coppery-red in autumn; great for bees.",
     "native_regions": [],
     "source_urls": [
@@ -8174,7 +9078,13 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 87"
+    "origin": "your list of 100, row 87",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "drought_tolerant",
+      "pollinator"
+    ]
   },
   {
     "id": "p124",
@@ -8197,8 +9107,14 @@
     "height_m": 0.75,
     "spread_m": 0.3,
     "evergreen": false,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "spring",
+      "autumn"
+    ],
+    "style_tags": [
+      "cottage",
+      "wildlife"
+    ],
     "description": "Sterile hybrid producing non-stop apricot-orange flowers from May to September; slug-resistant.",
     "native_regions": [],
     "source_urls": [
@@ -8239,7 +9155,13 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 88"
+    "origin": "your list of 100, row 88",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "long_flowering",
+      "pollinator"
+    ]
   },
   {
     "id": "p125",
@@ -8263,8 +9185,14 @@
     "height_m": 0.3,
     "spread_m": 0.3,
     "evergreen": false,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "summer"
+    ],
+    "style_tags": [
+      "cottage",
+      "wildlife",
+      "woodland"
+    ],
     "description": "Intricate pincushion-like pink flowers from early to late summer; thrives in moist, humus-rich soil.",
     "native_regions": [],
     "source_urls": [
@@ -8305,7 +9233,14 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 90"
+    "origin": "your list of 100, row 90",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "long_flowering",
+      "pollinator",
+      "woodland_edge"
+    ]
   },
   {
     "id": "p126",
@@ -8329,8 +9264,12 @@
     "height_m": 0.3,
     "spread_m": 0.75,
     "evergreen": false,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "spring"
+    ],
+    "style_tags": [
+      "woodland"
+    ],
     "description": "Heart-shaped silver-veined leaves and sprays of tiny blue forget-me-not flowers in spring.",
     "native_regions": [],
     "source_urls": [
@@ -8371,7 +9310,14 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 92"
+    "origin": "your list of 100, row 92",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "foliage",
+      "ground_cover",
+      "shade_garden"
+    ]
   },
   {
     "id": "p127",
@@ -8394,8 +9340,13 @@
     "height_m": 0.3,
     "spread_m": 0.3,
     "evergreen": false,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "spring"
+    ],
+    "style_tags": [
+      "wildlife",
+      "woodland"
+    ],
     "description": "White-spotted leaves and early spring flowers; early nectar source that thrives in cool, damp shade.",
     "native_regions": [],
     "source_urls": [
@@ -8436,7 +9387,14 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 93"
+    "origin": "your list of 100, row 93",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "ground_cover",
+      "pollinator",
+      "shade_garden"
+    ]
   },
   {
     "id": "p128",
@@ -8460,8 +9418,13 @@
     "height_m": 0.3,
     "spread_m": 0.75,
     "evergreen": true,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "spring",
+      "winter"
+    ],
+    "style_tags": [
+      "low_maintenance"
+    ],
     "description": "Tough leathery leaves turning red in winter, with pink spring flower clusters; thrives in poor or damp soil.",
     "native_regions": [],
     "source_urls": [
@@ -8503,7 +9466,14 @@
     ],
     "verified_on": "2026-11-15",
     "origin": "your list of 100, row 94",
-    "verification_note": "Your list named the species Bergenia cordifolia. RHS data was only found for the cultivar 'Purpurea', so that is what this row records"
+    "verification_note": "Your list named the species Bergenia cordifolia. RHS data was only found for the cultivar 'Purpurea', so that is what this row records",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "foliage",
+      "ground_cover",
+      "winter_interest"
+    ]
   },
   {
     "id": "p129",
@@ -8527,8 +9497,14 @@
     "height_m": 2,
     "spread_m": 0.3,
     "evergreen": false,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "summer"
+    ],
+    "style_tags": [
+      "contemporary",
+      "coastal",
+      "prairie"
+    ],
     "description": "Sword-like leaves and arching sprays of fiery red summer blooms; thrives in damp maritime climates.",
     "native_regions": [],
     "source_urls": [
@@ -8569,7 +9545,12 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 96"
+    "origin": "your list of 100, row 96",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "bold_colour"
+    ]
   },
   {
     "id": "p130",
@@ -8590,8 +9571,14 @@
     "height_m": 1.25,
     "spread_m": 0.75,
     "evergreen": false,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "summer"
+    ],
+    "style_tags": [
+      "contemporary",
+      "coastal",
+      "prairie"
+    ],
     "description": "Architectural torch-like spikes of warm orange and cream blooms in summer; loves coastal and sunny sites.",
     "native_regions": [],
     "source_urls": [
@@ -8631,7 +9618,13 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 97"
+    "origin": "your list of 100, row 97",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "architectural",
+      "bold"
+    ]
   },
   {
     "id": "p131",
@@ -8654,8 +9647,14 @@
     "height_m": 0.3,
     "spread_m": 0.75,
     "evergreen": true,
-    "season_of_interest": [],
-    "style_tags": [],
+    "season_of_interest": [
+      "spring"
+    ],
+    "style_tags": [
+      "cottage",
+      "mediterranean",
+      "low_maintenance"
+    ],
     "description": "Low-growing mats of tiny white-and-pink daisies from May to November; ideal for wall crevices and gravel.",
     "native_regions": [],
     "source_urls": [
@@ -8697,7 +9696,13 @@
     ],
     "verified_on": "2026-11-15",
     "origin": "your list of 100, row 98",
-    "verification_note": "RHS lists this plant as semi-evergreen"
+    "verification_note": "RHS lists this plant as semi-evergreen",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": "read from the description in your list of 100",
+    "feature_tags": [
+      "ground_cover",
+      "long_flowering"
+    ]
   },
   {
     "id": "p132",
@@ -8722,7 +9727,11 @@
     "spread_m": 0.3,
     "evergreen": true,
     "season_of_interest": [],
-    "style_tags": [],
+    "style_tags": [
+      "wildlife",
+      "japanese",
+      "woodland"
+    ],
     "description": "Glossy, strap-like evergreen fronds native to Britain and Ireland; thrives in damp shade and alkaline soils.",
     "native_regions": [],
     "source_urls": [
@@ -8762,6 +9771,13 @@
       "native_regions"
     ],
     "verified_on": "2026-11-15",
-    "origin": "your list of 100, row 100"
+    "origin": "your list of 100, row 100",
+    "style_tags_source": "fixed style list, proposed 16 Nov 2026, awaiting review",
+    "season_source": null,
+    "feature_tags": [
+      "foliage",
+      "native",
+      "shade_garden"
+    ]
   }
 ]

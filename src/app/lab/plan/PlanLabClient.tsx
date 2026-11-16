@@ -14,6 +14,7 @@
 
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { compressImage } from '@/lib/compressImage';
+import { GARDEN_STYLES, MAX_STYLES } from '@/lib/planting/styles';
 import { recoverDimensions, type CornerPoints } from '@/lib/site-model/dimensions';
 import { buildSunGrid, type Compass } from '@/lib/site-model/sun-grid';
 import { PlanSvg } from '@/components/plan/PlanSvg';
@@ -101,7 +102,7 @@ export default function PlanLabClient() {
 
   // Planting inputs
   const [hardiness, setHardiness] = useState<RhsOption>('H5');
-  const [styleTags, setStyleTags] = useState('cottage, wildlife');
+  const [selectedStyles, setSelectedStyles] = useState<string[]>(['cottage', 'wildlife']);
   const [location, setLocation] = useState('');
   const [email, setEmail] = useState('');
 
@@ -235,7 +236,7 @@ export default function PlanLabClient() {
     setJobId(null);
     setSubmitting(true);
 
-    const tags = styleTags.split(',').map(t => t.trim()).filter(Boolean);
+    const tags = selectedStyles;
     const h = parseFloat(boundaryH) || 1.8;
 
     try {
@@ -455,9 +456,26 @@ export default function PlanLabClient() {
 
               {/* Style tags */}
               <div>
-                <label style={labelStyle}>Style tags (comma-separated)</label>
-                <input type="text" value={styleTags} onChange={e => setStyleTags(e.target.value)}
-                  placeholder="cottage, wildlife, formal" style={inputStyle} />
+                <label style={labelStyle}>Garden style (choose up to {MAX_STYLES})</label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {GARDEN_STYLES.map(s => {
+                    const checked = selectedStyles.includes(s.id);
+                    const full = !checked && selectedStyles.length >= MAX_STYLES;
+                    return (
+                      <label key={s.id} style={{
+                        display: 'flex', alignItems: 'center', gap: 6, fontSize: 13,
+                        padding: '6px 10px', borderRadius: 6, cursor: full ? 'not-allowed' : 'pointer',
+                        border: `1px solid ${checked ? C.emerald : '#d1d5db'}`,
+                        background: checked ? '#ecfdf5' : '#ffffff', opacity: full ? 0.5 : 1,
+                      }}>
+                        <input type="checkbox" checked={checked} disabled={full}
+                          onChange={() => setSelectedStyles(prev =>
+                            prev.includes(s.id) ? prev.filter(x => x !== s.id) : [...prev, s.id])} />
+                        {s.label}
+                      </label>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Dimensions result */}

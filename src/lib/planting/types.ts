@@ -29,7 +29,12 @@ export interface PlantRecord {
   spread_m: number;
   evergreen: boolean;
   season_of_interest: string[];
+  /** Only ids from GARDEN_STYLES (src/lib/planting/styles.ts). */
   style_tags: string[];
+  /** Free descriptive words (fragrant, hedging...). Not used for style matching. */
+  feature_tags?: string[];
+  style_tags_source?: string;
+  season_source?: string | null;
   description: string | null;
   native_regions: string[];
   source_urls: string[];

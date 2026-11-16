@@ -24,6 +24,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireInvite, limitOr429, isValidEmail } from '@/lib/route-guards';
 import { validateImage } from '@/lib/validate-image';
+import { cleanStyleSelection } from '@/lib/planting/styles';
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { inngest } from '@/lib/inngest';
 
@@ -59,7 +60,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const depthMetres  = Number(b.depth_metres);
   const dominantLight = String(b.dominant_light ?? '');
   const rhsHardiness  = String(b.rhs_hardiness ?? '');
-  const styleTags    = Array.isArray(b.style_tags) ? (b.style_tags as unknown[]).map(String) : [];
+  // Only ids from the fixed style list are kept (unknown values are dropped).
+  const styleTags: string[] = cleanStyleSelection(b.style_tags);
   const cameraFacing = String(b.camera_facing ?? 'N');
   const hemisphere   = String(b.hemisphere ?? 'north');
   const location     = typeof b.location === 'string' ? b.location.slice(0, 200) : undefined;

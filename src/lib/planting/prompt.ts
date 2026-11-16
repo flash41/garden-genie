@@ -6,6 +6,7 @@
  */
 
 import type { ShortlistedPlant, SiteContext } from './types';
+import { styleLabel } from './styles';
 import type { SunLabel } from '@/lib/site-model/sun-grid';
 
 /**
@@ -74,7 +75,7 @@ export function buildPlantingPrompt(
 
 GARDEN SIZE: ${ctx.widthMetres}m wide x ${ctx.depthMetres}m deep
 CLIMATE: ${climateDesc}
-STYLE PREFERENCES: ${ctx.styleTags.length > 0 ? ctx.styleTags.join(', ') : 'no preference'}
+STYLE PREFERENCES: ${ctx.styleTags.length > 0 ? ctx.styleTags.map(t => `${styleLabel(t)} (tag: ${t})`).join(', ') : 'no preference'}
 ${lightMapSection}
 AVAILABLE PLANTS (use only these IDs):
 ${plantLines}

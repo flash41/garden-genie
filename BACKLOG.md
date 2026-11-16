@@ -7,7 +7,11 @@ Living task list. Edit via Claude Code prompts.
 - [x] **Email collected.** Optional email field on `/lab/plan`; `recipient_email` saved on the job. New migration `20261116000000_plan_jobs_recipient_email.sql` (NOT applied).
 - [ ] **Run `npm test` and `npm run build`, then commit** (Steen). `npx tsc --noEmit` passes.
 - [x] **Dropped the two plants with RHS invasive-species cautions** (Cotoneaster horizontalis p095, Parthenocissus quinquefolia p100), Steen's decision 16 Nov. Table is now 130 plants. Their ids are retired, not reused.
-- [ ] **New plants have no style tags or seasons**, so style matching ranks them below the first 60. Needs tagging (Steen to review, or sourced).
+- [x] **Style tags added to the 70 new plants (16 Nov)** using the existing tag words, so theme matching treats them like the first 60. Tags are proposals awaiting Steen's review (`style_tags_source`). Seasons read from the wording in Steen's list where stated.
+- [x] **Fixed list of ten garden styles in place (16 Nov)**, in `src/lib/planting/styles.ts`: cottage, modern and minimal, Mediterranean and dry, wildlife and pollinator, Japanese-inspired, woodland and shade, coastal, formal and classic, naturalistic and prairie, low maintenance. All 130 plants re-tagged against it (`style_tags`); other descriptive words moved to `feature_tags`. Lab page uses tick boxes (up to 3); the server drops unknown styles. Tags are proposals awaiting Steen's review: see `plants-style-tags-review.md` in the Garden-Bot documents folder.
+- [ ] **No 'Kitchen and herb' style yet**: the site's examples show one, but the table has almost no edibles. Add edible plants before offering it.
+- [ ] **Run `npm test`** after the style change (new test file `styles.test.ts`; could not be run from Claude's side).
+- [x] **Security branch merged to main and live, 16 Nov 09:38.** Verified against the live site: `/api/send-plan` rejects a missing recipient and a foreign PDF link; `/api/fetch-asset` refuses a look-alike host. Next.js updated to 16.4.6.
 - [ ] **Soil acidity is recorded (`soil_ph`) but not asked of the user or checked.** 11 plants need acid or neutral soil.
 - [ ] **`GEMINI_IMAGE_MODEL` default is `gemini-2.0-flash-exp`**, an old experimental name. Set the env var to a current image model when the new key is created.
 - [ ] **Render prompt lists plants only, not their positions.** Fine for a first test; revisit after seeing real renders.
