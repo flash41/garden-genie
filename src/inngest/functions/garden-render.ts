@@ -16,7 +16,9 @@ import { supabaseAdmin } from '@/lib/supabase-server';
 import { sendPlanReadyEmail } from '@/lib/plan-email';
 import type { PlantingSuggestion, ShoppingItem } from '@/lib/planting/types';
 
-const RENDER_MODEL = process.env.GEMINI_IMAGE_MODEL ?? 'gemini-2.0-flash-exp';
+// Default checked against Google's live model list on 16 Nov 2026 (the earlier
+// default, gemini-2.0-flash-exp, is no longer offered). Override with GEMINI_IMAGE_MODEL.
+const RENDER_MODEL = process.env.GEMINI_IMAGE_MODEL ?? 'gemini-2.5-flash-image';
 const TIMEOUT_MS = 120_000;
 
 async function trySendPlanEmail(jobId: string): Promise<void> {

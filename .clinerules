@@ -1,0 +1,31 @@
+# Project Memory — Read This First
+
+This project uses `PROJECT_CONTEXT.md` (in the project root) as the single
+source of truth for "what is the current state of this project and what was
+I just doing." It exists so that switching between models/sessions (Claude,
+GPT, etc.) never loses continuity.
+
+## Rules for every session
+
+1. **At the start of any task**, read `PROJECT_CONTEXT.md` in full before
+   doing anything else. Treat it as more current than your own memory of
+   this project.
+2. **After completing meaningful work** (a feature, a fix, a decision, or a
+   stopping point mid-task), update `PROJECT_CONTEXT.md`:
+   - Add a dated entry under "Recent Changes" (newest entry on top, keep the
+     last ~15 entries, prune older ones into a one-line summary if the file
+     gets long).
+   - Update "Current State" / "Active Work" if it changed.
+   - Update "Known Issues / Open Questions" if anything was resolved or
+     newly discovered.
+3. **Keep entries short and factual**: what changed, why, which files, and
+   what's left to do. No fluff.
+4. **Do not delete history carelessly** — the point of this file is
+   continuity across model switches, so prefer trimming/summarizing old
+   entries over deleting them outright.
+5. If `PROJECT_CONTEXT.md` conflicts with other docs (BACKLOG.md, handover
+   docs, etc.), `PROJECT_CONTEXT.md` wins for "current state" because it's
+   the most recently maintained file. Other docs are historical/supporting.
+6. **Never write secrets into `PROJECT_CONTEXT.md` or any tracked file.**
+   `.env.local` holds all credentials and is gitignored (`.env*` in
+   `.gitignore`) — reference that file by name only, never paste key values.
